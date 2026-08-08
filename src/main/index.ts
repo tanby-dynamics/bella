@@ -78,7 +78,7 @@ function createWindow(): void {
     autoHideMenuBar: true,
     title: 'Bella',
     backgroundColor: '#0b0c0e',
-    ...(process.platform === 'linux' ? { icon } : {}),
+    icon,
     webPreferences: {
       preload: join(__dirname, '../preload/index.js'),
       sandbox: false
