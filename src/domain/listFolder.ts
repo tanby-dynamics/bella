@@ -8,7 +8,6 @@ export interface DirectoryReader {
 export interface FileEntry {
   name: string
   path: string
-  isDirectory: boolean
   size: number
   modifiedAt: Date
   classification: FormatClassification
@@ -18,6 +17,8 @@ function joinPath(folderPath: string, name: string): string {
   return `${folderPath}/${name}`
 }
 
+/** Lists the files (not folders) directly inside a folder, unsorted -
+ * apply sortEntries to the result for display order. */
 export async function listFolder(
   folderPath: string,
   reader: DirectoryReader
@@ -26,6 +27,12 @@ export async function listFolder(
   const entries: FileEntry[] = []
 
   for (const rawEntry of rawEntries) {
+    // The file panel lists files only - folder navigation lives in the
+    // Locations tree instead. See ADR 0001 and listSubfolders.
+    if (rawEntry.isDirectory) {
+      continue
+    }
+
     const path = joinPath(folderPath, rawEntry.name)
 
     let stat: { size: number; modifiedAt: Date }
@@ -41,14 +48,11 @@ export async function listFolder(
     entries.push({
       name: rawEntry.name,
       path,
-      isDirectory: rawEntry.isDirectory,
       size: stat.size,
       modifiedAt: stat.modifiedAt,
-      classification: rawEntry.isDirectory ? { kind: 'other' } : classifyFormat(rawEntry.name)
+      classification: classifyFormat(rawEntry.name)
     })
   }
-
-  entries.sort((a, b) => a.name.localeCompare(b.name))
 
   return entries
 }

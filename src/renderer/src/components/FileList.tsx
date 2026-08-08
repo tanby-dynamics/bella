@@ -1,0 +1,131 @@
+import { typeLabel, type FileEntry, type SortColumn, type SortDirection } from '../types'
+import { FORMAT_BADGES } from '../formatBadges'
+import { formatDate, formatFileSize } from '../paths'
+
+interface Column {
+  key: SortColumn
+  label: string
+}
+
+const COLUMNS: Column[] = [
+  { key: 'name', label: 'Name' },
+  { key: 'modifiedAt', label: 'Date modified' },
+  { key: 'type', label: 'Type' },
+  { key: 'size', label: 'Size' }
+]
+
+interface FileListProps {
+  entries: FileEntry[]
+  selectedPath: string | null
+  onSelect: (entry: FileEntry) => void
+  sort: { column: SortColumn; direction: SortDirection }
+  onSortChange: (column: SortColumn) => void
+}
+
+function SortArrowIcon({ direction }: { direction: SortDirection }): React.JSX.Element {
+  return (
+    <svg
+      width="9"
+      height="9"
+      viewBox="0 0 24 24"
+      fill="none"
+      style={{ transform: direction === 'desc' ? 'rotate(180deg)' : undefined }}
+    >
+      <path d="M12 5v14M6 11l6-6 6 6" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" />
+    </svg>
+  )
+}
+
+function FileIcon(): React.JSX.Element {
+  return (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+      <path d="M6 2h8l4 4v16H6V2z" stroke="currentColor" strokeWidth="1.4" />
+    </svg>
+  )
+}
+
+function CubeIcon({ color }: { color: string }): React.JSX.Element {
+  return (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+      <path d="M12 2l8 4.5v9L12 20l-8-4.5v-9L12 2z" stroke={color} strokeWidth="1.4" />
+      <path d="M12 2v18M4 6.5L12 11l8-4.5" stroke={color} strokeWidth="1.4" />
+    </svg>
+  )
+}
+
+function FileListRow({
+  entry,
+  isSelected,
+  onSelect
+}: {
+  entry: FileEntry
+  isSelected: boolean
+  onSelect: () => void
+}): React.JSX.Element {
+  const badge =
+    entry.classification.kind !== 'other' ? FORMAT_BADGES[entry.classification.format] : undefined
+
+  return (
+    <div
+      className={`file-list__row${isSelected ? ' is-selected' : ''}`}
+      onClick={onSelect}
+      role="button"
+      tabIndex={0}
+    >
+      <span className="file-list__col file-list__col--name">
+        {badge ? <CubeIcon color={isSelected ? 'var(--accent)' : badge.color} /> : <FileIcon />}
+        <span className="file-list__name-text">{entry.name}</span>
+      </span>
+      <span className="file-list__col file-list__col--modified">
+        {formatDate(entry.modifiedAt)}
+      </span>
+      <span className="file-list__col file-list__col--type">{typeLabel(entry.classification)}</span>
+      <span className="file-list__col file-list__col--size">{formatFileSize(entry.size)}</span>
+    </div>
+  )
+}
+
+export function FileList({
+  entries,
+  selectedPath,
+  onSelect,
+  sort,
+  onSortChange
+}: FileListProps): React.JSX.Element {
+  return (
+    <div className="file-list">
+      <div className="file-list__header">
+        <span>{entries.length} items</span>
+      </div>
+      <div className="file-list__row file-list__row--head">
+        {COLUMNS.map((column) => (
+          <button
+            key={column.key}
+            type="button"
+            className={`file-list__col file-list__col--${column.key}${
+              sort.column === column.key ? ' is-active' : ''
+            }`}
+            onClick={() => onSortChange(column.key)}
+          >
+            <span>{column.label}</span>
+            {sort.column === column.key && <SortArrowIcon direction={sort.direction} />}
+          </button>
+        ))}
+      </div>
+      <div className="file-list__body">
+        {entries.length === 0 ? (
+          <div className="file-list__empty">This folder is empty</div>
+        ) : (
+          entries.map((entry) => (
+            <FileListRow
+              key={entry.path}
+              entry={entry}
+              isSelected={entry.path === selectedPath}
+              onSelect={() => onSelect(entry)}
+            />
+          ))
+        )}
+      </div>
+    </div>
+  )
+}

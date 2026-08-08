@@ -1,13 +1,40 @@
 import { useEffect, useMemo, useState } from 'react'
-import type { Favorite, FileEntry, Location, RenderMode, Settings } from './types'
+import {
+  sortEntries,
+  type Favorite,
+  type FileEntry,
+  type Location,
+  type RenderMode,
+  type Settings,
+  type SortColumn,
+  type SortDirection
+} from './types'
 import type { PreviewState } from './preview'
 import { fileNameFromPath } from './paths'
 import { Toolbar } from './components/Toolbar'
 import { Sidebar } from './components/Sidebar'
-import { FileGrid } from './components/FileGrid'
+import { FileList } from './components/FileList'
 import { PreviewPanel } from './components/PreviewPanel'
 import { StatusBar } from './components/StatusBar'
 import { SettingsPanel } from './components/SettingsPanel'
+
+// Single global sort setting, not remembered per folder (see CONTEXT.md) -
+// this is the fallback before Settings has loaded from the store.
+const DEFAULT_SORT: { column: SortColumn; direction: SortDirection } = {
+  column: 'name',
+  direction: 'asc'
+}
+
+// Default direction when a column is first clicked (not yet the active
+// sort) - Name/Type ascending, Date modified/Size descending, matching
+// Explorer's own conventions. Clicking the already-active column toggles
+// instead of falling back to this. See CONTEXT.md.
+const DEFAULT_DIRECTION: Record<SortColumn, SortDirection> = {
+  name: 'asc',
+  type: 'asc',
+  modifiedAt: 'desc',
+  size: 'desc'
+}
 
 function applyTheme(theme: Settings['theme']): void {
   const resolved =
@@ -33,6 +60,15 @@ function App(): React.JSX.Element {
   const selectedEntry = useMemo(
     () => entries.find((entry) => entry.path === selectedPath) ?? null,
     [entries, selectedPath]
+  )
+
+  // Global sort - applies across every folder, not remembered per folder
+  // (see CONTEXT.md) - so it lives in Settings alongside theme/render mode
+  // rather than folder-scoped state.
+  const sort = settings?.sort ?? DEFAULT_SORT
+  const sortedEntries = useMemo(
+    () => sortEntries(entries, sort.column, sort.direction),
+    [entries, sort]
   )
 
   useEffect(() => {
@@ -116,6 +152,16 @@ function App(): React.JSX.Element {
     if (patch.theme) applyTheme(updated.theme)
   }
 
+  async function changeSort(column: SortColumn): Promise<void> {
+    const nextDirection: SortDirection =
+      column === sort.column
+        ? sort.direction === 'asc'
+          ? 'desc'
+          : 'asc'
+        : DEFAULT_DIRECTION[column]
+    await changeSettings({ sort: { column, direction: nextDirection } })
+  }
+
   return (
     <div className="app">
       <Toolbar
@@ -132,11 +178,12 @@ function App(): React.JSX.Element {
           onAddCurrentFolderAsFavorite={addCurrentFolderAsFavorite}
           onRemoveFavorite={removeFavorite}
         />
-        <FileGrid
-          entries={entries}
+        <FileList
+          entries={sortedEntries}
           selectedPath={selectedPath}
           onSelect={selectEntry}
-          onOpenFolder={(entry) => navigate(entry.path)}
+          sort={sort}
+          onSortChange={changeSort}
         />
         <PreviewPanel
           selectedEntry={selectedEntry}

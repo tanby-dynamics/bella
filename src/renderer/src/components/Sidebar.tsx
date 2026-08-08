@@ -1,4 +1,6 @@
+import { useState } from 'react'
 import type { Favorite, Location } from '../types'
+import { ChevronIcon, LocationTreeNode } from './LocationTree'
 
 interface SidebarProps {
   favorites: Favorite[]
@@ -7,15 +9,6 @@ interface SidebarProps {
   onNavigate: (path: string) => void
   onAddCurrentFolderAsFavorite: () => void
   onRemoveFavorite: (path: string) => void
-}
-
-function DriveIcon(): React.JSX.Element {
-  return (
-    <svg width="15" height="15" viewBox="0 0 24 24" fill="none">
-      <rect x="3" y="6" width="18" height="12" rx="2" stroke="currentColor" strokeWidth="1.4" />
-      <circle cx="7" cy="15" r="0.8" fill="currentColor" />
-    </svg>
-  )
 }
 
 function StarIcon(): React.JSX.Element {
@@ -38,12 +31,21 @@ export function Sidebar({
   onAddCurrentFolderAsFavorite,
   onRemoveFavorite
 }: SidebarProps): React.JSX.Element {
+  const [favoritesExpanded, setFavoritesExpanded] = useState(true)
   const isCurrentFolderFavorite = favorites.some((f) => f.path === currentFolder)
 
   return (
     <div className="sidebar">
       <div className="sidebar__section-header">
-        <span>FAVORITES</span>
+        <button
+          type="button"
+          className="sidebar__section-toggle"
+          onClick={() => setFavoritesExpanded((current) => !current)}
+          aria-expanded={favoritesExpanded}
+        >
+          <ChevronIcon expanded={favoritesExpanded} />
+          <span>FAVORITES</span>
+        </button>
         {currentFolder && !isCurrentFolderFavorite && (
           <button
             type="button"
@@ -55,40 +57,40 @@ export function Sidebar({
           </button>
         )}
       </div>
-      {favorites.map((favorite) => (
-        <div
-          key={favorite.path}
-          className={`sidebar__item${favorite.path === currentFolder ? ' is-active' : ''}`}
-          onClick={() => onNavigate(favorite.path)}
-        >
-          <StarIcon />
-          <span>{favorite.name}</span>
-          <button
-            type="button"
-            className="sidebar__remove"
-            title="Remove from Favorites"
-            onClick={(event) => {
-              event.stopPropagation()
-              onRemoveFavorite(favorite.path)
-            }}
+      {favoritesExpanded &&
+        favorites.map((favorite) => (
+          <div
+            key={favorite.path}
+            className={`sidebar__item${favorite.path === currentFolder ? ' is-active' : ''}`}
+            onClick={() => onNavigate(favorite.path)}
           >
-            ×
-          </button>
-        </div>
-      ))}
+            <StarIcon />
+            <span>{favorite.name}</span>
+            <button
+              type="button"
+              className="sidebar__remove"
+              title="Remove from Favorites"
+              onClick={(event) => {
+                event.stopPropagation()
+                onRemoveFavorite(favorite.path)
+              }}
+            >
+              ×
+            </button>
+          </div>
+        ))}
 
       <div className="sidebar__section-header">
         <span>LOCATIONS</span>
       </div>
       {locations.map((location) => (
-        <div
+        <LocationTreeNode
           key={location.path}
-          className={`sidebar__item${location.path === currentFolder ? ' is-active' : ''}`}
-          onClick={() => onNavigate(location.path)}
-        >
-          <DriveIcon />
-          <span>{location.name}</span>
-        </div>
+          item={location}
+          depth={0}
+          currentFolder={currentFolder}
+          onNavigate={onNavigate}
+        />
       ))}
     </div>
   )

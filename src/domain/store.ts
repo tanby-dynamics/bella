@@ -1,3 +1,5 @@
+import type { SortColumn, SortDirection } from './sortEntries'
+
 export interface Favorite {
   name: string
   path: string
@@ -9,6 +11,9 @@ export type RenderMode = 'shaded' | 'wireframe' | 'xray'
 export interface Settings {
   theme: Theme
   defaultRenderMode: RenderMode
+  /** Single global sort, applied to the file list across all folders -
+   * not remembered per folder. See CONTEXT.md. */
+  sort: { column: SortColumn; direction: SortDirection }
 }
 
 export interface StoreData {
@@ -20,7 +25,11 @@ export interface StoreData {
 export const DEFAULT_STORE_DATA: StoreData = {
   favorites: [],
   lastOpenedFolder: null,
-  settings: { theme: 'system', defaultRenderMode: 'shaded' }
+  settings: {
+    theme: 'system',
+    defaultRenderMode: 'shaded',
+    sort: { column: 'name', direction: 'asc' }
+  }
 }
 
 /** Backing storage for the store's data - swappable independently of the

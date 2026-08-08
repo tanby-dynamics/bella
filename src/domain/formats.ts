@@ -21,6 +21,24 @@ function extensionOf(fileName: string): string {
   return dot === -1 ? '' : fileName.slice(dot + 1).toLowerCase()
 }
 
+const LISTED_TYPE_LABELS: Record<ListedFormatId, string> = {
+  step: 'STEP File',
+  fcstd: 'FreeCAD File',
+  scad: 'OpenSCAD File'
+}
+
+export function typeLabel(classification: FormatClassification): string {
+  if (classification.kind === 'renderable') {
+    return 'STL File'
+  }
+
+  if (classification.kind === 'listed') {
+    return LISTED_TYPE_LABELS[classification.format]
+  }
+
+  return 'File'
+}
+
 export function classifyFormat(fileName: string): FormatClassification {
   const ext = extensionOf(fileName)
 

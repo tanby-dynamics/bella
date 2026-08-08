@@ -2,12 +2,15 @@ import { contextBridge, ipcRenderer } from 'electron'
 import { electronAPI } from '@electron-toolkit/preload'
 import { IPC, type ParseRenderableFileResult } from '../shared/ipc'
 import type { FileEntry } from '../domain/listFolder'
+import type { Subfolder } from '../domain/listSubfolders'
 import type { Location } from '../domain/locations'
 import type { Favorite, Settings } from '../domain/store'
 
 const api = {
   getHomeDirectory: (): Promise<string> => ipcRenderer.invoke(IPC.homeDirectory),
   listFolder: (path: string): Promise<FileEntry[]> => ipcRenderer.invoke(IPC.listFolder, path),
+  listSubfolders: (path: string): Promise<Subfolder[]> =>
+    ipcRenderer.invoke(IPC.listSubfolders, path),
   parseRenderableFile: (path: string): Promise<ParseRenderableFileResult> =>
     ipcRenderer.invoke(IPC.parseRenderableFile, path),
   openExternal: (path: string): Promise<string> => ipcRenderer.invoke(IPC.openExternal, path),

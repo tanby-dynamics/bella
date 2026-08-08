@@ -3,6 +3,7 @@ import type { StlParseResult } from '../domain'
 export const IPC = {
   homeDirectory: 'fs:homeDirectory',
   listFolder: 'fs:listFolder',
+  listSubfolders: 'fs:listSubfolders',
   parseRenderableFile: 'fs:parseRenderableFile',
   openExternal: 'fs:openExternal',
   listLocations: 'locations:list',
