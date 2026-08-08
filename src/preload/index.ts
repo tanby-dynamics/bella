@@ -8,7 +8,7 @@ import {
 } from '../shared/ipc'
 import type { FolderContents } from '../domain/listFolderContents'
 import type { Location } from '../domain/locations'
-import type { Favorite, Settings, StoreData } from '../domain/store'
+import type { Favorite, RenderMode, Settings, StoreData } from '../domain/store'
 
 const api = {
   getHomeDirectory: (): Promise<string> => ipcRenderer.invoke(IPC.homeDirectory),
@@ -24,6 +24,9 @@ const api = {
   getLastOpenedFolder: (): Promise<string | null> => ipcRenderer.invoke(IPC.getLastOpenedFolder),
   setLastOpenedFolder: (path: string): Promise<void> =>
     ipcRenderer.invoke(IPC.setLastOpenedFolder, path),
+  getLastRenderMode: (): Promise<RenderMode> => ipcRenderer.invoke(IPC.getLastRenderMode),
+  setLastRenderMode: (mode: RenderMode): Promise<void> =>
+    ipcRenderer.invoke(IPC.setLastRenderMode, mode),
   getSettings: (): Promise<Settings> => ipcRenderer.invoke(IPC.getSettings),
   setSettings: (patch: Partial<Settings>): Promise<Settings> =>
     ipcRenderer.invoke(IPC.setSettings, patch),

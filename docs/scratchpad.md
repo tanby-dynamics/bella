@@ -68,12 +68,12 @@
 	- [x] manual tests
 	- [x] release note
 	- [x] commit
-- [ ] Remove default render mode configuration setting and remember the last selected render mode in the preview
-	- [ ] Prompt: Remove the "Default render mode" configuration setting and remember the last selected render mode in the preview
-	- [ ] implement
-	- [ ] manual tests
-	- [ ] release note
-	- [ ] commit
+- [x] Remove default render mode configuration setting and remember the last selected render mode in the preview
+	- [x] Prompt: Remove the "Default render mode" configuration setting and remember the last selected render mode in the preview
+	- [x] implement
+	- [x] manual tests
+	- [x] release note
+	- [x] commit
 - [ ] Remove floaty animation in the preview
 	- [ ] Prompt: Remove floaty animation in the preview - changing the preview with the mouse should take effect immediately
 	- [ ] implement
@@ -130,6 +130,13 @@
 	- [ ] What do I have to do  to set up code signing for Windows?
 - [ ] Tabbed preview
 	- [ ] Prompt: I want to be able to open multiple previews via tabs. This should work similarly to VS Code's tabbing - single clicking a file opens the preview in a transient tab with the file name italicised, double clicking the file or double clicking the tab changes the tab to persistent (non-italicised). Opening a file's preview with a transient tab present closes the transient tab and replaces it with the new preview tab. Click the x or middle click the tab to close it.  Tabs should be re-orderable by dragging and dropping. No support for splitting at the moment - only a single preview will actually be visible at a time.
+	- [ ] spec
+	- [ ] implement
+	- [ ] test 
+	- [ ] release note
+	- [ ] merge
+- [ ] Drag and drop reordering of favorites
+	- [ ] Prompt: xxx
 	- [ ] spec
 	- [ ] implement
 	- [ ] test 

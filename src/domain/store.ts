@@ -8,7 +8,6 @@ export type RenderMode = 'shaded' | 'wireframe' | 'xray'
 
 export interface Settings {
   theme: Theme
-  defaultRenderMode: RenderMode
   /** Persisted pixel width of the sidebar/Locations-tree panel. The sole
    * survivor of the old resizable-columns persistence (see the removed
    * ColumnWidths) now that the file list - and its per-column widths -
@@ -28,6 +27,11 @@ export interface StoreData {
    * app-remembered state (same treatment as lastOpenedFolder). See
    * CONTEXT.md. */
   skippedUpdateVersion: string | null
+  /** The most recently selected Render mode - not a user-facing Setting,
+   * just app-remembered state (same treatment as lastOpenedFolder /
+   * skippedUpdateVersion), so the preview reopens in whatever mode it was
+   * last left in rather than a configured default. See CONTEXT.md. */
+  lastRenderMode: RenderMode
 }
 
 export const DEFAULT_STORE_DATA: StoreData = {
@@ -35,11 +39,11 @@ export const DEFAULT_STORE_DATA: StoreData = {
   lastOpenedFolder: null,
   settings: {
     theme: 'system',
-    defaultRenderMode: 'shaded',
     sidebarWidth: 220,
     checkForUpdatesOnStartup: true
   },
-  skippedUpdateVersion: null
+  skippedUpdateVersion: null,
+  lastRenderMode: 'shaded'
 }
 
 /** Backing storage for the store's data - swappable independently of the
@@ -60,10 +64,12 @@ export interface Store {
   setSettings(patch: Partial<Settings>): Promise<void>
   getSkippedUpdateVersion(): Promise<string | null>
   setSkippedUpdateVersion(version: string | null): Promise<void>
+  getLastRenderMode(): Promise<RenderMode>
+  setLastRenderMode(mode: RenderMode): Promise<void>
   /** Clears all stored configuration (favorites, last-opened folder,
-   * settings, skipped update version) back to defaults and returns the
-   * reset data, so callers can apply it immediately without a separate
-   * round of reads. */
+   * settings, skipped update version, last render mode) back to defaults
+   * and returns the reset data, so callers can apply it immediately
+   * without a separate round of reads. */
   resetAll(): Promise<StoreData>
 }
 
@@ -130,6 +136,16 @@ export function createStore(backend: StoreBackend): Store {
     async setSkippedUpdateVersion(version) {
       const data = await readData()
       await backend.write({ ...data, skippedUpdateVersion: version })
+    },
+
+    async getLastRenderMode() {
+      const data = await readData()
+      return data.lastRenderMode
+    },
+
+    async setLastRenderMode(mode) {
+      const data = await readData()
+      await backend.write({ ...data, lastRenderMode: mode })
     },
 
     async resetAll() {

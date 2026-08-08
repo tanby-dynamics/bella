@@ -73,6 +73,7 @@ function App(): React.JSX.Element {
         loadedFavorites,
         loadedLocations,
         lastOpenedFolder,
+        lastRenderMode,
         homeDirectory,
         version
       ] = await Promise.all([
@@ -80,6 +81,7 @@ function App(): React.JSX.Element {
         window.api.listFavorites(),
         window.api.listLocations(),
         window.api.getLastOpenedFolder(),
+        window.api.getLastRenderMode(),
         window.api.getHomeDirectory(),
         window.api.getAppVersion()
       ])
@@ -87,7 +89,7 @@ function App(): React.JSX.Element {
       if (cancelled) return
 
       setSettings(loadedSettings)
-      setRenderMode(loadedSettings.defaultRenderMode)
+      setRenderMode(lastRenderMode)
       applyTheme(loadedSettings.theme)
       setFavorites(loadedFavorites)
       setLocations(loadedLocations)
@@ -138,7 +140,6 @@ function App(): React.JSX.Element {
   async function selectFile(entry: FileEntry): Promise<void> {
     setHighlighted({ path: entry.path, kind: 'file' })
     setSelectedEntry(entry)
-    setRenderMode(settings?.defaultRenderMode ?? 'shaded')
     await window.api.setLastOpenedFolder(parentFolderPath(entry.path))
 
     if (entry.classification.kind !== 'renderable') {
@@ -202,10 +203,18 @@ function App(): React.JSX.Element {
     if (patch.theme) applyTheme(updated.theme)
   }
 
+  // Persists the newly picked Render mode as well as reflecting it in
+  // state, so the preview reopens in whatever mode it was last left in -
+  // not a configured default. See CONTEXT.md.
+  async function changeRenderMode(mode: RenderMode): Promise<void> {
+    setRenderMode(mode)
+    await window.api.setLastRenderMode(mode)
+  }
+
   async function resetConfiguration(): Promise<void> {
     const defaults = await window.api.resetConfig()
     setSettings(defaults.settings)
-    setRenderMode(defaults.settings.defaultRenderMode)
+    setRenderMode(defaults.lastRenderMode)
     applyTheme(defaults.settings.theme)
     setFavorites(defaults.favorites)
   }
@@ -279,7 +288,7 @@ function App(): React.JSX.Element {
           selectedEntry={selectedEntry}
           preview={preview}
           renderMode={renderMode}
-          onRenderModeChange={setRenderMode}
+          onRenderModeChange={changeRenderMode}
           onOpen={openSelected}
         />
       </div>

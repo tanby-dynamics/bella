@@ -11,6 +11,8 @@ export const IPC = {
   removeFavorite: 'favorites:remove',
   getLastOpenedFolder: 'session:getLastOpenedFolder',
   setLastOpenedFolder: 'session:setLastOpenedFolder',
+  getLastRenderMode: 'session:getLastRenderMode',
+  setLastRenderMode: 'session:setLastRenderMode',
   getSettings: 'settings:get',
   setSettings: 'settings:set',
   resetConfig: 'config:reset',

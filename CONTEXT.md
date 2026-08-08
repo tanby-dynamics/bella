@@ -85,8 +85,9 @@ Version only — a later Release still prompts.
   (watertight, manifold) mesh, and real-world exports often aren't — this
   metadata field is descoped rather than showing unreliable numbers.
   Metadata panel v1 fields: Dimensions, Triangle count, Modified date.
-- **v1 Settings scope**: theme (light/dark/system) and default render
-  mode. Nothing file-management-related until that feature exists.
+- **v1 Settings scope**: theme (light/dark/system). Nothing
+  file-management-related until that feature exists. Render mode is not a
+  Setting - see "App state persists" below.
 - **The Locations tree is the sole browsing surface.** There's no
   separate file list panel and no "current folder" concept — expanding a
   folder anywhere in the tree reveals its subfolders and files together,
@@ -136,7 +137,9 @@ Version only — a later Release still prompts.
 - **App state persists** across restarts in a local app-config file:
   Favorites list, last-opened folder (now updated whenever a file is
   selected, since there's no separate "navigate to a folder" event
-  anymore — see ADR 0004), and the sidebar width.
+  anymore — see ADR 0004), the sidebar width, and the last-selected Render
+  mode (updated whenever the user picks one in the preview's render-mode
+  toggle - not a Setting, same treatment as Skipped Version).
 - **Selection is single-file only** in v1 — no multi-select. The tree's
   highlight can land on a folder too (for visual feedback while
   browsing), but only a file selection drives the preview, and it's a

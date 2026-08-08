@@ -56,12 +56,11 @@ describe('store', () => {
     expect(await store.getLastOpenedFolder()).toBe('D:\\Projects\\Robot Arm')
   })
 
-  it('has default settings (system theme, shaded render mode, 220px sidebar, update checks on)', async () => {
+  it('has default settings (system theme, 220px sidebar, update checks on)', async () => {
     const store = createStore(fakeBackend())
 
     expect(await store.getSettings()).toEqual({
       theme: 'system',
-      defaultRenderMode: 'shaded',
       sidebarWidth: 220,
       checkForUpdatesOnStartup: true
     })
@@ -74,7 +73,6 @@ describe('store', () => {
 
     expect(await store.getSettings()).toEqual({
       theme: 'dark',
-      defaultRenderMode: 'shaded',
       sidebarWidth: 220,
       checkForUpdatesOnStartup: true
     })
@@ -87,7 +85,6 @@ describe('store', () => {
 
     expect(await store.getSettings()).toEqual({
       theme: 'system',
-      defaultRenderMode: 'shaded',
       sidebarWidth: 280,
       checkForUpdatesOnStartup: true
     })
@@ -100,24 +97,23 @@ describe('store', () => {
 
     expect(await store.getSettings()).toEqual({
       theme: 'system',
-      defaultRenderMode: 'shaded',
       sidebarWidth: 220,
       checkForUpdatesOnStartup: false
     })
   })
 
-  it('resetAll clears favorites, last-opened folder, settings, and skipped update version back to defaults', async () => {
+  it('resetAll clears favorites, last-opened folder, settings, skipped update version, and last render mode back to defaults', async () => {
     const store = createStore(
       fakeBackend({
         favorites: [{ name: '3D Projects', path: 'D:\\3D Projects' }],
         lastOpenedFolder: 'D:\\3D Projects',
         settings: {
           theme: 'dark',
-          defaultRenderMode: 'wireframe',
           sidebarWidth: 280,
           checkForUpdatesOnStartup: false
         },
-        skippedUpdateVersion: '0.2.0'
+        skippedUpdateVersion: '0.2.0',
+        lastRenderMode: 'wireframe'
       })
     )
 
@@ -128,6 +124,7 @@ describe('store', () => {
     expect(await store.getLastOpenedFolder()).toBeNull()
     expect(await store.getSettings()).toEqual(DEFAULT_STORE_DATA.settings)
     expect(await store.getSkippedUpdateVersion()).toBeNull()
+    expect(await store.getLastRenderMode()).toBe('shaded')
   })
 })
 
@@ -156,15 +153,15 @@ describe('store - Skipped Version', () => {
 
   it('fills in defaults for fields missing from an older on-disk config', async () => {
     // Simulates a config file written before checkForUpdatesOnStartup /
-    // skippedUpdateVersion / sidebarWidth existed (the last replaced the
-    // old sort/columnWidths fields - see ADR 0004).
+    // skippedUpdateVersion / sidebarWidth / lastRenderMode existed (the
+    // sidebarWidth field replaced the old sort/columnWidths fields - see
+    // ADR 0004).
     const store = createStore(
       fakeBackend({
         favorites: [],
         lastOpenedFolder: null,
         settings: {
-          theme: 'dark',
-          defaultRenderMode: 'shaded'
+          theme: 'dark'
         }
       } as unknown as StoreData)
     )
@@ -172,7 +169,24 @@ describe('store - Skipped Version', () => {
     expect(await store.getSkippedUpdateVersion()).toBeNull()
     expect((await store.getSettings()).checkForUpdatesOnStartup).toBe(true)
     expect((await store.getSettings()).sidebarWidth).toBe(220)
+    expect(await store.getLastRenderMode()).toBe('shaded')
     // Fields the old config did have are preserved, not clobbered by defaults.
     expect((await store.getSettings()).theme).toBe('dark')
+  })
+})
+
+describe('store - last render mode', () => {
+  it('has shaded as the last render mode by default', async () => {
+    const store = createStore(fakeBackend())
+
+    expect(await store.getLastRenderMode()).toBe('shaded')
+  })
+
+  it('sets and gets the last render mode', async () => {
+    const store = createStore(fakeBackend())
+
+    await store.setLastRenderMode('wireframe')
+
+    expect(await store.getLastRenderMode()).toBe('wireframe')
   })
 })

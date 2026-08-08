@@ -8,7 +8,8 @@ import {
   parseRenderable,
   enumerateLocations,
   createStore,
-  classifyFormat
+  classifyFormat,
+  type RenderMode
 } from '../domain'
 import { fsDirectoryReader } from './adapters/fsDirectoryReader'
 import { osDriveLister } from './adapters/osDriveLister'
@@ -53,6 +54,9 @@ function registerIpcHandlers(): void {
 
   ipcMain.handle(IPC.getLastOpenedFolder, () => store.getLastOpenedFolder())
   ipcMain.handle(IPC.setLastOpenedFolder, (_event, path: string) => store.setLastOpenedFolder(path))
+
+  ipcMain.handle(IPC.getLastRenderMode, () => store.getLastRenderMode())
+  ipcMain.handle(IPC.setLastRenderMode, (_event, mode: RenderMode) => store.setLastRenderMode(mode))
 
   ipcMain.handle(IPC.getSettings, () => store.getSettings())
   ipcMain.handle(IPC.setSettings, async (_event, patch) => {

@@ -1,4 +1,4 @@
-import type { RenderMode, Settings, Theme } from '../types'
+import type { Settings, Theme } from '../types'
 
 interface SettingsPanelProps {
   settings: Settings
@@ -14,7 +14,6 @@ interface SettingsPanelProps {
 }
 
 const THEMES: Theme[] = ['system', 'light', 'dark']
-const RENDER_MODES: RenderMode[] = ['shaded', 'wireframe', 'xray']
 
 export function SettingsPanel({
   settings,
@@ -51,20 +50,6 @@ export function SettingsPanel({
             {THEMES.map((theme) => (
               <option key={theme} value={theme}>
                 {theme[0].toUpperCase() + theme.slice(1)}
-              </option>
-            ))}
-          </select>
-        </label>
-
-        <label className="settings-panel__field">
-          <span>Default render mode</span>
-          <select
-            value={settings.defaultRenderMode}
-            onChange={(event) => onChange({ defaultRenderMode: event.target.value as RenderMode })}
-          >
-            {RENDER_MODES.map((mode) => (
-              <option key={mode} value={mode}>
-                {mode[0].toUpperCase() + mode.slice(1)}
               </option>
             ))}
           </select>
