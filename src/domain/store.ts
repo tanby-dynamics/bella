@@ -23,12 +23,20 @@ export interface Settings {
    * not remembered per folder. See CONTEXT.md. */
   sort: { column: SortColumn; direction: SortDirection }
   columnWidths: ColumnWidths
+  /** Whether an Update Check runs automatically on startup. Does not affect
+   * the manual "Check for updates" action, which always runs. See
+   * CONTEXT.md. */
+  checkForUpdatesOnStartup: boolean
 }
 
 export interface StoreData {
   favorites: Favorite[]
   lastOpenedFolder: string | null
   settings: Settings
+  /** The Skipped Version, if any - not a user-facing Setting, just
+   * app-remembered state (same treatment as lastOpenedFolder). See
+   * CONTEXT.md. */
+  skippedUpdateVersion: string | null
 }
 
 export const DEFAULT_STORE_DATA: StoreData = {
@@ -38,8 +46,10 @@ export const DEFAULT_STORE_DATA: StoreData = {
     theme: 'system',
     defaultRenderMode: 'shaded',
     sort: { column: 'name', direction: 'asc' },
-    columnWidths: { modifiedAt: 108, type: 92, size: 68 }
-  }
+    columnWidths: { modifiedAt: 108, type: 92, size: 68 },
+    checkForUpdatesOnStartup: true
+  },
+  skippedUpdateVersion: null
 }
 
 /** Backing storage for the store's data - swappable independently of the
@@ -58,15 +68,29 @@ export interface Store {
   setLastOpenedFolder(path: string): Promise<void>
   getSettings(): Promise<Settings>
   setSettings(patch: Partial<Settings>): Promise<void>
+  getSkippedUpdateVersion(): Promise<string | null>
+  setSkippedUpdateVersion(version: string | null): Promise<void>
   /** Clears all stored configuration (favorites, last-opened folder,
-   * settings) back to defaults and returns the reset data, so callers can
-   * apply it immediately without a separate round of reads. */
+   * settings, skipped update version) back to defaults and returns the
+   * reset data, so callers can apply it immediately without a separate
+   * round of reads. */
   resetAll(): Promise<StoreData>
 }
 
 export function createStore(backend: StoreBackend): Store {
+  // Merges in top-level and settings defaults rather than trusting the
+  // backend's shape outright, so a config file written by an older version
+  // of Bella (missing fields this version added, e.g. checkForUpdatesOnStartup)
+  // still reads as complete instead of leaving those fields undefined.
   async function readData(): Promise<StoreData> {
-    return (await backend.read()) ?? DEFAULT_STORE_DATA
+    const data = await backend.read()
+    if (!data) return DEFAULT_STORE_DATA
+
+    return {
+      ...DEFAULT_STORE_DATA,
+      ...data,
+      settings: { ...DEFAULT_STORE_DATA.settings, ...data.settings }
+    }
   }
 
   return {
@@ -106,6 +130,16 @@ export function createStore(backend: StoreBackend): Store {
     async setSettings(patch) {
       const data = await readData()
       await backend.write({ ...data, settings: { ...data.settings, ...patch } })
+    },
+
+    async getSkippedUpdateVersion() {
+      const data = await readData()
+      return data.skippedUpdateVersion
+    },
+
+    async setSkippedUpdateVersion(version) {
+      const data = await readData()
+      await backend.write({ ...data, skippedUpdateVersion: version })
     },
 
     async resetAll() {

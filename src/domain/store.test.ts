@@ -56,14 +56,15 @@ describe('store', () => {
     expect(await store.getLastOpenedFolder()).toBe('D:\\Projects\\Robot Arm')
   })
 
-  it('has default settings (system theme, shaded render mode, name-ascending sort)', async () => {
+  it('has default settings (system theme, shaded render mode, name-ascending sort, update checks on)', async () => {
     const store = createStore(fakeBackend())
 
     expect(await store.getSettings()).toEqual({
       theme: 'system',
       defaultRenderMode: 'shaded',
       sort: { column: 'name', direction: 'asc' },
-      columnWidths: { modifiedAt: 108, type: 92, size: 68 }
+      columnWidths: { modifiedAt: 108, type: 92, size: 68 },
+      checkForUpdatesOnStartup: true
     })
   })
 
@@ -76,7 +77,8 @@ describe('store', () => {
       theme: 'dark',
       defaultRenderMode: 'shaded',
       sort: { column: 'name', direction: 'asc' },
-      columnWidths: { modifiedAt: 108, type: 92, size: 68 }
+      columnWidths: { modifiedAt: 108, type: 92, size: 68 },
+      checkForUpdatesOnStartup: true
     })
   })
 
@@ -89,7 +91,8 @@ describe('store', () => {
       theme: 'system',
       defaultRenderMode: 'shaded',
       sort: { column: 'size', direction: 'desc' },
-      columnWidths: { modifiedAt: 108, type: 92, size: 68 }
+      columnWidths: { modifiedAt: 108, type: 92, size: 68 },
+      checkForUpdatesOnStartup: true
     })
   })
 
@@ -112,11 +115,26 @@ describe('store', () => {
       theme: 'system',
       defaultRenderMode: 'shaded',
       sort: { column: 'name', direction: 'asc' },
-      columnWidths: { modifiedAt: 140, type: 92, size: 68 }
+      columnWidths: { modifiedAt: 140, type: 92, size: 68 },
+      checkForUpdatesOnStartup: true
     })
   })
 
-  it('resetAll clears favorites, last-opened folder, and settings back to defaults', async () => {
+  it('updates the checkForUpdatesOnStartup setting independently, leaving the rest untouched', async () => {
+    const store = createStore(fakeBackend())
+
+    await store.setSettings({ checkForUpdatesOnStartup: false })
+
+    expect(await store.getSettings()).toEqual({
+      theme: 'system',
+      defaultRenderMode: 'shaded',
+      sort: { column: 'name', direction: 'asc' },
+      columnWidths: { modifiedAt: 108, type: 92, size: 68 },
+      checkForUpdatesOnStartup: false
+    })
+  })
+
+  it('resetAll clears favorites, last-opened folder, settings, and skipped update version back to defaults', async () => {
     const store = createStore(
       fakeBackend({
         favorites: [{ name: '3D Projects', path: 'D:\\3D Projects' }],
@@ -125,8 +143,10 @@ describe('store', () => {
           theme: 'dark',
           defaultRenderMode: 'wireframe',
           sort: { column: 'size', direction: 'desc' },
-          columnWidths: { modifiedAt: 140, type: 92, size: 68 }
-        }
+          columnWidths: { modifiedAt: 140, type: 92, size: 68 },
+          checkForUpdatesOnStartup: false
+        },
+        skippedUpdateVersion: '0.2.0'
       })
     )
 
@@ -136,5 +156,52 @@ describe('store', () => {
     expect(await store.getFavorites()).toEqual([])
     expect(await store.getLastOpenedFolder()).toBeNull()
     expect(await store.getSettings()).toEqual(DEFAULT_STORE_DATA.settings)
+    expect(await store.getSkippedUpdateVersion()).toBeNull()
+  })
+})
+
+describe('store - Skipped Version', () => {
+  it('has no skipped update version by default', async () => {
+    const store = createStore(fakeBackend())
+
+    expect(await store.getSkippedUpdateVersion()).toBeNull()
+  })
+
+  it('sets and gets the skipped update version', async () => {
+    const store = createStore(fakeBackend())
+
+    await store.setSkippedUpdateVersion('0.2.0')
+
+    expect(await store.getSkippedUpdateVersion()).toBe('0.2.0')
+  })
+
+  it('clears the skipped update version by setting it to null', async () => {
+    const store = createStore(fakeBackend({ ...DEFAULT_STORE_DATA, skippedUpdateVersion: '0.2.0' }))
+
+    await store.setSkippedUpdateVersion(null)
+
+    expect(await store.getSkippedUpdateVersion()).toBeNull()
+  })
+
+  it('fills in defaults for fields missing from an older on-disk config', async () => {
+    // Simulates a config file written before checkForUpdatesOnStartup /
+    // skippedUpdateVersion existed.
+    const store = createStore(
+      fakeBackend({
+        favorites: [],
+        lastOpenedFolder: null,
+        settings: {
+          theme: 'dark',
+          defaultRenderMode: 'shaded',
+          sort: { column: 'name', direction: 'asc' },
+          columnWidths: { modifiedAt: 108, type: 92, size: 68 }
+        }
+      } as unknown as StoreData)
+    )
+
+    expect(await store.getSkippedUpdateVersion()).toBeNull()
+    expect((await store.getSettings()).checkForUpdatesOnStartup).toBe(true)
+    // Fields the old config did have are preserved, not clobbered by defaults.
+    expect((await store.getSettings()).theme).toBe('dark')
   })
 })

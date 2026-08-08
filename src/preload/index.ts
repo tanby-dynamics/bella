@@ -1,6 +1,11 @@
 import { contextBridge, ipcRenderer } from 'electron'
 import { electronAPI } from '@electron-toolkit/preload'
-import { IPC, type ParseRenderableFileResult } from '../shared/ipc'
+import {
+  IPC,
+  type ParseRenderableFileResult,
+  type UpdateCheckResult,
+  type UpdateDownloadStatus
+} from '../shared/ipc'
 import type { FileEntry } from '../domain/listFolder'
 import type { Subfolder } from '../domain/listSubfolders'
 import type { Location } from '../domain/locations'
@@ -24,7 +29,24 @@ const api = {
   getSettings: (): Promise<Settings> => ipcRenderer.invoke(IPC.getSettings),
   setSettings: (patch: Partial<Settings>): Promise<Settings> =>
     ipcRenderer.invoke(IPC.setSettings, patch),
-  resetConfig: (): Promise<StoreData> => ipcRenderer.invoke(IPC.resetConfig)
+  resetConfig: (): Promise<StoreData> => ipcRenderer.invoke(IPC.resetConfig),
+  getAppVersion: (): Promise<string> => ipcRenderer.invoke(IPC.getAppVersion),
+  // bypassSkip: true for a manual "Check for updates" click, which should
+  // always surface the result even if the user previously skipped that
+  // Version - false for the silent startup check. See CONTEXT.md.
+  checkForUpdate: (bypassSkip: boolean): Promise<UpdateCheckResult> =>
+    ipcRenderer.invoke(IPC.checkForUpdate, bypassSkip),
+  startUpdateDownload: (): Promise<void> => ipcRenderer.invoke(IPC.startUpdateDownload),
+  onUpdateDownloadStatus: (callback: (status: UpdateDownloadStatus) => void): (() => void) => {
+    const listener = (_event: Electron.IpcRendererEvent, status: UpdateDownloadStatus): void =>
+      callback(status)
+    ipcRenderer.on(IPC.updateDownloadStatus, listener)
+    return () => ipcRenderer.removeListener(IPC.updateDownloadStatus, listener)
+  },
+  quitAndInstallUpdate: (): Promise<void> => ipcRenderer.invoke(IPC.quitAndInstallUpdate),
+  skipUpdateVersion: (version: string): Promise<void> =>
+    ipcRenderer.invoke(IPC.skipUpdateVersion, version),
+  openReleasesPage: (): Promise<void> => ipcRenderer.invoke(IPC.openReleasesPage)
 }
 
 export type BellaApi = typeof api

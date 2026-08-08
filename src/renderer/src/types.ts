@@ -15,6 +15,7 @@ export type {
 } from '../../domain/store'
 export type { StlParseSuccess } from '../../domain/stlParser'
 export type { FormatClassification } from '../../domain/formats'
+export type { UpdateCheckResult, UpdateDownloadStatus } from '../../shared/ipc'
 
 // Value-level re-exports - unlike the type-only ones above, these do bundle
 // real code, but only from domain modules that are pure logic with zero

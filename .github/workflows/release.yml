@@ -1,0 +1,80 @@
+# Builds and publishes a Release when a version tag is pushed. See ADR 0002
+# and ADR 0003 for why the process is shaped this way.
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'
+
+permissions:
+  contents: write
+
+jobs:
+  # Fails fast, before spending matrix build minutes, if release-notes.md
+  # wasn't updated to match the tag being released.
+  check-notes:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run release:check-notes -- "$GITHUB_REF_NAME" notes-body.md
+      - uses: actions/upload-artifact@v4
+        with:
+          name: notes-body
+          path: notes-body.md
+
+  # Builds installers for each platform and publishes them to a draft
+  # GitHub Release (created on first upload, reused by the other matrix
+  # legs). The Version comes from the tag, not package.json - see ADR 0002.
+  build:
+    needs: check-notes
+    strategy:
+      matrix:
+        include:
+          - os: windows-latest
+            builderFlag: --win
+          - os: macos-latest
+            builderFlag: --mac
+          - os: ubuntu-latest
+            builderFlag: --linux
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run typecheck
+        shell: bash
+      - run: npm run test
+        shell: bash
+      - run: npx electron-vite build
+        shell: bash
+      - name: Build and publish installer
+        shell: bash
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          VERSION="${GITHUB_REF_NAME#v}"
+          npx electron-builder ${{ matrix.builderFlag }} --publish always -c.extraMetadata.version="$VERSION"
+
+  # Overwrites the draft release's auto-generated body with the matching
+  # release-notes.md entry, so the GitHub Release and the in-app viewer
+  # never say different things (see ADR 0002). Leaves it as a draft - a
+  # human reviews the attached installers and publishes it.
+  finalize-notes:
+    needs: [check-notes, build]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: notes-body
+      - env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: gh release edit "$GITHUB_REF_NAME" --notes-file notes-body.md --repo tanby-dynamics/bella

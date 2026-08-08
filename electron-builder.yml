@@ -1,5 +1,5 @@
 appId: com.electron.app
-productName: bella-scaffold
+productName: bella
 directories:
   buildResources: build
 files:
@@ -12,7 +12,7 @@ files:
 asarUnpack:
   - resources/**
 win:
-  executableName: bella-scaffold
+  executableName: bella
 nsis:
   artifactName: ${name}-${version}-setup.${ext}
   shortcutName: ${productName}
@@ -38,6 +38,12 @@ linux:
 appImage:
   artifactName: ${name}-${version}.${ext}
 npmRebuild: false
+# electron-updater's GitHub provider reads updates straight from this
+# repo's published Releases - no separate update-server infra. Releases
+# are created as drafts so a human reviews before publishing. See ADR 0002
+# and ADR 0003.
 publish:
-  provider: generic
-  url: https://example.com/auto-updates
+  provider: github
+  owner: tanby-dynamics
+  repo: bella
+  releaseType: draft
