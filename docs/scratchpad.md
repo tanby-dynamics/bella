@@ -40,21 +40,21 @@
 	- [x] manual test
 	- [x] release note
 	- [x] commit
-- [ ] Current location bar should be presented like "C: > Documents > etc > Current" and each node should be selectable - nav to that location
-	- [ ] implement
-	- [ ] manual test
-	- [ ] release note
-	- [ ] commit
-- [ ] Remove the file list panel and move files into the location tree. It should work like VS Code's EXPLORER panel. Remove icons for directories, but leave them for files. 
+- [x] Current location bar should be presented like "C: > Documents > etc > Current" and each node should be selectable - nav to that location
+	- [x] implement
+	- [x] manual test
+	- [x] release note
+	- [x] commit
+- [ ] grill: Remove the file list panel and move files into the location tree. It should work like VS Code's EXPLORER panel - lean on that for expected behaviour. For example, remove icons for directories, but leave them for files. 
 	- [ ] spec
 	- [ ] implement
-	- [ ] test 
+	- [ ] manual tests
 	- [ ] release note
 	- [ ] merge
 - [ ] Hide non-recognised file types and dotfiles
 	- [ ] spec
 	- [ ] implement
-	- [ ] test 
+	- [ ] manual tests 
 	- [ ] release note
 	- [ ] merge
 - [ ] Release v0.2.0
@@ -88,14 +88,13 @@
 - [ ] Release v0.3.0
 - [ ] Marketing site - bella.tanbydynamics.co
 - [ ] Code signing for macOS
+	- [ ] What do I have to do  to set up code signing for macOS?
 - [ ] Code signing for Windows
+	- [ ] What do I have to do  to set up code signing for Windows?
 - [ ] 
 - [ ] 
 
 
-1. agreed
-2. agreed
-3. agreed
 
 
 
