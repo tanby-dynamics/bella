@@ -35,11 +35,6 @@ export function fileNameFromPath(path: string): string {
   return parts[parts.length - 1] ?? path
 }
 
-export function joinPath(folderPath: string, name: string): string {
-  const sep = detectSeparator(folderPath)
-  return folderPath.endsWith(sep) ? `${folderPath}${name}` : `${folderPath}${sep}${name}`
-}
-
 export function formatFileSize(bytes: number): string {
   if (bytes < 1024) return `${bytes} B`
   const units = ['KB', 'MB', 'GB']

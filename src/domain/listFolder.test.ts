@@ -41,6 +41,51 @@ describe('listFolder', () => {
     })
   })
 
+  it('attaches size/modified metadata to every entry in a mixed folder, including non-CAD files', async () => {
+    const statByName: Record<string, { size: number; modifiedAt: Date }> = {
+      'base_plate.stl': { size: 1200, modifiedAt: new Date('2026-08-01T00:00:00Z') },
+      'gripper_v3.step': { size: 620, modifiedAt: new Date('2026-08-02T00:00:00Z') },
+      'notes.txt': { size: 48, modifiedAt: new Date('2026-08-03T00:00:00Z') }
+    }
+    const reader = fakeReader({
+      readEntries: async () => [
+        { name: 'base_plate.stl', isDirectory: false },
+        { name: 'gripper_v3.step', isDirectory: false },
+        { name: 'notes.txt', isDirectory: false }
+      ],
+      stat: async (entryPath) => statByName[entryPath.split('/').pop()!]
+    })
+
+    const entries = await listFolder('/Projects/Robot Arm', reader)
+
+    expect(entries).toEqual([
+      {
+        name: 'base_plate.stl',
+        path: '/Projects/Robot Arm/base_plate.stl',
+        isDirectory: false,
+        size: 1200,
+        modifiedAt: new Date('2026-08-01T00:00:00Z'),
+        classification: { kind: 'renderable', format: 'stl' }
+      },
+      {
+        name: 'gripper_v3.step',
+        path: '/Projects/Robot Arm/gripper_v3.step',
+        isDirectory: false,
+        size: 620,
+        modifiedAt: new Date('2026-08-02T00:00:00Z'),
+        classification: { kind: 'listed', format: 'step' }
+      },
+      {
+        name: 'notes.txt',
+        path: '/Projects/Robot Arm/notes.txt',
+        isDirectory: false,
+        size: 48,
+        modifiedAt: new Date('2026-08-03T00:00:00Z'),
+        classification: { kind: 'other' }
+      }
+    ])
+  })
+
   it('sorts entries by name', async () => {
     const reader = fakeReader({
       readEntries: async () => [

@@ -1,5 +1,5 @@
-import { app, shell, BrowserWindow, ipcMain, dialog } from 'electron'
-import { join } from 'path'
+import { app, shell, BrowserWindow, ipcMain } from 'electron'
+import { basename, join } from 'path'
 import { homedir } from 'node:os'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import icon from '../../resources/icon.png?asset'
@@ -26,7 +26,10 @@ function registerIpcHandlers(): void {
   ipcMain.handle(
     IPC.parseRenderableFile,
     async (_event, path: string): Promise<ParseRenderableFileResult> => {
-      const classification = classifyFormat(path)
+      // classifyFormat is contracted to take a filename, not a full path
+      // (see src/domain/formats.ts) - a folder segment containing a dot
+      // (e.g. "archive.old") would otherwise be misread as an extension.
+      const classification = classifyFormat(basename(path))
       if (classification.kind !== 'renderable') {
         return { ok: false, error: 'not-renderable' }
       }
@@ -53,16 +56,14 @@ function registerIpcHandlers(): void {
     await store.setSettings(patch)
     return store.getSettings()
   })
-
-  ipcMain.handle('dialog:pickFolder', async (event) => {
-    const window = BrowserWindow.fromWebContents(event.sender)
-    if (!window) return null
-    const result = await dialog.showOpenDialog(window, { properties: ['openDirectory'] })
-    return result.canceled ? null : result.filePaths[0]
-  })
 }
 
 function createWindow(): void {
+  // Native window chrome on every platform (frame defaults to true) rather
+  // than a frameless window with a custom-drawn titlebar. Still satisfies
+  // "native OS window controls per platform" - macOS gets its native
+  // traffic lights, Windows/Linux their native controls - without the
+  // cross-platform drag-region/hit-testing work a frameless titlebar needs.
   const mainWindow = new BrowserWindow({
     width: 1280,
     height: 800,

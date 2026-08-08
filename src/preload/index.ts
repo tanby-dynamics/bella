@@ -20,8 +20,7 @@ const api = {
     ipcRenderer.invoke(IPC.setLastOpenedFolder, path),
   getSettings: (): Promise<Settings> => ipcRenderer.invoke(IPC.getSettings),
   setSettings: (patch: Partial<Settings>): Promise<Settings> =>
-    ipcRenderer.invoke(IPC.setSettings, patch),
-  pickFolder: (): Promise<string | null> => ipcRenderer.invoke('dialog:pickFolder')
+    ipcRenderer.invoke(IPC.setSettings, patch)
 }
 
 export type BellaApi = typeof api
