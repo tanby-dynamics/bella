@@ -1,5 +1,3 @@
-import type { SortColumn, SortDirection } from './sortEntries'
-
 export interface Favorite {
   name: string
   path: string
@@ -8,21 +6,14 @@ export interface Favorite {
 export type Theme = 'light' | 'dark' | 'system'
 export type RenderMode = 'shaded' | 'wireframe' | 'xray'
 
-/** Persisted pixel widths for the file list's resizable columns. Name has
- * no entry - it always fills the remaining space. */
-export interface ColumnWidths {
-  modifiedAt: number
-  type: number
-  size: number
-}
-
 export interface Settings {
   theme: Theme
   defaultRenderMode: RenderMode
-  /** Single global sort, applied to the file list across all folders -
-   * not remembered per folder. See CONTEXT.md. */
-  sort: { column: SortColumn; direction: SortDirection }
-  columnWidths: ColumnWidths
+  /** Persisted pixel width of the sidebar/Locations-tree panel. The sole
+   * survivor of the old resizable-columns persistence (see the removed
+   * ColumnWidths) now that the file list - and its per-column widths -
+   * has been folded into the tree. See ADR 0004. */
+  sidebarWidth: number
   /** Whether an Update Check runs automatically on startup. Does not affect
    * the manual "Check for updates" action, which always runs. See
    * CONTEXT.md. */
@@ -45,8 +36,7 @@ export const DEFAULT_STORE_DATA: StoreData = {
   settings: {
     theme: 'system',
     defaultRenderMode: 'shaded',
-    sort: { column: 'name', direction: 'asc' },
-    columnWidths: { modifiedAt: 108, type: 92, size: 68 },
+    sidebarWidth: 220,
     checkForUpdatesOnStartup: true
   },
   skippedUpdateVersion: null

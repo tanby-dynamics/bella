@@ -29,40 +29,89 @@
 	- [x] implement
 	- [x] manual test
 	- [x] merge
-- [ ] Release 0.1.0
-- [ ] Test installer on Windows
-- [ ] Style the scroll bars in the directory nav and files view to match the theme - similar to VS Code in dark mode
-	- [ ] implement
-	- [ ] manual test
-	- [ ] commit
-- [ ] Current location bar should be presented like "C: > Documents > etc > Current" and each location should be selectable - nav to that location
+- [x] Release 0.1.0
+- [x] Fix icons
+- [x] Release 0.1.1
+- [x] Fix linux release
+- [x] Release 0.1.2
+- [x] Test installer on Windows
+- [x] Style the scroll bars in the directory nav and files view to match the theme - similar to VS Code in dark mode
+	- [x] implement
+	- [x] manual test
+	- [x] release note
+	- [x] commit
+- [x] Current location bar should be presented like "C: > Documents > etc > Current" and each node should be selectable - nav to that location
+	- [x] implement
+	- [x] manual test
+	- [x] release note
+	- [x] commit
+- [ ] Remove the file list panel and move files into the location tree. It should work like VS Code's EXPLORER panel - lean on that for expected behaviour. For example, remove icons for directories, but leave them for files. 
+	- [x] grill
+	- [x] spec
+	- [x] implement
+	- [x] manual tests
+	- [x] release note
+	- [x] merge
+- [ ] Remove the toolbar - the breadcrumbs and the Settings button. Replace the Settings button with a link "Settings" to the left of the version in the status bar  - it should look like "Settings · v0.2.0". Breadcrumbs won't be replaced, you can remove all of the code that supported breadcrumbs.
+	- [ ] grill
 	- [ ] spec
 	- [ ] implement
-	- [ ] manual test
-	- [ ] commit
-- [ ] Make directory pane and file pane resizable - remember the current widths between restarts
-	- [ ] spec
+	- [ ] manual tests
+	- [ ] release note
+	- [ ] merge
+- [ ] Hide hidden directories and files, dotfiles (files and directories), and non-renderable file types
 	- [ ] implement
-	- [ ] test 
+	- [ ] manual tests 
+	- [ ] release note
+	- [ ] merge
+- [ ] Remove the "Default render mode" and just remember the last selected render mode in the preview
+	- [ ] implement
+	- [ ] manual tests
+	- [ ] release note
+	- [ ] merge
+- [ ] Remove animation in the preview - changing the view should take effect immediately
+	- [ ] implement
+	- [ ] manual tests 
+	- [ ] release note
 	- [ ] merge
 - [ ] Release v0.2.0
 - [ ] Test auto-update
-- [ ] Configurable accent colors - defaults of `#f5a623 #4fd1c5 #ff8a9d #9aa3ff` or assign your own
-- [ ] Configurable render colour - defaults of `#f5a623 #4fd1c5 #ff8a9d #9aa3ff` or assign your own. Note that this shouldn't override colors specified in the previewed file - if the file is in a format that has colors the preview should use those colors
+- [ ] Configurable accent colors - defaults of `#f5a623 #4fd1c5 #ff8a9d #9aa3ff` or assign your own (hex code and color picker)
+- [ ] Configurable render colour - defaults of `#f5a623 #4fd1c5 #ff8a9d #9aa3ff` or assign your own (hex code and color picker). Note that this shouldn't override colors specified in the previewed file - if the file is in a format that has colors the preview should use those colors
 - [ ] Implement OBJ and MTL formats
+	- [ ] spec
+	- [ ] implement
+	- [ ] test 
+	- [ ] release note
+	- [ ] merge
 - [ ] Implement 3MF format
+	- [ ] spec
+	- [ ] implement
+	- [ ] test 
+	- [ ] release note
+	- [ ] merge
 - [ ] Implement STEP format - https://github.com/kovacsv/occt-import-js
+	- [ ] spec
+	- [ ] implement
+	- [ ] test 
+	- [ ] release note
+	- [ ] merge
 - [ ] Implement FreeCAD's `.FCStd` format
+	- [ ] spec
+	- [ ] implement
+	- [ ] test 
+	- [ ] release note
+	- [ ] merge
+- [ ] Release v0.3.0
 - [ ] Marketing site - bella.tanbydynamics.co
 - [ ] Code signing for macOS
+	- [ ] What do I have to do  to set up code signing for macOS?
 - [ ] Code signing for Windows
+	- [ ] What do I have to do  to set up code signing for Windows?
 - [ ] 
 - [ ] 
 
 
-1. agreed
-2. agreed
-3. agreed
 
 
 

@@ -1,22 +1,22 @@
-import type { FileEntry } from '../types'
+import { typeLabel, type FileEntry } from '../types'
 import { formatFileSize } from '../paths'
 
 interface StatusBarProps {
   selectedEntry: FileEntry | null
-  currentFolder: string | null
   appVersion: string | null
   onOpenReleaseNotes: () => void
 }
 
 export function StatusBar({
   selectedEntry,
-  currentFolder,
   appVersion,
   onOpenReleaseNotes
 }: StatusBarProps): React.JSX.Element {
+  // Modified date isn't shown here - it already lives in the metadata
+  // panel, keyed off the same selectedEntry (see ADR 0004).
   const line = selectedEntry
-    ? `${selectedEntry.name}  ·  ${formatFileSize(selectedEntry.size)}  ·  ${currentFolder ?? ''}`
-    : (currentFolder ?? '')
+    ? `${selectedEntry.name}  ·  ${typeLabel(selectedEntry.classification)}  ·  ${formatFileSize(selectedEntry.size)}`
+    : ''
 
   return (
     <div className="status-bar">

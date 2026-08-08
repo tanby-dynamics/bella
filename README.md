@@ -35,17 +35,17 @@ npm run dev          # launch the app with hot reload
 
 ## Scripts
 
-| Script | What it does |
-|---|---|
-| `npm run dev` | Launch the app in development mode (hot reload) |
-| `npm test` | Run the domain-layer test suite once |
-| `npm run test:watch` | Run the domain-layer test suite in watch mode |
-| `npm run typecheck` | Typecheck the main/preload and renderer projects |
-| `npm run lint` | Lint the whole repo |
-| `npm run format` | Format the whole repo with Prettier |
-| `npm run build` | Typecheck, test, then build the app for production |
-| `npm run build:win` / `build:mac` / `build:linux` | Build a platform installer via electron-builder |
-| `npm start` | Preview a production build |
+| Script                                            | What it does                                       |
+| ------------------------------------------------- | -------------------------------------------------- |
+| `npm run dev`                                     | Launch the app in development mode (hot reload)    |
+| `npm test`                                        | Run the domain-layer test suite once               |
+| `npm run test:watch`                              | Run the domain-layer test suite in watch mode      |
+| `npm run typecheck`                               | Typecheck the main/preload and renderer projects   |
+| `npm run lint`                                    | Lint the whole repo                                |
+| `npm run format`                                  | Format the whole repo with Prettier                |
+| `npm run build`                                   | Typecheck, test, then build the app for production |
+| `npm run build:win` / `build:mac` / `build:linux` | Build a platform installer via electron-builder    |
+| `npm start`                                       | Preview a production build                         |
 
 ## Project structure
 

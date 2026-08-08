@@ -35,6 +35,13 @@ linux:
     - deb
   maintainer: electronjs.org
   category: Utility
+# electron-builder's snap target defaults to publishing via the Snap Store
+# (which needs the snapcraft CLI) regardless of the top-level `publish`
+# config above. Route it through the same GitHub Releases flow as the
+# other artifacts instead.
+snap:
+  publish:
+    - github
 appImage:
   artifactName: ${name}-${version}.${ext}
 npmRebuild: false

@@ -6,16 +6,14 @@ import {
   type UpdateCheckResult,
   type UpdateDownloadStatus
 } from '../shared/ipc'
-import type { FileEntry } from '../domain/listFolder'
-import type { Subfolder } from '../domain/listSubfolders'
+import type { FolderContents } from '../domain/listFolderContents'
 import type { Location } from '../domain/locations'
 import type { Favorite, Settings, StoreData } from '../domain/store'
 
 const api = {
   getHomeDirectory: (): Promise<string> => ipcRenderer.invoke(IPC.homeDirectory),
-  listFolder: (path: string): Promise<FileEntry[]> => ipcRenderer.invoke(IPC.listFolder, path),
-  listSubfolders: (path: string): Promise<Subfolder[]> =>
-    ipcRenderer.invoke(IPC.listSubfolders, path),
+  listFolderContents: (path: string): Promise<FolderContents> =>
+    ipcRenderer.invoke(IPC.listFolderContents, path),
   parseRenderableFile: (path: string): Promise<ParseRenderableFileResult> =>
     ipcRenderer.invoke(IPC.parseRenderableFile, path),
   openExternal: (path: string): Promise<string> => ipcRenderer.invoke(IPC.openExternal, path),
