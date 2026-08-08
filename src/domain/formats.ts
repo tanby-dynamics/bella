@@ -1,4 +1,4 @@
-export type RenderableFormatId = 'stl' | 'obj'
+export type RenderableFormatId = 'stl' | 'obj' | '3mf'
 export type ListedFormatId = 'step' | 'fcstd' | 'scad' | 'mtl'
 
 export type FormatClassification =
@@ -8,7 +8,8 @@ export type FormatClassification =
 
 const RENDERABLE_EXTENSIONS: Record<string, RenderableFormatId> = {
   stl: 'stl',
-  obj: 'obj'
+  obj: 'obj',
+  '3mf': '3mf'
 }
 
 // MTL is a material sidecar for OBJ, not a mesh format of its own - it never
@@ -39,7 +40,8 @@ const LISTED_TYPE_LABELS: Record<ListedFormatId, string> = {
 
 const RENDERABLE_TYPE_LABELS: Record<RenderableFormatId, string> = {
   stl: 'STL File',
-  obj: 'OBJ File'
+  obj: 'OBJ File',
+  '3mf': '3MF File'
 }
 
 export function typeLabel(classification: FormatClassification): string {

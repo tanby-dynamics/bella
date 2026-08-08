@@ -26,34 +26,30 @@
 	- [x] test
 	- [x] release note
 	- [x] merge
-- [ ] Add preview for 3MF format
-	- [ ] Prompt: Implement preview for 3MF format
-	- [ ] spec
-	- [ ] implement
-	- [ ] test
-	- [ ] release note
-	- [ ] merge
+- [x] Add preview for 3MF format
+	- [x] Prompt: Implement preview for 3MF format
+	- [x] implement
+	- [x] test
+	- [x] release note
+	- [x] commit
 - [ ] Add preview for STEP format
 	- [ ] Prompt: Implement preview for STEP format using https://github.com/kovacsv/occt-import-js
-	- [ ] spec
 	- [ ] implement
-	- [ ] test
+	- [ ] test 
 	- [ ] release note
-	- [ ] merge
+	- [ ] commit
 - [ ] Add preview for FreeCAD's format
 	- [ ] Prompt: Implement preview for FreeCAD's `.FCStd` format
-	- [ ] spec
 	- [ ] implement
 	- [ ] test
 	- [ ] release note
-	- [ ] merge
+	- [ ] commit
 - [ ] Add preview for OpenSCAD format
 	- [ ] Prompt: Implement preview for OpenSCAD format
-	- [ ] spec
 	- [ ] implement
 	- [ ] test
 	- [ ] release note
-	- [ ] merge
+	- [ ] commit
 - [ ] Release v0.3.0
 - [ ] Marketing site - bella.tanbydynamics.co
 - [ ] Code signing for macOS

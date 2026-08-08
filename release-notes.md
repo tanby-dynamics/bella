@@ -11,6 +11,7 @@ file's top entry doesn't match the pushed tag. See ADR 0002.
 - Configurable accent colors
 - Configurable preview render color
 - Add preview for OBJ and MTL formats
+- Add preview for 3MF format
 
 ## v0.2.0 - 2026-08-08
 

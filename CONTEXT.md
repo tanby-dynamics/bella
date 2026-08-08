@@ -6,7 +6,7 @@ filesystem and previewing CAD files in a 3D viewer.
 ## Terms
 
 **Renderable format** — a CAD file format Bella can parse into a mesh and
-display in the 3D viewer. STL, OBJ. The set of renderable formats is
+display in the 3D viewer. STL, OBJ, 3MF. The set of renderable formats is
 expected to grow over time.
 
 **Listed format** — a recognized CAD file format with no 3D preview yet;
@@ -162,14 +162,14 @@ Version only — a later Release still prompts.
   metadata is even read: that's both an unrecognized file
   (FormatClassification `other`) and a Listed-format file (`step`/`fcstd`/
   `scad`/`mtl` - recognized, but no preview implemented) - only a Renderable
-  format (STL, OBJ) makes it into the tree. This is a `listFolderContents`
-  filter, not a user-facing toggle - there's no way to reveal these entries
-  in v1, and no way to select a Listed-format file at all right now (its
-  "preview not available" state in the preview/metadata panels is
-  currently unreachable through the tree, kept for when a Listed format
-  gains a preview and becomes Renderable).
-- **Renderable format set**: STL, OBJ. Other plain-mesh formats (PLY, ...)
-  can be added later given the format handling is designed to be
+  format (STL, OBJ, 3MF) makes it into the tree. This is a
+  `listFolderContents` filter, not a user-facing toggle - there's no way to
+  reveal these entries in v1, and no way to select a Listed-format file at
+  all right now (its "preview not available" state in the preview/metadata
+  panels is currently unreachable through the tree, kept for when a Listed
+  format gains a preview and becomes Renderable).
+- **Renderable format set**: STL, OBJ, 3MF. Other plain-mesh formats
+  (PLY, ...) can be added later given the format handling is designed to be
   extensible; nothing else is in scope until needed.
 - **OBJ's MTL sidecar is resolved directly from disk, not through the
   tree.** An OBJ's `mtllib` directive(s) name one or more `.mtl` files,
@@ -188,6 +188,23 @@ Version only — a later Release still prompts.
   every face resolves to a material color, the render color Setting has no
   visible effect on that file. If the OBJ has no `mtllib`/`usemtl` at all,
   it's treated the same as STL: colorless, so renderColor applies normally.
+- **3MF support covers the core spec's mesh/build/basematerials, not
+  assemblies or the Materials and Properties Extension.** A 3MF package is a
+  ZIP (unzipped in-process via `fflate`, now a direct dependency rather than
+  three's bundled copy) containing an XML "3D model part", conventionally at
+  `3D/3dmodel.model`. Bella reads every `<object>`'s own `<mesh>`, places
+  each `<build><item>` instance (applying its `transform`, if any) into one
+  combined preview - a 3MF's whole build platform is the file's preview, the
+  same way an OBJ or STL file's whole geometry is - and resolves triangle
+  colors from `<basematerials>` groups via `pid`/`pindex` (object-level
+  default, overridable per-triangle), same precedence-over-renderColor rule
+  as OBJ+MTL above. Out of scope, same "known gap" treatment as OBJ's
+  textures: `<components>` (an object that's an assembly of other objects
+  rather than its own mesh - such an object contributes nothing, not a
+  parse failure, unless nothing on the build platform has its own mesh, at
+  which point it's the same "no renderable geometry" parse error as an empty
+  build), the Materials and Properties Extension's colorgroups/textures, and
+  multiple models per package (only the root model part is read).
 - **Empty preview state**: when no file is selected (empty folder, or
   before any selection), the preview panel shows an explicit empty state
   ("No file selected" / "This folder is empty") and the metadata panel

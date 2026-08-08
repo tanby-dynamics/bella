@@ -14,6 +14,10 @@ describe('classifyFormat', () => {
     expect(classifyFormat('base_plate.mtl')).toEqual({ kind: 'listed', format: 'mtl' })
   })
 
+  it('classifies .3mf as a renderable format', () => {
+    expect(classifyFormat('base_plate.3mf')).toEqual({ kind: 'renderable', format: '3mf' })
+  })
+
   it('classifies .step as a listed (recognized but unsupported) format', () => {
     expect(classifyFormat('gripper_v3.step')).toEqual({ kind: 'listed', format: 'step' })
   })
@@ -42,6 +46,10 @@ describe('typeLabel', () => {
 
   it('describes a renderable OBJ as "OBJ File"', () => {
     expect(typeLabel({ kind: 'renderable', format: 'obj' })).toBe('OBJ File')
+  })
+
+  it('describes a renderable 3MF as "3MF File"', () => {
+    expect(typeLabel({ kind: 'renderable', format: '3mf' })).toBe('3MF File')
   })
 
   it('describes a listed MTL as "MTL Material File"', () => {
