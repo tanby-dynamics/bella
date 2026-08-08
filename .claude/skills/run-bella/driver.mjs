@@ -82,7 +82,8 @@ export async function clickText(text) {
   if (!page) throw new Error('launch first')
   return page.evaluate((t) => {
     const els = [...document.querySelectorAll('button, a, [role="button"], span')]
-    const el = els.find((e) => e.textContent?.trim() === t) ?? els.find((e) => e.textContent?.includes(t))
+    const el =
+      els.find((e) => e.textContent?.trim() === t) ?? els.find((e) => e.textContent?.includes(t))
     if (!el) return 'NOT_FOUND'
     el.click()
     return 'OK: ' + el.tagName
@@ -131,7 +132,10 @@ export async function quit() {
 
 // --- REPL (human interactive path) ---
 // Only runs when this file is executed directly, not when imported.
-if (import.meta.url === `file://${process.argv[1].replace(/\\/g, '/')}` || import.meta.url === `file:///${process.argv[1].replace(/\\/g, '/')}`) {
+if (
+  import.meta.url === `file://${process.argv[1].replace(/\\/g, '/')}` ||
+  import.meta.url === `file:///${process.argv[1].replace(/\\/g, '/')}`
+) {
   const COMMANDS = {
     async launch() {
       await launch()
@@ -186,7 +190,11 @@ if (import.meta.url === `file://${process.argv[1].replace(/\\/g, '/')}` || impor
     }
   }
 
-  const rl = readline.createInterface({ input: process.stdin, output: process.stdout, prompt: 'driver> ' })
+  const rl = readline.createInterface({
+    input: process.stdin,
+    output: process.stdout,
+    prompt: 'driver> '
+  })
 
   rl.on('line', async (line) => {
     const [cmd, ...rest] = line.trim().split(/\s+/)

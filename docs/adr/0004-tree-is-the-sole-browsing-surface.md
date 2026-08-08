@@ -22,7 +22,7 @@ folder's files at a time, and the breadcrumb tracked that current folder.
 With no separate panel left to swap, there's no single "folder you're in"
 either - any number of tree nodes can be expanded independently, the same
 way a VS Code Explorer works. The breadcrumb's anchor changes accordingly:
-it tracks whatever's currently *highlighted* in the tree - a folder's own
+it tracks whatever's currently _highlighted_ in the tree - a folder's own
 path, or a selected file's containing folder - rather than a navigated-to
 folder. Clicking a breadcrumb segment (or a Favorite) highlights that
 folder, the same as clicking its row directly, and reveals (expands +
@@ -40,7 +40,7 @@ colored icon, click-to-preview) as tree leaves.
 
 Selecting a file is now decoupled from browsing: clicking or expanding a
 folder only changes the tree's highlight, never the preview. Only
-selecting a *different file* changes what's loaded in the preview panel,
+selecting a _different file_ changes what's loaded in the preview panel,
 metadata panel, and status bar - so browsing other parts of the tree never
 discards what you're currently looking at.
 

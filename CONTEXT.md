@@ -39,6 +39,7 @@ folders being browsed.
 
 **Render mode** — the 3D viewer's display style for a Renderable-format
 file, one of:
+
 - **Shaded** — normal lit solid render (faces filled, simple lighting).
 - **Wireframe** — mesh edges only, no face fill.
 - **X-ray** — solid render with semi-transparent faces, so internal
@@ -93,7 +94,7 @@ Version only — a later Release still prompts.
   folder anywhere in the tree reveals its subfolders and files together,
   inline, and any number of folders can be expanded independently at
   once (a VS Code Explorer-style hierarchy). The breadcrumb tracks
-  whatever's currently *highlighted* — a folder's own path, or a
+  whatever's currently _highlighted_ — a folder's own path, or a
   selected file's containing folder — instead of a navigated-to folder.
   Clicking a breadcrumb segment (or a Favorite) highlights that folder,
   the same as clicking its row directly, and reveals (expands + scrolls
@@ -109,7 +110,7 @@ Version only — a later Release still prompts.
   toggles expand/collapse and highlights the row in the same click, since
   there's no separate "navigate" action left to disambiguate from
   "expand." Selecting/highlighting a folder never touches the preview —
-  only selecting a *different file* does.
+  only selecting a _different file_ does.
 - **No synthetic "This PC" grouping node.** Locations stay flat
   top-level roots (drives, shares), matching how they're enumerated
   today — no wrapper node introduced purely for grouping.
@@ -175,7 +176,7 @@ Version only — a later Release still prompts.
   A Listed format (STEP/FCStd/SCAD) shows "preview not available" because
   Bella doesn't support the format at all — an expected, known gap. A
   Renderable-format file (STL) that fails to parse shows a different error
-  state ("Couldn't load — file may be corrupted") because Bella *does*
+  state ("Couldn't load — file may be corrupted") because Bella _does_
   claim to support it and something went wrong.
 
 - **Read-only for v1.** Bella does not move, rename, or delete files yet.

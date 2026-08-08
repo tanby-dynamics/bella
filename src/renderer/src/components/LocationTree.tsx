@@ -123,7 +123,7 @@ function TreeFileRow({
       role="button"
       tabIndex={0}
     >
-      {badge ? <CubeIcon color='var(--accent)' /> : <FileIcon />}
+      {badge ? <CubeIcon color="var(--accent)" /> : <FileIcon />}
       <span className="sidebar__tree-file-name">{entry.name}</span>
     </div>
   )
@@ -225,7 +225,11 @@ export function LocationTreeNode({
   // RevealRequest).
   useEffect(() => {
     if (!revealRequest || !isAncestorPath(item.path, revealRequest.path)) return
-    if (!expanded) void expand()
+    // Deferred to a microtask - expand() can setState synchronously (e.g.
+    // setExpanded(true) with no await in between, when children are
+    // already loaded), which would otherwise cascade a render straight out
+    // of this effect.
+    if (!expanded) queueMicrotask(() => void expand())
     if (item.path === revealRequest.path) {
       itemRef.current?.scrollIntoView({ block: 'nearest' })
     }

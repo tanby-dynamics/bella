@@ -30,8 +30,7 @@ renderer's async init settle after `launch()`):
 
 ```js
 // scratch-check.mjs (repo root - delete when done, don't commit)
-import { launch, clickText, treeFileNames, ss, quit } from
-  './.claude/skills/run-bella/driver.mjs'
+import { launch, clickText, treeFileNames, ss, quit } from './.claude/skills/run-bella/driver.mjs'
 
 await launch()
 await new Promise((r) => setTimeout(r, 1000)) // let startup init settle
@@ -61,17 +60,17 @@ user's app pointed somewhere they weren't.
 Same underlying behavior either way - `import { launch } from '...'` in a
 script, or type `launch` at the `driver>` prompt.
 
-| export | REPL command | what it does |
-|---|---|---|
-| `launch()` | `launch` | build check + launch the app, wait for the main window |
-| `ss(name?)` | `ss [name]` | screenshot → `.playwright-shots/<name>.png` |
-| `click(sel)` | `click <css-sel>` | click element (DOM `.click()`, not coordinates) |
-| `clickText(text)` | `click-text <text>` | click button/link/span whose text matches or contains it |
-| `treeFileNames()` | - | array of file names currently visible in the Locations tree (i.e. under an expanded folder) |
-| `evalPage(expr)` | `eval <js>` | evaluate expression in the page, return the value |
-| `text(sel?)` | `text [css-sel]` | `innerText` of an element (or `body`) |
-| `windows()` | `windows` | list all windows + webContents (for finding the real UI) |
-| `quit()` | `quit` | close the app |
+| export            | REPL command        | what it does                                                                                |
+| ----------------- | ------------------- | ------------------------------------------------------------------------------------------- |
+| `launch()`        | `launch`            | build check + launch the app, wait for the main window                                      |
+| `ss(name?)`       | `ss [name]`         | screenshot → `.playwright-shots/<name>.png`                                                 |
+| `click(sel)`      | `click <css-sel>`   | click element (DOM `.click()`, not coordinates)                                             |
+| `clickText(text)` | `click-text <text>` | click button/link/span whose text matches or contains it                                    |
+| `treeFileNames()` | -                   | array of file names currently visible in the Locations tree (i.e. under an expanded folder) |
+| `evalPage(expr)`  | `eval <js>`         | evaluate expression in the page, return the value                                           |
+| `text(sel?)`      | `text [css-sel]`    | `innerText` of an element (or `body`)                                                       |
+| `windows()`       | `windows`           | list all windows + webContents (for finding the real UI)                                    |
+| `quit()`          | `quit`              | close the app                                                                               |
 
 REPL-only (keyboard input, no return value needed): `type <text>`,
 `press <key>`, `wait <css-sel>` (10s timeout). Use `page.keyboard` /
@@ -100,17 +99,17 @@ npm run dev # electron-vite dev - hot reload, dev server
 - **`ELECTRON_RUN_AS_NODE=1` is set in this shell environment.** It makes
   `electron.exe` boot as plain Node instead of the Electron app framework
   - `electron.app` comes back `undefined` and the app throws
-  ("Cannot read properties of undefined (reading 'isPackaged')") before
-  any window opens. The driver strips this env var for the launched
-  child process only; if you write your own one-off script, do the same:
-  `const env = { ...process.env }; delete env.ELECTRON_RUN_AS_NODE`.
+    ("Cannot read properties of undefined (reading 'isPackaged')") before
+    any window opens. The driver strips this env var for the launched
+    child process only; if you write your own one-off script, do the same:
+    `const env = { ...process.env }; delete env.ELECTRON_RUN_AS_NODE`.
 - **No clean "app ready" signal.** `launch` polls for a non-devtools
   window for up to 20s rather than a blind sleep, since the renderer does
   async init (load settings, navigate to the last-opened folder) before
   there's anything meaningful to interact with.
 - **Native GPU/network service warnings on launch are normal noise**
   (`GPU process exited unexpectedly`, `Network service crashed,
-  restarting`) - harmless in this environment, the window still renders.
+restarting`) - harmless in this environment, the window still renders.
 
 ## Troubleshooting
 

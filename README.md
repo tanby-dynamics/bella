@@ -33,6 +33,14 @@ npm install
 npm run dev          # launch the app with hot reload
 ```
 
+## Releasing
+
+```sh
+npm run prerelease
+git tag v1.2.3
+git push origin v1.2.3
+```
+
 ## Scripts
 
 | Script                                            | What it does                                       |

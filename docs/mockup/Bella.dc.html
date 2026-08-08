@@ -1,258 +1,624 @@
-<!DOCTYPE html>
+<!doctype html>
 <html>
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<script src="./support.js"></script>
-</head>
-<body>
-<x-dc>
-<helmet data-dc-atomics>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
-<style>
-  body{margin:0;background:#0b0c0e;font-family:'Inter',-apple-system,sans-serif}
-  a{color:{{accentColor}};}
-  a:hover{color:{{accentColor}};opacity:0.85}
-  ::-webkit-scrollbar{width:10px;height:10px}
-  ::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.12);border-radius:6px}
-  ::-webkit-scrollbar-track{background:transparent}
-  @keyframes spin3d{from{transform:rotateX(-18deg) rotateY(0deg)}to{transform:rotateX(-18deg) rotateY(360deg)}}
-</style>
-</helmet>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <script src="./support.js"></script>
+  </head>
+  <body>
+    <x-dc>
+      <helmet data-dc-atomics>
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link
+          href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap"
+          rel="stylesheet"
+        />
+        <style>
+          body{margin:0;background:#0b0c0e;font-family:'Inter',-apple-system,sans-serif}
+          a{color:{{accentColor}};}
+          a:hover{color:{{accentColor}};opacity:0.85}
+          ::-webkit-scrollbar{width:10px;height:10px}
+          ::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.12);border-radius:6px}
+          ::-webkit-scrollbar-track{background:transparent}
+          @keyframes spin3d{from{transform:rotateX(-18deg) rotateY(0deg)}to{transform:rotateX(-18deg) rotateY(360deg)}}
+        </style>
+      </helmet>
 
-<div style="display:flex;align-items:center;justify-content:center;min-height:100vh;padding:48px;background:radial-gradient(circle at 30% 20%, #17181c 0%, #0b0c0e 60%)">
-<div style="width:1400px;height:880px;flex-shrink:0;border-radius:16px;overflow:hidden;background:#15161a;box-shadow:0 0 0 1px rgba(255,255,255,0.06), 0 40px 100px rgba(0,0,0,0.6);display:flex;flex-direction:column;font-family:'Inter',sans-serif;color:#e8e9ec">
-
-  <!-- Titlebar -->
-  <div style="height:44px;flex-shrink:0;display:flex;align-items:center;padding:0 16px;background:#191a1e;border-bottom:1px solid rgba(255,255,255,0.06);position:relative">
-    <div style="display:flex;gap:8px">
-      <div style="width:12px;height:12px;border-radius:50%;background:#ff5f57"></div>
-      <div style="width:12px;height:12px;border-radius:50%;background:#febc2e"></div>
-      <div style="width:12px;height:12px;border-radius:50%;background:#28c840"></div>
-    </div>
-    <div style="position:absolute;left:0;right:0;text-align:center;font-size:13px;font-weight:600;color:rgba(255,255,255,0.55);letter-spacing:0.2px">Bella — CAD Preview</div>
-  </div>
-
-  <!-- Toolbar -->
-  <div style="height:52px;flex-shrink:0;display:flex;align-items:center;gap:14px;padding:0 16px;background:#15161a;border-bottom:1px solid rgba(255,255,255,0.06)">
-    <div style="display:flex;align-items:center;gap:8px;font-size:14px;color:rgba(255,255,255,0.85)">
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7z" stroke="rgba(255,255,255,0.55)" stroke-width="1.6"/></svg>
-      <span style="color:rgba(255,255,255,0.4)">This PC</span>
-      <span style="color:rgba(255,255,255,0.3)">/</span>
-      <span style="color:rgba(255,255,255,0.4)">Projects</span>
-      <span style="color:rgba(255,255,255,0.3)">/</span>
-      <span style="font-weight:600">Robot Arm</span>
-    </div>
-    <div style="flex:1"></div>
-    <div onclick="{{ openSettings }}" style="display:flex;align-items:center;gap:7px;background:#1e2025;border:1px solid rgba(255,255,255,0.08);border-radius:8px;padding:0 12px;height:34px;cursor:pointer">
-      <svg width="15" height="15" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="3" stroke="rgba(255,255,255,0.6)" stroke-width="1.6"/><path d="M19.4 13a7.6 7.6 0 0 0 0-2l2-1.5-2-3.4-2.3.9a7.4 7.4 0 0 0-1.8-1l-.3-2.4h-4l-.3 2.4a7.4 7.4 0 0 0-1.8 1l-2.3-.9-2 3.4L6.6 11a7.6 7.6 0 0 0 0 2l-2 1.5 2 3.4 2.3-.9c.5.4 1.1.7 1.8 1l.3 2.4h4l.3-2.4c.7-.3 1.3-.6 1.8-1l2.3.9 2-3.4-2-1.5z" stroke="rgba(255,255,255,0.6)" stroke-width="1.4"/></svg>
-      <span style="font-size:12.5px;color:rgba(255,255,255,0.7)">Settings</span>
-    </div>
-  </div>
-
-  <!-- Body -->
-  <div style="flex:1;display:flex;min-height:0">
-
-    <!-- Sidebar -->
-    <div style="width:220px;flex-shrink:0;background:#15161a;border-right:1px solid rgba(255,255,255,0.06);padding:16px 8px;overflow:auto">
-      <div style="font-size:11px;font-weight:700;letter-spacing:0.6px;color:rgba(255,255,255,0.3);padding:6px 10px">FAVORITES</div>
-      <sc-for list="{{ favorites }}" as="f" hint-placeholder-count="3">
-        <div style="display:flex;align-items:center;gap:10px;height:32px;padding:0 10px;border-radius:7px;font-size:13px;background:{{f.bg}};color:{{f.color}};cursor:pointer;margin-bottom:1px">
-          <div dangerouslySetInnerHTML="{{f.icon}}" style="display:flex;flex-shrink:0"></div>
-          <span>{{f.label}}</span>
-        </div>
-      </sc-for>
-      <div style="font-size:11px;font-weight:700;letter-spacing:0.6px;color:rgba(255,255,255,0.3);padding:16px 10px 6px">LOCATIONS</div>
-      <sc-for list="{{ locations }}" as="l" hint-placeholder-count="3">
-        <div style="display:flex;align-items:center;gap:10px;height:32px;padding:0 10px;border-radius:7px;font-size:13px;color:rgba(255,255,255,0.65);cursor:pointer">
-          <div dangerouslySetInnerHTML="{{l.icon}}" style="display:flex;flex-shrink:0"></div>
-          <span>{{l.label}}</span>
-        </div>
-      </sc-for>
-    </div>
-
-    <!-- File grid -->
-    <div style="width:380px;flex-shrink:0;border-right:1px solid rgba(255,255,255,0.06);padding:16px;overflow:auto;background:#131418">
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
-        <span style="font-size:12px;color:rgba(255,255,255,0.35)">{{ fileCountLabel }}</span>
-        <div style="display:flex;gap:12px">
-          <span style="font-size:12px;color:rgba(255,255,255,0.35)">View: Thumbnails</span>
-          <span style="font-size:12px;color:rgba(255,255,255,0.35)">Sort: Name</span>
-        </div>
-      </div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
-        <sc-for list="{{ files }}" as="file" hint-placeholder-count="6">
-          <div onclick="{{file.onClick}}" style="background:{{file.cardBg}};border:1px solid {{file.cardBorder}};border-radius:10px;padding:12px 10px 10px;cursor:pointer;display:flex;flex-direction:column;gap:8px">
-            <div style="height:64px;border-radius:6px;background:#0f1013;display:flex;align-items:center;justify-content:center">
-              <div dangerouslySetInnerHTML="{{file.thumb}}"></div>
+      <div
+        style="
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          min-height: 100vh;
+          padding: 48px;
+          background: radial-gradient(circle at 30% 20%, #17181c 0%, #0b0c0e 60%);
+        "
+      >
+        <div
+          style="
+            width: 1400px;
+            height: 880px;
+            flex-shrink: 0;
+            border-radius: 16px;
+            overflow: hidden;
+            background: #15161a;
+            box-shadow:
+              0 0 0 1px rgba(255, 255, 255, 0.06),
+              0 40px 100px rgba(0, 0, 0, 0.6);
+            display: flex;
+            flex-direction: column;
+            font-family: 'Inter', sans-serif;
+            color: #e8e9ec;
+          "
+        >
+          <!-- Titlebar -->
+          <div
+            style="
+              height: 44px;
+              flex-shrink: 0;
+              display: flex;
+              align-items: center;
+              padding: 0 16px;
+              background: #191a1e;
+              border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+              position: relative;
+            "
+          >
+            <div style="display: flex; gap: 8px">
+              <div style="width: 12px; height: 12px; border-radius: 50%; background: #ff5f57"></div>
+              <div style="width: 12px; height: 12px; border-radius: 50%; background: #febc2e"></div>
+              <div style="width: 12px; height: 12px; border-radius: 50%; background: #28c840"></div>
             </div>
-            <div style="font-size:12.5px;font-weight:600;color:rgba(255,255,255,0.9);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{file.name}}</div>
-            <div style="display:flex;align-items:center;gap:6px">
-              <span style="font-size:9.5px;font-weight:700;letter-spacing:0.4px;padding:2px 6px;border-radius:4px;background:{{file.badgeBg}};color:{{file.badgeColor}}">{{file.ext}}</span>
-              <span style="font-size:10.5px;color:rgba(255,255,255,0.3)">{{file.size}}</span>
+            <div
+              style="
+                position: absolute;
+                left: 0;
+                right: 0;
+                text-align: center;
+                font-size: 13px;
+                font-weight: 600;
+                color: rgba(255, 255, 255, 0.55);
+                letter-spacing: 0.2px;
+              "
+            >
+              Bella — CAD Preview
             </div>
           </div>
-        </sc-for>
-      </div>
-    </div>
 
-    <!-- Preview panel -->
-    <div style="flex:1;display:flex;flex-direction:column;background:#0e0f12;min-width:0">
-      <div style="flex:1;min-height:0;position:relative;display:flex;align-items:center;justify-content:center;background:radial-gradient(circle at 50% 40%, #17181d 0%, #0b0c0e 75%);overflow:hidden">
-        <!-- viewport chrome -->
-        <div style="position:absolute;top:14px;left:14px;right:14px;display:flex;justify-content:space-between;align-items:center">
-          <div style="display:flex;align-items:center;gap:10px">
-            <div style="font-size:13px;font-weight:600;color:rgba(255,255,255,0.85)">{{ selectedFile.name }}</div>
-            <div style="font-size:11.5px;font-weight:600;color:{{accentColor}};cursor:pointer">Open</div>
+          <!-- Toolbar -->
+          <div
+            style="
+              height: 52px;
+              flex-shrink: 0;
+              display: flex;
+              align-items: center;
+              gap: 14px;
+              padding: 0 16px;
+              background: #15161a;
+              border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+            "
+          >
+            <div
+              style="
+                display: flex;
+                align-items: center;
+                gap: 8px;
+                font-size: 14px;
+                color: rgba(255, 255, 255, 0.85);
+              "
+            >
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                <path
+                  d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7z"
+                  stroke="rgba(255,255,255,0.55)"
+                  stroke-width="1.6"
+                />
+              </svg>
+              <span style="color: rgba(255, 255, 255, 0.4)">This PC</span>
+              <span style="color: rgba(255, 255, 255, 0.3)">/</span>
+              <span style="color: rgba(255, 255, 255, 0.4)">Projects</span>
+              <span style="color: rgba(255, 255, 255, 0.3)">/</span>
+              <span style="font-weight: 600">Robot Arm</span>
+            </div>
+            <div style="flex: 1"></div>
+            <div
+              onclick="{{ openSettings }}"
+              style="
+                display: flex;
+                align-items: center;
+                gap: 7px;
+                background: #1e2025;
+                border: 1px solid rgba(255, 255, 255, 0.08);
+                border-radius: 8px;
+                padding: 0 12px;
+                height: 34px;
+                cursor: pointer;
+              "
+            >
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none">
+                <circle cx="12" cy="12" r="3" stroke="rgba(255,255,255,0.6)" stroke-width="1.6" />
+                <path
+                  d="M19.4 13a7.6 7.6 0 0 0 0-2l2-1.5-2-3.4-2.3.9a7.4 7.4 0 0 0-1.8-1l-.3-2.4h-4l-.3 2.4a7.4 7.4 0 0 0-1.8 1l-2.3-.9-2 3.4L6.6 11a7.6 7.6 0 0 0 0 2l-2 1.5 2 3.4 2.3-.9c.5.4 1.1.7 1.8 1l.3 2.4h4l.3-2.4c.7-.3 1.3-.6 1.8-1l2.3.9 2-3.4-2-1.5z"
+                  stroke="rgba(255,255,255,0.6)"
+                  stroke-width="1.4"
+                />
+              </svg>
+              <span style="font-size: 12.5px; color: rgba(255, 255, 255, 0.7)">Settings</span>
+            </div>
           </div>
-          <div style="display:flex;background:#1a1c21;border:1px solid rgba(255,255,255,0.08);border-radius:8px;padding:2px;gap:2px">
-            <sc-for list="{{ renderModes }}" as="m" hint-placeholder-count="3">
-              <div onclick="{{m.onClick}}" style="font-size:11px;font-weight:600;padding:6px 10px;border-radius:6px;cursor:pointer;background:{{m.bg}};color:{{m.color}}">{{m.label}}</div>
-            </sc-for>
+
+          <!-- Body -->
+          <div style="flex: 1; display: flex; min-height: 0">
+            <!-- Sidebar -->
+            <div
+              style="
+                width: 220px;
+                flex-shrink: 0;
+                background: #15161a;
+                border-right: 1px solid rgba(255, 255, 255, 0.06);
+                padding: 16px 8px;
+                overflow: auto;
+              "
+            >
+              <div
+                style="
+                  font-size: 11px;
+                  font-weight: 700;
+                  letter-spacing: 0.6px;
+                  color: rgba(255, 255, 255, 0.3);
+                  padding: 6px 10px;
+                "
+              >
+                FAVORITES
+              </div>
+              <sc-for list="{{ favorites }}" as="f" hint-placeholder-count="3">
+                <div
+                  style="display:flex;align-items:center;gap:10px;height:32px;padding:0 10px;border-radius:7px;font-size:13px;background:{{f.bg}};color:{{f.color}};cursor:pointer;margin-bottom:1px"
+                >
+                  <div
+                    dangerouslySetInnerHTML="{{f.icon}}"
+                    style="display: flex; flex-shrink: 0"
+                  ></div>
+                  <span>{{f.label}}</span>
+                </div>
+              </sc-for>
+              <div
+                style="
+                  font-size: 11px;
+                  font-weight: 700;
+                  letter-spacing: 0.6px;
+                  color: rgba(255, 255, 255, 0.3);
+                  padding: 16px 10px 6px;
+                "
+              >
+                LOCATIONS
+              </div>
+              <sc-for list="{{ locations }}" as="l" hint-placeholder-count="3">
+                <div
+                  style="
+                    display: flex;
+                    align-items: center;
+                    gap: 10px;
+                    height: 32px;
+                    padding: 0 10px;
+                    border-radius: 7px;
+                    font-size: 13px;
+                    color: rgba(255, 255, 255, 0.65);
+                    cursor: pointer;
+                  "
+                >
+                  <div
+                    dangerouslySetInnerHTML="{{l.icon}}"
+                    style="display: flex; flex-shrink: 0"
+                  ></div>
+                  <span>{{l.label}}</span>
+                </div>
+              </sc-for>
+            </div>
+
+            <!-- File grid -->
+            <div
+              style="
+                width: 380px;
+                flex-shrink: 0;
+                border-right: 1px solid rgba(255, 255, 255, 0.06);
+                padding: 16px;
+                overflow: auto;
+                background: #131418;
+              "
+            >
+              <div
+                style="
+                  display: flex;
+                  align-items: center;
+                  justify-content: space-between;
+                  margin-bottom: 14px;
+                "
+              >
+                <span style="font-size: 12px; color: rgba(255, 255, 255, 0.35)"
+                  >{{ fileCountLabel }}</span
+                >
+                <div style="display: flex; gap: 12px">
+                  <span style="font-size: 12px; color: rgba(255, 255, 255, 0.35)"
+                    >View: Thumbnails</span
+                  >
+                  <span style="font-size: 12px; color: rgba(255, 255, 255, 0.35)">Sort: Name</span>
+                </div>
+              </div>
+              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px">
+                <sc-for list="{{ files }}" as="file" hint-placeholder-count="6">
+                  <div
+                    onclick="{{file.onClick}}"
+                    style="background:{{file.cardBg}};border:1px solid {{file.cardBorder}};border-radius:10px;padding:12px 10px 10px;cursor:pointer;display:flex;flex-direction:column;gap:8px"
+                  >
+                    <div
+                      style="
+                        height: 64px;
+                        border-radius: 6px;
+                        background: #0f1013;
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                      "
+                    >
+                      <div dangerouslySetInnerHTML="{{file.thumb}}"></div>
+                    </div>
+                    <div
+                      style="
+                        font-size: 12.5px;
+                        font-weight: 600;
+                        color: rgba(255, 255, 255, 0.9);
+                        white-space: nowrap;
+                        overflow: hidden;
+                        text-overflow: ellipsis;
+                      "
+                    >
+                      {{file.name}}
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 6px">
+                      <span
+                        style="font-size:9.5px;font-weight:700;letter-spacing:0.4px;padding:2px 6px;border-radius:4px;background:{{file.badgeBg}};color:{{file.badgeColor}}"
+                        >{{file.ext}}</span
+                      >
+                      <span style="font-size: 10.5px; color: rgba(255, 255, 255, 0.3)"
+                        >{{file.size}}</span
+                      >
+                    </div>
+                  </div>
+                </sc-for>
+              </div>
+            </div>
+
+            <!-- Preview panel -->
+            <div
+              style="
+                flex: 1;
+                display: flex;
+                flex-direction: column;
+                background: #0e0f12;
+                min-width: 0;
+              "
+            >
+              <div
+                style="
+                  flex: 1;
+                  min-height: 0;
+                  position: relative;
+                  display: flex;
+                  align-items: center;
+                  justify-content: center;
+                  background: radial-gradient(circle at 50% 40%, #17181d 0%, #0b0c0e 75%);
+                  overflow: hidden;
+                "
+              >
+                <!-- viewport chrome -->
+                <div
+                  style="
+                    position: absolute;
+                    top: 14px;
+                    left: 14px;
+                    right: 14px;
+                    display: flex;
+                    justify-content: space-between;
+                    align-items: center;
+                  "
+                >
+                  <div style="display: flex; align-items: center; gap: 10px">
+                    <div
+                      style="font-size: 13px; font-weight: 600; color: rgba(255, 255, 255, 0.85)"
+                    >
+                      {{ selectedFile.name }}
+                    </div>
+                    <div
+                      style="font-size:11.5px;font-weight:600;color:{{accentColor}};cursor:pointer"
+                    >
+                      Open
+                    </div>
+                  </div>
+                  <div
+                    style="
+                      display: flex;
+                      background: #1a1c21;
+                      border: 1px solid rgba(255, 255, 255, 0.08);
+                      border-radius: 8px;
+                      padding: 2px;
+                      gap: 2px;
+                    "
+                  >
+                    <sc-for list="{{ renderModes }}" as="m" hint-placeholder-count="3">
+                      <div
+                        onclick="{{m.onClick}}"
+                        style="font-size:11px;font-weight:600;padding:6px 10px;border-radius:6px;cursor:pointer;background:{{m.bg}};color:{{m.color}}"
+                      >
+                        {{m.label}}
+                      </div>
+                    </sc-for>
+                  </div>
+                </div>
+
+                <!-- 3D placeholder render -->
+                <div
+                  style="
+                    width: 200px;
+                    height: 200px;
+                    perspective: 700px;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    overflow: visible;
+                  "
+                >
+                  <div
+                    style="
+                      width: 110px;
+                      height: 110px;
+                      position: relative;
+                      transform-style: preserve-3d;
+                      transform: rotateX(-18deg) rotateY(-32deg);
+                    "
+                  >
+                    <div
+                      style="position:absolute;inset:0;background:{{cubeFaceFront}};border:1px solid {{accentColor}};transform:translateZ(55px)"
+                    ></div>
+                    <div
+                      style="position:absolute;inset:0;background:{{cubeFaceBack}};border:1px solid {{accentColor}};transform:translateZ(-55px) rotateY(180deg)"
+                    ></div>
+                    <div
+                      style="position:absolute;inset:0;background:{{cubeFaceRight}};border:1px solid {{accentColor}};transform:rotateY(90deg) translateZ(55px)"
+                    ></div>
+                    <div
+                      style="position:absolute;inset:0;background:{{cubeFaceLeft}};border:1px solid {{accentColor}};transform:rotateY(-90deg) translateZ(55px)"
+                    ></div>
+                    <div
+                      style="position:absolute;inset:0;background:{{cubeFaceTop}};border:1px solid {{accentColor}};transform:rotateX(90deg) translateZ(55px)"
+                    ></div>
+                    <div
+                      style="position:absolute;inset:0;background:{{cubeFaceBottom}};border:1px solid {{accentColor}};transform:rotateX(-90deg) translateZ(55px)"
+                    ></div>
+                  </div>
+                </div>
+
+                <div
+                  style="
+                    position: absolute;
+                    bottom: 14px;
+                    left: 0;
+                    right: 0;
+                    text-align: center;
+                    font-size: 11px;
+                    color: rgba(255, 255, 255, 0.25);
+                  "
+                >
+                  Placeholder render — actual preview shows the loaded model
+                </div>
+
+                <!-- zoom controls -->
+                <div
+                  style="
+                    position: absolute;
+                    top: 50%;
+                    right: 14px;
+                    transform: translateY(-50%);
+                    display: flex;
+                    flex-direction: column;
+                    gap: 6px;
+                    background: #1a1c21;
+                    border: 1px solid rgba(255, 255, 255, 0.08);
+                    border-radius: 8px;
+                    padding: 4px;
+                  "
+                >
+                  <div
+                    style="
+                      width: 28px;
+                      height: 28px;
+                      display: flex;
+                      align-items: center;
+                      justify-content: center;
+                      color: rgba(255, 255, 255, 0.6);
+                      font-size: 16px;
+                      cursor: pointer;
+                    "
+                  >
+                    +
+                  </div>
+                  <div
+                    style="
+                      width: 28px;
+                      height: 28px;
+                      display: flex;
+                      align-items: center;
+                      justify-content: center;
+                      color: rgba(255, 255, 255, 0.6);
+                      font-size: 16px;
+                      cursor: pointer;
+                    "
+                  >
+                    −
+                  </div>
+                </div>
+              </div>
+
+              <!-- metadata -->
+              <div
+                style="
+                  flex-shrink: 0;
+                  border-top: 1px solid rgba(255, 255, 255, 0.06);
+                  padding: 16px 20px;
+                  display: grid;
+                  grid-template-columns: 1fr 1fr 1fr 1fr;
+                  gap: 16px;
+                "
+              >
+                <sc-for list="{{ metadata }}" as="meta" hint-placeholder-count="4">
+                  <div>
+                    <div
+                      style="
+                        font-size: 10.5px;
+                        font-weight: 700;
+                        letter-spacing: 0.4px;
+                        color: rgba(255, 255, 255, 0.3);
+                        margin-bottom: 4px;
+                      "
+                    >
+                      {{meta.label}}
+                    </div>
+                    <div
+                      style="
+                        font-size: 13.5px;
+                        font-weight: 600;
+                        color: rgba(255, 255, 255, 0.9);
+                        font-family: 'JetBrains Mono', monospace;
+                      "
+                    >
+                      {{meta.value}}
+                    </div>
+                  </div>
+                </sc-for>
+              </div>
+            </div>
+          </div>
+
+          <!-- status bar -->
+          <div
+            style="
+              height: 26px;
+              flex-shrink: 0;
+              display: flex;
+              align-items: center;
+              padding: 0 16px;
+              background: #191a1e;
+              border-top: 1px solid rgba(255, 255, 255, 0.06);
+              font-size: 11px;
+              color: rgba(255, 255, 255, 0.35);
+            "
+          >
+            {{ statusLine }}
           </div>
         </div>
-
-        <!-- 3D placeholder render -->
-        <div style="width:200px;height:200px;perspective:700px;display:flex;align-items:center;justify-content:center;overflow:visible">
-          <div style="width:110px;height:110px;position:relative;transform-style:preserve-3d;transform:rotateX(-18deg) rotateY(-32deg)">
-            <div style="position:absolute;inset:0;background:{{cubeFaceFront}};border:1px solid {{accentColor}};transform:translateZ(55px)"></div>
-            <div style="position:absolute;inset:0;background:{{cubeFaceBack}};border:1px solid {{accentColor}};transform:translateZ(-55px) rotateY(180deg)"></div>
-            <div style="position:absolute;inset:0;background:{{cubeFaceRight}};border:1px solid {{accentColor}};transform:rotateY(90deg) translateZ(55px)"></div>
-            <div style="position:absolute;inset:0;background:{{cubeFaceLeft}};border:1px solid {{accentColor}};transform:rotateY(-90deg) translateZ(55px)"></div>
-            <div style="position:absolute;inset:0;background:{{cubeFaceTop}};border:1px solid {{accentColor}};transform:rotateX(90deg) translateZ(55px)"></div>
-            <div style="position:absolute;inset:0;background:{{cubeFaceBottom}};border:1px solid {{accentColor}};transform:rotateX(-90deg) translateZ(55px)"></div>
-          </div>
-        </div>
-
-        <div style="position:absolute;bottom:14px;left:0;right:0;text-align:center;font-size:11px;color:rgba(255,255,255,0.25)">Placeholder render — actual preview shows the loaded model</div>
-
-        <!-- zoom controls -->
-        <div style="position:absolute;top:50%;right:14px;transform:translateY(-50%);display:flex;flex-direction:column;gap:6px;background:#1a1c21;border:1px solid rgba(255,255,255,0.08);border-radius:8px;padding:4px">
-          <div style="width:28px;height:28px;display:flex;align-items:center;justify-content:center;color:rgba(255,255,255,0.6);font-size:16px;cursor:pointer">+</div>
-          <div style="width:28px;height:28px;display:flex;align-items:center;justify-content:center;color:rgba(255,255,255,0.6);font-size:16px;cursor:pointer">−</div>
-        </div>
       </div>
-
-      <!-- metadata -->
-      <div style="flex-shrink:0;border-top:1px solid rgba(255,255,255,0.06);padding:16px 20px;display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:16px">
-        <sc-for list="{{ metadata }}" as="meta" hint-placeholder-count="4">
-          <div>
-            <div style="font-size:10.5px;font-weight:700;letter-spacing:0.4px;color:rgba(255,255,255,0.3);margin-bottom:4px">{{meta.label}}</div>
-            <div style="font-size:13.5px;font-weight:600;color:rgba(255,255,255,0.9);font-family:'JetBrains Mono',monospace">{{meta.value}}</div>
-          </div>
-        </sc-for>
-      </div>
-    </div>
-  </div>
-
-  <!-- status bar -->
-  <div style="height:26px;flex-shrink:0;display:flex;align-items:center;padding:0 16px;background:#191a1e;border-top:1px solid rgba(255,255,255,0.06);font-size:11px;color:rgba(255,255,255,0.35)">
-    {{ statusLine }}
-  </div>
-
-</div>
-</div>
-
-</x-dc>
-<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1500,&quot;height&quot;:950},&quot;accentColor&quot;:{&quot;editor&quot;:&quot;color&quot;,&quot;default&quot;:&quot;#f5a623&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;options&quot;:[&quot;#f5a623&quot;,&quot;#4fd1c5&quot;,&quot;#ff6b6b&quot;,&quot;#9aa3ff&quot;]}}">
-const ICONS = {
-  desktop: '<svg width="15" height="15" viewBox="0 0 24 24" fill="none"><rect x="3" y="4" width="18" height="12" rx="1.5" stroke="currentColor" stroke-width="1.6"/><path d="M8 20h8M12 16v4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>',
-  folder: '<svg width="15" height="15" viewBox="0 0 24 24" fill="none"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7z" stroke="currentColor" stroke-width="1.6"/></svg>',
-  downloads: '<svg width="15" height="15" viewBox="0 0 24 24" fill="none"><path d="M12 4v11m0 0l-4-4m4 4l4-4M5 19h14" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>',
-  drive: '<svg width="15" height="15" viewBox="0 0 24 24" fill="none"><rect x="3" y="6" width="18" height="12" rx="2" stroke="currentColor" stroke-width="1.6"/><circle cx="7" cy="15" r="0.8" fill="currentColor"/></svg>',
-  cube: (color) => `<svg width="30" height="30" viewBox="0 0 24 24" fill="none"><path d="M12 2l8 4.5v9L12 20l-8-4.5v-9L12 2z" stroke="${color}" stroke-width="1.4"/><path d="M12 2v18M4 6.5L12 11l8-4.5" stroke="${color}" stroke-width="1.4"/></svg>`,
-  grid: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none"><rect x="3" y="3" width="8" height="8" rx="1" fill="currentColor"/><rect x="13" y="3" width="8" height="8" rx="1" fill="currentColor"/><rect x="3" y="13" width="8" height="8" rx="1" fill="currentColor"/><rect x="13" y="13" width="8" height="8" rx="1" fill="currentColor"/></svg>',
-  list: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none"><rect x="3" y="5" width="18" height="3" rx="1" fill="currentColor"/><rect x="3" y="11" width="18" height="3" rx="1" fill="currentColor"/><rect x="3" y="17" width="18" height="3" rx="1" fill="currentColor"/></svg>',
-};
-
-const EXT_COLORS = {
-  STL: { bg: 'rgba(79,209,197,0.15)', color: '#4fd1c5' },
-  SCAD: { bg: 'rgba(245,166,35,0.15)', color: '#f5a623' },
-  FCSTD: { bg: 'rgba(140,150,255,0.15)', color: '#9aa3ff' },
-  STEP: { bg: 'rgba(255,138,157,0.15)', color: '#ff8a9d' },
-};
-
-const FILES = [
-  { name: 'base_plate.stl', ext: 'STL', size: '1.2 MB' },
-  { name: 'shoulder_joint.scad', ext: 'SCAD', size: '84 KB' },
-  { name: 'forearm_link.FCStd', ext: 'FCSTD', size: '3.4 MB' },
-  { name: 'gripper_v3.step', ext: 'STEP', size: '620 KB' },
-  { name: 'servo_mount.stl', ext: 'STL', size: '410 KB' },
-  { name: 'wrist_bracket.scad', ext: 'SCAD', size: '52 KB' },
-];
-
-class Component extends DCLogic {
-  state = {
-    selectedIndex: 0,
-    view: 'grid',
-    renderMode: 'shaded',
-  };
-
-  renderVals() {
-    const accent = this.props.accentColor ?? '#f5a623';
-    const selected = FILES[this.state.selectedIndex];
-    const selectedExt = EXT_COLORS[selected.ext];
-
-    const files = FILES.map((f, i) => {
-      const isSel = i === this.state.selectedIndex;
-      const c = EXT_COLORS[f.ext];
-      return {
-        name: f.name, ext: f.ext, size: f.size,
-        badgeBg: c.bg, badgeColor: c.color,
-        cardBg: isSel ? 'rgba(255,255,255,0.06)' : '#17181c',
-        cardBorder: isSel ? accent : 'rgba(255,255,255,0.06)',
-        thumb: { __html: ICONS.cube(isSel ? accent : c.color) },
-        onClick: () => this.setState({ selectedIndex: i }),
+    </x-dc>
+    <script
+      type="text/x-dc"
+      data-dc-script
+      data-props='{"$preview":{"width":1500,"height":950},"accentColor":{"editor":"color","default":"#f5a623","tsType":"string","options":["#f5a623","#4fd1c5","#ff6b6b","#9aa3ff"]}}'
+    >
+      const ICONS = {
+        desktop: '<svg width="15" height="15" viewBox="0 0 24 24" fill="none"><rect x="3" y="4" width="18" height="12" rx="1.5" stroke="currentColor" stroke-width="1.6"/><path d="M8 20h8M12 16v4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>',
+        folder: '<svg width="15" height="15" viewBox="0 0 24 24" fill="none"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7z" stroke="currentColor" stroke-width="1.6"/></svg>',
+        downloads: '<svg width="15" height="15" viewBox="0 0 24 24" fill="none"><path d="M12 4v11m0 0l-4-4m4 4l4-4M5 19h14" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+        drive: '<svg width="15" height="15" viewBox="0 0 24 24" fill="none"><rect x="3" y="6" width="18" height="12" rx="2" stroke="currentColor" stroke-width="1.6"/><circle cx="7" cy="15" r="0.8" fill="currentColor"/></svg>',
+        cube: (color) => `<svg width="30" height="30" viewBox="0 0 24 24" fill="none"><path d="M12 2l8 4.5v9L12 20l-8-4.5v-9L12 2z" stroke="${color}" stroke-width="1.4"/><path d="M12 2v18M4 6.5L12 11l8-4.5" stroke="${color}" stroke-width="1.4"/></svg>`,
+        grid: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none"><rect x="3" y="3" width="8" height="8" rx="1" fill="currentColor"/><rect x="13" y="3" width="8" height="8" rx="1" fill="currentColor"/><rect x="3" y="13" width="8" height="8" rx="1" fill="currentColor"/><rect x="13" y="13" width="8" height="8" rx="1" fill="currentColor"/></svg>',
+        list: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none"><rect x="3" y="5" width="18" height="3" rx="1" fill="currentColor"/><rect x="3" y="11" width="18" height="3" rx="1" fill="currentColor"/><rect x="3" y="17" width="18" height="3" rx="1" fill="currentColor"/></svg>',
       };
-    });
 
-    const favorites = [
-      { label: 'Desktop', icon: { __html: ICONS.desktop } },
-      { label: 'Documents', icon: { __html: ICONS.folder } },
-      { label: '3D Projects', icon: { __html: ICONS.folder } },
-      { label: 'Downloads', icon: { __html: ICONS.downloads } },
-    ].map((f, i) => ({ ...f, bg: i === 2 ? 'rgba(255,255,255,0.06)' : 'transparent', color: i === 2 ? '#fff' : 'rgba(255,255,255,0.65)' }));
+      const EXT_COLORS = {
+        STL: { bg: 'rgba(79,209,197,0.15)', color: '#4fd1c5' },
+        SCAD: { bg: 'rgba(245,166,35,0.15)', color: '#f5a623' },
+        FCSTD: { bg: 'rgba(140,150,255,0.15)', color: '#9aa3ff' },
+        STEP: { bg: 'rgba(255,138,157,0.15)', color: '#ff8a9d' },
+      };
 
-    const locations = [
-      { label: 'This PC', icon: { __html: ICONS.drive } },
-      { label: 'Projects (D:)', icon: { __html: ICONS.drive } },
-      { label: 'Network', icon: { __html: ICONS.drive } },
-    ];
+      const FILES = [
+        { name: 'base_plate.stl', ext: 'STL', size: '1.2 MB' },
+        { name: 'shoulder_joint.scad', ext: 'SCAD', size: '84 KB' },
+        { name: 'forearm_link.FCStd', ext: 'FCSTD', size: '3.4 MB' },
+        { name: 'gripper_v3.step', ext: 'STEP', size: '620 KB' },
+        { name: 'servo_mount.stl', ext: 'STL', size: '410 KB' },
+        { name: 'wrist_bracket.scad', ext: 'SCAD', size: '52 KB' },
+      ];
+
+      class Component extends DCLogic {
+        state = {
+          selectedIndex: 0,
+          view: 'grid',
+          renderMode: 'shaded',
+        };
+
+        renderVals() {
+          const accent = this.props.accentColor ?? '#f5a623';
+          const selected = FILES[this.state.selectedIndex];
+          const selectedExt = EXT_COLORS[selected.ext];
+
+          const files = FILES.map((f, i) => {
+            const isSel = i === this.state.selectedIndex;
+            const c = EXT_COLORS[f.ext];
+            return {
+              name: f.name, ext: f.ext, size: f.size,
+              badgeBg: c.bg, badgeColor: c.color,
+              cardBg: isSel ? 'rgba(255,255,255,0.06)' : '#17181c',
+              cardBorder: isSel ? accent : 'rgba(255,255,255,0.06)',
+              thumb: { __html: ICONS.cube(isSel ? accent : c.color) },
+              onClick: () => this.setState({ selectedIndex: i }),
+            };
+          });
+
+          const favorites = [
+            { label: 'Desktop', icon: { __html: ICONS.desktop } },
+            { label: 'Documents', icon: { __html: ICONS.folder } },
+            { label: '3D Projects', icon: { __html: ICONS.folder } },
+            { label: 'Downloads', icon: { __html: ICONS.downloads } },
+          ].map((f, i) => ({ ...f, bg: i === 2 ? 'rgba(255,255,255,0.06)' : 'transparent', color: i === 2 ? '#fff' : 'rgba(255,255,255,0.65)' }));
+
+          const locations = [
+            { label: 'This PC', icon: { __html: ICONS.drive } },
+            { label: 'Projects (D:)', icon: { __html: ICONS.drive } },
+            { label: 'Network', icon: { __html: ICONS.drive } },
+          ];
 
 
-    const renderModes = ['Shaded', 'Wireframe', 'X-ray'].map((label) => {
-      const active = label.toLowerCase().replace('-', '') === this.state.renderMode.replace('-', '');
-      return { label, bg: active ? accent : 'transparent', color: active ? '#0b0c0e' : 'rgba(255,255,255,0.55)', onClick: () => this.setState({ renderMode: label.toLowerCase().replace('-', '') }) };
-    });
+          const renderModes = ['Shaded', 'Wireframe', 'X-ray'].map((label) => {
+            const active = label.toLowerCase().replace('-', '') === this.state.renderMode.replace('-', '');
+            return { label, bg: active ? accent : 'transparent', color: active ? '#0b0c0e' : 'rgba(255,255,255,0.55)', onClick: () => this.setState({ renderMode: label.toLowerCase().replace('-', '') }) };
+          });
 
-    const wire = this.state.renderMode === 'wireframe';
-    const xray = this.state.renderMode === 'xray';
-    const faceBg = (base) => wire ? 'transparent' : xray ? base.replace('0.9', '0.15').replace(')', ',0.2)').replace('rgba', 'rgba') : base;
-    const solid = (alpha) => xray ? `${selectedExt.color}22` : wire ? 'transparent' : `color-mix(in srgb, ${selectedExt.color} ${alpha}%, #0b0c0e)`;
+          const wire = this.state.renderMode === 'wireframe';
+          const xray = this.state.renderMode === 'xray';
+          const faceBg = (base) => wire ? 'transparent' : xray ? base.replace('0.9', '0.15').replace(')', ',0.2)').replace('rgba', 'rgba') : base;
+          const solid = (alpha) => xray ? `${selectedExt.color}22` : wire ? 'transparent' : `color-mix(in srgb, ${selectedExt.color} ${alpha}%, #0b0c0e)`;
 
-    const metadata = [
-      { label: 'DIMENSIONS', value: '84 × 42 × 18 mm' },
-      { label: 'TRIANGLES', value: '18,204' },
-      { label: 'VOLUME', value: '12.4 cm³' },
-      { label: 'MODIFIED', value: 'Aug 6, 2026' },
-    ];
+          const metadata = [
+            { label: 'DIMENSIONS', value: '84 × 42 × 18 mm' },
+            { label: 'TRIANGLES', value: '18,204' },
+            { label: 'VOLUME', value: '12.4 cm³' },
+            { label: 'MODIFIED', value: 'Aug 6, 2026' },
+          ];
 
-    return {
-      accentColor: accent,
-      files,
-      fileCountLabel: `${FILES.length} items`,
-      favorites, locations, renderModes,
-      openSettings: () => this.setState({ selectedIndex: this.state.selectedIndex }),
-      selectedFile: selected,
-      cubeFaceFront: solid(55), cubeFaceBack: solid(35), cubeFaceRight: solid(45),
-      cubeFaceLeft: solid(30), cubeFaceTop: solid(65), cubeFaceBottom: solid(25),
-      metadata,
-      statusLine: `${selected.name}  ·  ${selected.size}  ·  D:\\Projects\\Robot Arm`,
-    };
-  }
-}
-
-</script>
-</body>
+          return {
+            accentColor: accent,
+            files,
+            fileCountLabel: `${FILES.length} items`,
+            favorites, locations, renderModes,
+            openSettings: () => this.setState({ selectedIndex: this.state.selectedIndex }),
+            selectedFile: selected,
+            cubeFaceFront: solid(55), cubeFaceBack: solid(35), cubeFaceRight: solid(45),
+            cubeFaceLeft: solid(30), cubeFaceTop: solid(65), cubeFaceBottom: solid(25),
+            metadata,
+            statusLine: `${selected.name}  ·  ${selected.size}  ·  D:\\Projects\\Robot Arm`,
+          };
+        }
+      }
+    </script>
+  </body>
 </html>

@@ -71,6 +71,13 @@ function App(): React.JSX.Element {
 
   const sidebarWidth = settings?.sidebarWidth ?? DEFAULT_SIDEBAR_WIDTH
 
+  // Expands + scrolls the tree to `path`, without touching what's
+  // highlighted - used for the one-off startup reveal (see init below),
+  // where nothing's been clicked yet so nothing should be highlighted.
+  function revealInTree(path: string): void {
+    setRevealRequest((current) => ({ path, nonce: (current?.nonce ?? 0) + 1 }))
+  }
+
   useEffect(() => {
     let cancelled = false
 
@@ -164,13 +171,6 @@ function App(): React.JSX.Element {
     } else {
       setPreview({ status: 'not-available' })
     }
-  }
-
-  // Expands + scrolls the tree to `path`, without touching what's
-  // highlighted - used for the one-off startup reveal (see init above),
-  // where nothing's been clicked yet so nothing should be highlighted.
-  function revealInTree(path: string): void {
-    setRevealRequest((current) => ({ path, nonce: (current?.nonce ?? 0) + 1 }))
   }
 
   // A Favorite click - means "go to this folder": highlight it, as if its

@@ -1,0 +1,5 @@
+# Normalize line endings to LF in the repo regardless of platform/checkout
+# settings (core.autocrlf) - matches .editorconfig's end_of_line = lf and
+# prettier's default. Avoids the CRLF/LF churn Windows checkouts otherwise
+# produce against everything ESLint/Prettier touch.
+* text=auto eol=lf

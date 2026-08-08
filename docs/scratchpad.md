@@ -4,113 +4,116 @@
 
 - [ ] Fix auto update
 - [ ] Configurable accent colors
-	- [x] Prompt: I want to be able to configure the accent color - the color that is used across the application for accents - preset defaults of `#f5a623 #4fd1c5 #ff8a9d #9aa3ff` or assign your own (hex code and color picker). NOte that this is _not_ a per-file type accent - there is only one accent color used across the application.
-	- [x] implement
-	- [x] manual tests 
-	- [x] release note
-	- [ ] commit
+  - [x] Prompt: I want to be able to configure the accent color - the color that is used across the application for accents - preset defaults of `#f5a623 #4fd1c5 #ff8a9d #9aa3ff` or assign your own (hex code and color picker). NOte that this is _not_ a per-file type accent - there is only one accent color used across the application.
+  - [x] implement
+  - [x] manual tests
+  - [x] release note
+  - [x] commit
 - [ ] Pre-release script
-	- [ ] prompt: Add a pre-release script to `package.json` like `npm run prerelease` that runs all tests and performs linting
+  - [x] prompt: Add a pre-release script to `package.json` like `npm run prerelease` that runs all tests and performs linting
+  - [x] implement
+  - [ ] test
+  - [ ] commit
 - [ ] Configurable render colour
-	- [ ] Prompt: Configurable preview render colour - defaults of `#f5a623 #4fd1c5 #ff8a9d #9aa3ff` or assign your own (hex code and color picker). Note that this shouldn't override colors specified in the previewed file - if the file is in a format that supports defining colors the preview should use those colors.
-	- [ ] implement
-	- [ ] manual tests 
-	- [ ] release note
-	- [ ] commit
+  - [ ] Prompt: Configurable preview render colour - defaults of `#f5a623 #4fd1c5 #ff8a9d #9aa3ff` or assign your own (hex code and color picker). Note that this shouldn't override colors specified in the previewed file - if the file is in a format that supports defining colors the preview should use those colors.
+  - [ ] implement
+  - [ ] manual tests
+  - [ ] release note
+  - [ ] commit
 - [ ] Implement OBJ and MTL formats
-	- [ ] Prompt: Implement OBJ and MTL formats
-	- [ ] spec
-	- [ ] implement
-	- [ ] test 
-	- [ ] release note
-	- [ ] merge
+  - [ ] Prompt: Implement OBJ and MTL formats
+  - [ ] spec
+  - [ ] implement
+  - [ ] test
+  - [ ] release note
+  - [ ] merge
 - [ ] Implement 3MF format
-	- [ ] Prompt: Implement 3MF format
-	- [ ] spec
-	- [ ] implement
-	- [ ] test 
-	- [ ] release note
-	- [ ] merge
+  - [ ] Prompt: Implement 3MF format
+  - [ ] spec
+  - [ ] implement
+  - [ ] test
+  - [ ] release note
+  - [ ] merge
 - [ ] Implement STEP format
-	- [ ] Prompt: Implement STEP format - https://github.com/kovacsv/occt-import-js
-	- [ ] spec
-	- [ ] implement
-	- [ ] test 
-	- [ ] release note
-	- [ ] merge
+  - [ ] Prompt: Implement STEP format - https://github.com/kovacsv/occt-import-js
+  - [ ] spec
+  - [ ] implement
+  - [ ] test
+  - [ ] release note
+  - [ ] merge
 - [ ] Implement FreeCAD's format
-	- [ ] Prompt: Implement FreeCAD's `.FCStd` format
-	- [ ] spec
-	- [ ] implement
-	- [ ] test 
-	- [ ] release note
-	- [ ] merge
+  - [ ] Prompt: Implement FreeCAD's `.FCStd` format
+  - [ ] spec
+  - [ ] implement
+  - [ ] test
+  - [ ] release note
+  - [ ] merge
 - [ ] Release v0.3.0
 - [ ] Marketing site - bella.tanbydynamics.co
 - [ ] Code signing for macOS
-	- [ ] What do I have to do  to set up code signing for macOS?
+  - [ ] What do I have to do to set up code signing for macOS?
 - [ ] Code signing for Windows
-	- [ ] What do I have to do  to set up code signing for Windows?
+  - [ ] What do I have to do to set up code signing for Windows?
 - [ ] Tabbed preview
-	- [ ] Prompt: I want to be able to open multiple previews via tabs. This should work similarly to VS Code's tabbing - single clicking a file opens the preview in a transient tab with the file name italicised, double clicking the file or double clicking the tab changes the tab to persistent (non-italicised). Opening a file's preview with a transient tab present closes the transient tab and replaces it with the new preview tab. Click the x or middle click the tab to close it.  Tabs should be re-orderable by dragging and dropping. No support for splitting at the moment - only a single preview will actually be visible at a time.
-	- [ ] spec
-	- [ ] implement
-	- [ ] test 
-	- [ ] release note
-	- [ ] merge
+  - [ ] Prompt: I want to be able to open multiple previews via tabs. This should work similarly to VS Code's tabbing - single clicking a file opens the preview in a transient tab with the file name italicised, double clicking the file or double clicking the tab changes the tab to persistent (non-italicised). Opening a file's preview with a transient tab present closes the transient tab and replaces it with the new preview tab. Click the x or middle click the tab to close it. Tabs should be re-orderable by dragging and dropping. No support for splitting at the moment - only a single preview will actually be visible at a time.
+  - [ ] spec
+  - [ ] implement
+  - [ ] test
+  - [ ] release note
+  - [ ] merge
 - [ ] Drag and drop reordering of favorites
-	- [ ] Prompt: xxx
-	- [ ] spec
-	- [ ] implement
-	- [ ] test 
-	- [ ] release note
-	- [ ] merge
+  - [ ] Prompt: xxx
+  - [ ] spec
+  - [ ] implement
+  - [ ] test
+  - [ ] release note
+  - [ ] merge
 - [ ] Preview PNG, GIF, and JPEG files
-	- [ ] Prompt: xxx
-	- [ ] spec
-	- [ ] implement
-	- [ ] test 
-	- [ ] release note
-	- [ ] merge
+  - [ ] Prompt: xxx
+  - [ ] spec
+  - [ ] implement
+  - [ ] test
+  - [ ] release note
+  - [ ] merge
 - [ ] Preview .md and .txt files
-	- [ ] Prompt: xxx
-	- [ ] spec
-	- [ ] implement
-	- [ ] test 
-	- [ ] release note
-	- [ ] merge
+  - [ ] Prompt: xxx
+  - [ ] spec
+  - [ ] implement
+  - [ ] test
+  - [ ] release note
+  - [ ] merge
 - [ ] Release v0.4.0
-- [ ] 
+- [ ]
 
 ## 20260808
 
 - [x] v1 MVP
-	- [x] manual test
-	- [x] merge
+  - [x] manual test
+  - [x] merge
 - [x] "Locations" should be a hierarchical directory browser, while the files panel should only show files
-	- [x] spec
-	- [x] implement
-	- [x] test
-	- [x] merge
+  - [x] spec
+  - [x] implement
+  - [x] test
+  - [x] merge
 - [x] Replace the thumbnails view with a list - we're dropping the thumbnails view as it doesn't add much value. The file browser list should be similar to Windows Explorer's list view - "Name", "Date modified", "Type", and "Size" columns. The columns should be sortable, and the sort selection should be remembered when navigating to other directories and persisted between application startups
-	- [x] spec
-	- [x] implement
-	- [x] manual test
+  - [x] spec
+  - [x] implement
+  - [x] manual test
 - [x] Application icon - I've got icons in the `build` folder, I want them to be used for the application's title icon
-	- [x] implement
-	- [x] manual test
-	- [x] commit
+  - [x] implement
+  - [x] manual test
+  - [x] commit
 - [x] Add a button to the Settings screen to "Reset configuration" - show a confirmation dialog, then clear all of the stored configuration and apply it immediately
-	- [x] implement
-	- [x] manual test
-	- [x] commit
+  - [x] implement
+  - [x] manual test
+  - [x] commit
 - [x] Two related features:
-	- Add versioning and release notes to the application. I want to have a list of release notes that are easy to append to before pushing the new version - if possible a markdown file that I can maintain, that gets rendered to a view within the app. Show version number in footer - click version number to view release notes. Add GH action to build installers - I want to use git tags with the version number to trigger the GH action.
-	- Automatic application updates. On startup, show a nag window if there is a new version. Click to download and install the new version. Add a configurable setting to enable/disable checking for new version on startup - default to enabled.
-	- [x] spec
-	- [x] implement
-	- [x] manual test
-	- [x] merge
+  - Add versioning and release notes to the application. I want to have a list of release notes that are easy to append to before pushing the new version - if possible a markdown file that I can maintain, that gets rendered to a view within the app. Show version number in footer - click version number to view release notes. Add GH action to build installers - I want to use git tags with the version number to trigger the GH action.
+  - Automatic application updates. On startup, show a nag window if there is a new version. Click to download and install the new version. Add a configurable setting to enable/disable checking for new version on startup - default to enabled.
+  - [x] spec
+  - [x] implement
+  - [x] manual test
+  - [x] merge
 - [x] Release 0.1.0
 - [x] Fix icons
 - [x] Release 0.1.1
@@ -118,57 +121,49 @@
 - [x] Release 0.1.2
 - [x] Test installer on Windows
 - [x] Style the scroll bars in the directory nav and files view to match the theme - similar to VS Code in dark mode
-	- [x] implement
-	- [x] manual test
-	- [x] release note
-	- [x] commit
+  - [x] implement
+  - [x] manual test
+  - [x] release note
+  - [x] commit
 - [x] Current location bar should be presented like "C: > Documents > etc > Current" and each node should be selectable - nav to that location
-	- [x] implement
-	- [x] manual test
-	- [x] release note
-	- [x] commit
-- [x] Remove the file list panel and move files into the location tree. It should work like VS Code's EXPLORER panel - lean on that for expected behaviour. For example, remove icons for directories, but leave them for files. 
-	- [x] grill
-	- [x] spec
-	- [x] implement
-	- [x] manual tests
-	- [x] release note
-	- [x] merge
-- [x] Remove the toolbar - the breadcrumbs and the Settings button. Replace the Settings button with a link "Settings" to the left of the version in the status bar  - it should look like "Settings · v0.2.0". Breadcrumbs won't be replaced, you can remove all of the code that supported breadcrumbs.
-	- [x] implement
-	- [x] manual tests
-	- [x] release note
-	- [x] merge
+  - [x] implement
+  - [x] manual test
+  - [x] release note
+  - [x] commit
+- [x] Remove the file list panel and move files into the location tree. It should work like VS Code's EXPLORER panel - lean on that for expected behaviour. For example, remove icons for directories, but leave them for files.
+  - [x] grill
+  - [x] spec
+  - [x] implement
+  - [x] manual tests
+  - [x] release note
+  - [x] merge
+- [x] Remove the toolbar - the breadcrumbs and the Settings button. Replace the Settings button with a link "Settings" to the left of the version in the status bar - it should look like "Settings · v0.2.0". Breadcrumbs won't be replaced, you can remove all of the code that supported breadcrumbs.
+  - [x] implement
+  - [x] manual tests
+  - [x] release note
+  - [x] merge
 - [x] Hide hidden directories and files, dotfiles (files and directories), and non-renderable file types
-	- [x] implement
-	- [x] manual tests 
-	- [x] release note
-	- [x] commit
+  - [x] implement
+  - [x] manual tests
+  - [x] release note
+  - [x] commit
 - [ ] Reimplement adding favs
-	- [x] prompt: Add a right-click context menu to directory entries in the sidebar. Single entry - "Make favorite". If the directory is already a favorite the entry should be "Unfavorite". Remove the "+" add favorite button that's next to the "FAVORITES" label. Add a "-" remove favorite button next to each favorite entry.
-	- [x] implement
-	- [x] manual tests
-	- [x] release note
-	- [x] commit
+  - [x] prompt: Add a right-click context menu to directory entries in the sidebar. Single entry - "Make favorite". If the directory is already a favorite the entry should be "Unfavorite". Remove the "+" add favorite button that's next to the "FAVORITES" label. Add a "-" remove favorite button next to each favorite entry.
+  - [x] implement
+  - [x] manual tests
+  - [x] release note
+  - [x] commit
 - [x] Remove default render mode configuration setting and remember the last selected render mode in the preview
-	- [x] Prompt: Remove the "Default render mode" configuration setting and remember the last selected render mode in the preview
-	- [x] implement
-	- [x] manual tests
-	- [x] release note
-	- [x] commit
+  - [x] Prompt: Remove the "Default render mode" configuration setting and remember the last selected render mode in the preview
+  - [x] implement
+  - [x] manual tests
+  - [x] release note
+  - [x] commit
 - [x] Remove floaty animation in the preview
-	- [x] Prompt: Remove floaty animation in the preview - changing the preview with the mouse should take effect immediately
-	- [x] implement
-	- [x] manual tests 
-	- [x] release note
-	- [x] commit
+  - [x] Prompt: Remove floaty animation in the preview - changing the preview with the mouse should take effect immediately
+  - [x] implement
+  - [x] manual tests
+  - [x] release note
+  - [x] commit
 - [x] Release v0.2.0
 - [x] Test auto-update
-
-
-
-
-
-
-
-

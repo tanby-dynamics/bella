@@ -35,8 +35,7 @@ export type ParseRenderableFileResult = StlParseResult | { ok: false; error: 'no
  * macOS, where self-update is unsupported until the app is signed - see
  * ADR 0003. */
 export type UpdateCheckResult =
-  | { available: false }
-  | { available: true; version: string; canSelfUpdate: boolean }
+  { available: false } | { available: true; version: string; canSelfUpdate: boolean }
 
 /** Pushed from the main process (via the updateDownloadStatus channel) while
  * a self-update download triggered by startUpdateDownload is in progress. */
