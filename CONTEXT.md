@@ -17,15 +17,18 @@ browser (badge, icon) but has no 3D preview yet; shown with a
 
 **Browsing scope** — unrestricted and OS-wide: any drive, folder, or network
 share reachable from the OS, not limited to app-defined workspaces or
-project roots. The file grid shows every file in the current folder, not
-just CAD files — CAD files (Renderable or Listed formats) get an extension
+project roots. The file list shows every *file* in the current folder, not
+just CAD files, and no subfolders (see Location below for folder
+navigation) — CAD files (Renderable or Listed formats) get an extension
 badge and preview support; everything else gets a generic file icon and no
 preview.
 
-**Location** — a filesystem root shown in the sidebar (e.g. "This PC", a
-drive, a network share), auto-enumerated from the OS. Distinct from
-Favorite: Locations are what the OS offers, Favorites are what the user
-pins.
+**Location** — a filesystem root shown in the sidebar's tree (e.g. "This
+PC", a drive, a network share), auto-enumerated from the OS and lazily
+expandable to browse its subfolders. Distinct from Favorite: Locations are
+what the OS offers, Favorites are what the user pins. The term applies only
+to these top-level roots — the tree's expandable subfolder nodes underneath
+a Location aren't themselves Locations, just folders being browsed.
 
 **Render mode** — the 3D viewer's display style for a Renderable-format
 file, one of:
@@ -35,7 +38,7 @@ file, one of:
   structure/overlaps show through the surface.
 
 **Open** (action) — launches the selected file in the OS's default external
-application for that file type. Distinct from selecting a file in the grid,
+application for that file type. Distinct from selecting a file in the list,
 which updates Bella's own 3D preview in place.
 
 ## Decisions (not yet ADR-worthy, tracked here for now)
@@ -46,14 +49,41 @@ which updates Bella's own 3D preview in place.
   Metadata panel v1 fields: Dimensions, Triangle count, Modified date.
 - **v1 Settings scope**: theme (light/dark/system) and default render
   mode. Nothing file-management-related until that feature exists.
+- **Folder navigation is tree-only.** The file panel lists files only —
+  no folders, no click-to-navigate. Changing folder happens exclusively
+  via the Locations sidebar tree (lazily expandable per Location, one
+  level of subfolders at a time). The breadcrumb is a passive "you are
+  here" indicator with click-to-jump to an ancestor, not an independent
+  navigation control, and the tree does not auto-expand/sync to follow
+  it.
+- **Tree chevrons are unconditional.** Every folder node in the tree
+  shows an expand affordance, even if it turns out to have no
+  subfolders — avoids an eager per-node child-existence check. Chevron
+  and label are separate click targets: chevron expands/collapses,
+  label navigates.
+- **No synthetic "This PC" grouping node.** Locations stay flat
+  top-level roots (drives, shares), matching how they're enumerated
+  today — no wrapper node introduced purely for grouping.
+- **Favorites stay simple.** Explorer-styled (collapsible section, same
+  visual treatment as the tree) but no drag-to-reorder and no
+  auto-suggested "frequent folders" — pinning/unpinning only, same as
+  today.
+- **File-listing domain functions are split by purpose**, not filtered
+  client-side: one domain function returns files only for the file
+  panel, a separate function returns immediate subfolders only for tree
+  expansion. See [ADR 0001](docs/adr/0001-file-panel-files-only-navigation-via-tree.md).
+- **File list view is fixed at list (Explorer-style)**, sortable by
+  column (Name, Date modified, Type, Size). Sort is a single global
+  (column, direction) setting — not per-folder — persisted across
+  restarts; clicking the active column toggles direction; sensible
+  per-column defaults (Name/Type ascending, Date modified/Size
+  descending on first click).
 - **Metadata panel for Listed formats** shows only file size and Modified
   date — Dimensions and Triangle count require parsing geometry Bella
   doesn't understand for these formats, so they're omitted rather than
   shown empty.
-- **View/Sort are fixed in v1**: thumbnail grid view, sorted by name.
-  No toggle yet — matches what the mockup implements.
 - **App state persists** across restarts in a local app-config file:
-  Favorites list and last-opened folder.
+  Favorites list, last-opened folder, and the global sort setting.
 - **Selection is single-file only** in v1 — no multi-select.
 - **3D viewer interaction**: mouse-drag to orbit, scroll-wheel to zoom
   (primary); on-screen +/- buttons perform the same zoom as a secondary,
@@ -76,6 +106,6 @@ which updates Bella's own 3D preview in place.
 - **Read-only for v1.** Bella does not move, rename, or delete files yet.
   Simple file management is a planned future capability — the read-only
   design should not preclude adding it later.
-- **Thumbnails are type icons, not renders.** The file grid shows an
+- **Row icons are type icons, not renders.** Each file-list row shows an
   icon/color keyed off file extension, not a generated snapshot of the
   model's actual geometry.
