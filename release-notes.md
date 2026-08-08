@@ -11,6 +11,8 @@ file's top entry doesn't match the pushed tag. See ADR 0002.
 - Consolidate directory and file views into the location pane
 - Make the location pane resizable
 - Remove the header toolbar
+- Hide hidden and dotfiles and directories
+- Hide all non-renderable files
 
 ## v0.1.2 - 2026-08-08
 

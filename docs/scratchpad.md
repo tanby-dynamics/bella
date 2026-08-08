@@ -52,35 +52,43 @@
 	- [x] manual tests
 	- [x] release note
 	- [x] merge
-- [ ] Remove the toolbar - the breadcrumbs and the Settings button. Replace the Settings button with a link "Settings" to the left of the version in the status bar  - it should look like "Settings · v0.2.0". Breadcrumbs won't be replaced, you can remove all of the code that supported breadcrumbs.
+- [x] Remove the toolbar - the breadcrumbs and the Settings button. Replace the Settings button with a link "Settings" to the left of the version in the status bar  - it should look like "Settings · v0.2.0". Breadcrumbs won't be replaced, you can remove all of the code that supported breadcrumbs.
 	- [x] implement
 	- [x] manual tests
 	- [x] release note
-	- [ ] merge
-- [ ] Hide hidden directories and files, dotfiles (files and directories), and non-renderable file types
-	- [ ] implement
-	- [ ] manual tests 
+	- [x] merge
+- [x] Hide hidden directories and files, dotfiles (files and directories), and non-renderable file types
+	- [x] implement
+	- [x] manual tests 
 	- [ ] release note
-	- [ ] merge
+	- [ ] commit
 - [ ] Add a context menu to directory entries in the sidebar. Single entry - "Make favorite". If the directory is already a favorite the entry should be "Unfavorite".
 	- [ ] implement
 	- [ ] manual tests
 	- [ ] release note
-	- [ ] merge
+	- [ ] commit
 - [ ] Remove the "Default render mode" and just remember the last selected render mode in the preview
 	- [ ] implement
 	- [ ] manual tests
 	- [ ] release note
-	- [ ] merge
+	- [ ] commit
 - [ ] Remove animation in the preview - changing the view should take effect immediately
 	- [ ] implement
 	- [ ] manual tests 
 	- [ ] release note
-	- [ ] merge
+	- [ ] commit
 - [ ] Release v0.2.0
 - [ ] Test auto-update
 - [ ] Configurable accent colors - defaults of `#f5a623 #4fd1c5 #ff8a9d #9aa3ff` or assign your own (hex code and color picker)
+	- [ ] implement
+	- [ ] manual tests 
+	- [ ] release note
+	- [ ] commit
 - [ ] Configurable render colour - defaults of `#f5a623 #4fd1c5 #ff8a9d #9aa3ff` or assign your own (hex code and color picker). Note that this shouldn't override colors specified in the previewed file - if the file is in a format that has colors the preview should use those colors
+	- [ ] implement
+	- [ ] manual tests 
+	- [ ] release note
+	- [ ] commit
 - [ ] Implement OBJ and MTL formats
 	- [ ] spec
 	- [ ] implement
@@ -111,7 +119,14 @@
 	- [ ] What do I have to do  to set up code signing for macOS?
 - [ ] Code signing for Windows
 	- [ ] What do I have to do  to set up code signing for Windows?
-- [ ] 
+- [ ] Tabbed preview
+	- [ ] Prompt: I want to be able to open multiple previews via tabs. This should work similarly to VS Code's tabbing - single clicking a file opens the preview in a transient tab with the file name italicised, double clicking the file or double clicking the tab changes the tab to persistent (non-italicised). Opening a file's preview with a transient tab present closes the transient tab and replaces it with the new preview tab. Click the x or middle click the tab to close it.  Tabs should be re-orderable by dragging and dropping. No support for splitting at the moment - only a single preview will actually be visible at a time.
+	- [ ] spec
+	- [ ] implement
+	- [ ] test 
+	- [ ] release note
+	- [ ] merge
+- [ ] Release v0.4.0
 - [ ] 
 
 

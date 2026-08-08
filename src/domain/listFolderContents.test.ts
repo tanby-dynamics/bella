@@ -13,8 +13,8 @@ describe('listFolderContents', () => {
   it('splits a mixed folder into subfolders and files', async () => {
     const reader = fakeReader({
       readEntries: async () => [
-        { name: 'Robot Arm', isDirectory: true },
-        { name: 'base_plate.stl', isDirectory: false }
+        { name: 'Robot Arm', isDirectory: true, isHidden: false },
+        { name: 'base_plate.stl', isDirectory: false, isHidden: false }
       ]
     })
 
@@ -26,7 +26,7 @@ describe('listFolderContents', () => {
 
   it('does not stat subfolders - the tree only needs name/path for them', async () => {
     const reader = fakeReader({
-      readEntries: async () => [{ name: 'Robot Arm', isDirectory: true }],
+      readEntries: async () => [{ name: 'Robot Arm', isDirectory: true, isHidden: false }],
       stat: async () => {
         throw new Error('must not stat a directory entry')
       }
@@ -37,19 +37,10 @@ describe('listFolderContents', () => {
     expect(subfolders).toEqual([{ name: 'Robot Arm', path: '/Projects/Robot Arm' }])
   })
 
-  it('classifies each file by its CAD format and attaches size/modified metadata', async () => {
-    const statByName: Record<string, { size: number; modifiedAt: Date }> = {
-      'base_plate.stl': { size: 1200, modifiedAt: new Date('2026-08-01T00:00:00Z') },
-      'gripper_v3.step': { size: 620, modifiedAt: new Date('2026-08-02T00:00:00Z') },
-      'notes.txt': { size: 48, modifiedAt: new Date('2026-08-03T00:00:00Z') }
-    }
+  it('classifies a Renderable-format file and attaches size/modified metadata', async () => {
     const reader = fakeReader({
-      readEntries: async () => [
-        { name: 'base_plate.stl', isDirectory: false },
-        { name: 'gripper_v3.step', isDirectory: false },
-        { name: 'notes.txt', isDirectory: false }
-      ],
-      stat: async (entryPath) => statByName[entryPath.split('/').pop()!]
+      readEntries: async () => [{ name: 'base_plate.stl', isDirectory: false, isHidden: false }],
+      stat: async () => ({ size: 1200, modifiedAt: new Date('2026-08-01T00:00:00Z') })
     })
 
     const { files } = await listFolderContents('/Projects/Robot Arm', reader)
@@ -61,20 +52,6 @@ describe('listFolderContents', () => {
         size: 1200,
         modifiedAt: new Date('2026-08-01T00:00:00Z'),
         classification: { kind: 'renderable', format: 'stl' }
-      },
-      {
-        name: 'gripper_v3.step',
-        path: '/Projects/Robot Arm/gripper_v3.step',
-        size: 620,
-        modifiedAt: new Date('2026-08-02T00:00:00Z'),
-        classification: { kind: 'listed', format: 'step' }
-      },
-      {
-        name: 'notes.txt',
-        path: '/Projects/Robot Arm/notes.txt',
-        size: 48,
-        modifiedAt: new Date('2026-08-03T00:00:00Z'),
-        classification: { kind: 'other' }
       }
     ])
   })
@@ -85,11 +62,11 @@ describe('listFolderContents', () => {
     // e.g. Windows' C:\DumpStack.log.tmp raising EPERM.
     const reader = fakeReader({
       readEntries: async () => [
-        { name: 'base_plate.stl', isDirectory: false },
-        { name: 'DumpStack.log.tmp', isDirectory: false }
+        { name: 'base_plate.stl', isDirectory: false, isHidden: false },
+        { name: 'locked.stl', isDirectory: false, isHidden: false }
       ],
       stat: async (entryPath) => {
-        if (entryPath.endsWith('DumpStack.log.tmp')) {
+        if (entryPath.endsWith('locked.stl')) {
           throw Object.assign(new Error('EPERM: operation not permitted'), { code: 'EPERM' })
         }
         return { size: 1200, modifiedAt: new Date('2026-08-01T00:00:00Z') }
@@ -101,6 +78,61 @@ describe('listFolderContents', () => {
     expect(files.map((f) => f.name)).toEqual(['base_plate.stl'])
   })
 
+  it('omits any file without a 3D preview - Listed formats and unrecognized files alike - before even statting it', async () => {
+    // Only a Renderable format (STL in v1) has a preview - Listed formats
+    // (STEP/FCStd/SCAD) are recognized but show "preview not available" if
+    // ever selected, and unrecognized files show nothing at all, so neither
+    // belongs in a tree whose whole point is browsing to a previewable file.
+    const reader = fakeReader({
+      readEntries: async () => [
+        { name: 'base_plate.stl', isDirectory: false, isHidden: false },
+        { name: 'gripper_v3.step', isDirectory: false, isHidden: false },
+        { name: 'notes.txt', isDirectory: false, isHidden: false }
+      ],
+      stat: async (entryPath) => {
+        if (!entryPath.endsWith('base_plate.stl')) {
+          throw new Error('must not stat a file without a preview')
+        }
+        return { size: 1200, modifiedAt: new Date('2026-08-01T00:00:00Z') }
+      }
+    })
+
+    const { files } = await listFolderContents('/Projects/Robot Arm', reader)
+
+    expect(files.map((f) => f.name)).toEqual(['base_plate.stl'])
+  })
+
+  it('omits dotfiles and dotfolders on every platform', async () => {
+    const reader = fakeReader({
+      readEntries: async () => [
+        { name: '.git', isDirectory: true, isHidden: false },
+        { name: '.gitignore', isDirectory: false, isHidden: false },
+        { name: 'Robot Arm', isDirectory: true, isHidden: false },
+        { name: 'base_plate.stl', isDirectory: false, isHidden: false }
+      ]
+    })
+
+    const { subfolders, files } = await listFolderContents('/Projects', reader)
+
+    expect(subfolders.map((s) => s.name)).toEqual(['Robot Arm'])
+    expect(files.map((f) => f.name)).toEqual(['base_plate.stl'])
+  })
+
+  it('omits entries the reader reports as OS-hidden (e.g. Windows Hidden attribute)', async () => {
+    const reader = fakeReader({
+      readEntries: async () => [
+        { name: 'System Volume Information', isDirectory: true, isHidden: true },
+        { name: 'thumbs.db', isDirectory: false, isHidden: true },
+        { name: 'Robot Arm', isDirectory: true, isHidden: false }
+      ]
+    })
+
+    const { subfolders, files } = await listFolderContents('/Projects', reader)
+
+    expect(subfolders.map((s) => s.name)).toEqual(['Robot Arm'])
+    expect(files).toEqual([])
+  })
+
   it('returns empty subfolders and files for an empty folder', async () => {
     const reader = fakeReader({ readEntries: async () => [] })
 
@@ -110,9 +142,9 @@ describe('listFolderContents', () => {
   it('sorts subfolders by name, case-insensitively', async () => {
     const reader = fakeReader({
       readEntries: async () => [
-        { name: 'wrist', isDirectory: true },
-        { name: 'Base', isDirectory: true },
-        { name: 'Gripper', isDirectory: true }
+        { name: 'wrist', isDirectory: true, isHidden: false },
+        { name: 'Base', isDirectory: true, isHidden: false },
+        { name: 'Gripper', isDirectory: true, isHidden: false }
       ]
     })
 
@@ -124,9 +156,9 @@ describe('listFolderContents', () => {
   it('sorts files by name, case-insensitively', async () => {
     const reader = fakeReader({
       readEntries: async () => [
-        { name: 'wrist.stl', isDirectory: false },
-        { name: 'Base.stl', isDirectory: false },
-        { name: 'Gripper.stl', isDirectory: false }
+        { name: 'wrist.stl', isDirectory: false, isHidden: false },
+        { name: 'Base.stl', isDirectory: false, isHidden: false },
+        { name: 'Gripper.stl', isDirectory: false, isHidden: false }
       ]
     })
 
@@ -142,8 +174,8 @@ describe('listFolderContents', () => {
     // single alphabetical merge of both.
     const reader = fakeReader({
       readEntries: async () => [
-        { name: 'aaa.stl', isDirectory: false },
-        { name: 'zzz-folder', isDirectory: true }
+        { name: 'aaa.stl', isDirectory: false, isHidden: false },
+        { name: 'zzz-folder', isDirectory: true, isHidden: false }
       ],
       stat: async () => ({ size: 10, modifiedAt: new Date('2026-08-01T00:00:00Z') })
     })

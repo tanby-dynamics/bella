@@ -9,19 +9,25 @@ filesystem and previewing CAD files in a 3D viewer.
 display in the 3D viewer. v1: STL only. The set of renderable formats is
 expected to grow over time.
 
-**Listed format** — a recognized CAD file format that appears in the file
-browser (badge, icon) but has no 3D preview yet; shown with a
-"preview not available" state instead of a render. v1: STEP, FCStd, SCAD.
+**Listed format** — a recognized CAD file format with no 3D preview yet;
+would show a badge/icon and a "preview not available" state instead of a
+render, if selected. v1: STEP, FCStd, SCAD. Classified by the same
+`classifyFormat` a Renderable format is, but as of the "no-preview formats
+stay out of the tree" decision below, a Listed-format file never actually
+reaches the tree to be selected - the classification exists for the
+metadata/preview UI to fall back on if that changes.
 
 **Favorite** — a user-pinned folder shown in the sidebar for quick access.
 
 **Browsing scope** — unrestricted and OS-wide: any drive, folder, or network
 share reachable from the OS, not limited to app-defined workspaces or
-project roots. Expanding a folder anywhere in the Locations tree reveals
-every *file* inside it (not just CAD files) alongside its subfolders — CAD
-files (Renderable or Listed formats) get an extension badge and preview
-support; everything else gets a generic file icon and no preview. See ADR
-0004: the tree is the sole browsing surface, there's no separate file list.
+project roots. Expanding a folder anywhere in the Locations tree reveals its
+Renderable-format files (the only ones with a 3D preview, each with an
+extension badge) and subfolders; hidden entries and any file without a
+preview - Listed format or unrecognized - are filtered out rather than
+shown unstyled (see the "Hidden and no-preview entries" decision below).
+See ADR 0004: the tree is the sole browsing surface, there's no separate
+file list.
 
 **Location** — a filesystem root shown in the sidebar's tree (e.g. "This
 PC", a drive, a network share), auto-enumerated from the OS and lazily
@@ -139,6 +145,20 @@ Version only — a later Release still prompts.
   (primary); on-screen +/- buttons perform the same zoom as a secondary,
   accessible control.
 - **No search/filter** within a folder in v1.
+- **Hidden and no-preview entries are filtered out of the tree**, not
+  shown-but-unstyled. "Hidden" is a dotfile/dotfolder (leading `.`, every
+  platform) or, on Windows, the OS Hidden attribute (checked per directory
+  via PowerShell in `fsDirectoryReader` - no such attribute exists on
+  macOS/Linux). A file without a 3D preview is filtered too, before its
+  metadata is even read: that's both an unrecognized file
+  (FormatClassification `other`) and a Listed-format file (`step`/`fcstd`/
+  `scad` - recognized, but no preview implemented) - only a Renderable
+  format (STL in v1) makes it into the tree. This is a `listFolderContents`
+  filter, not a user-facing toggle - there's no way to reveal these entries
+  in v1, and no way to select a Listed-format file at all right now (its
+  "preview not available" state in the preview/metadata panels is
+  currently unreachable through the tree, kept for when a Listed format
+  gains a preview and becomes Renderable).
 - **v1 Renderable format set**: STL only. Other plain-mesh formats
   (OBJ, PLY, ...) can be added later given the format handling is
   designed to be extensible; nothing else is in scope until needed.

@@ -2,7 +2,14 @@ import { classifyFormat, type FormatClassification } from './formats'
 import { joinPath } from './paths'
 
 export interface DirectoryReader {
-  readEntries(path: string): Promise<Array<{ name: string; isDirectory: boolean }>>
+  /** `isHidden` carries only what the OS itself flags as hidden (the
+   * Windows Hidden attribute; always false on platforms without such a
+   * concept) - the dot-prefix convention is a naming rule, not filesystem
+   * metadata, so this domain layer applies that half of "hidden" itself via
+   * isDotfile rather than asking the reader for it. */
+  readEntries(
+    path: string
+  ): Promise<Array<{ name: string; isDirectory: boolean; isHidden: boolean }>>
   stat(entryPath: string): Promise<{ size: number; modifiedAt: Date }>
 }
 
@@ -24,12 +31,28 @@ export interface FolderContents {
   files: FileEntry[]
 }
 
+/** A dotfile/dotfolder by the cross-platform naming convention (leading
+ * `.`) - the other half of "hidden", alongside the OS-level Hidden
+ * attribute a DirectoryReader reports per entry. Applied uniformly on every
+ * platform, unlike the attribute, which is Windows-only. */
+function isDotfile(name: string): boolean {
+  return name.startsWith('.')
+}
+
 /** Lists a folder's immediate children - subfolders and files together -
  * for a single Locations-tree node's lazy expansion. Replaces the old
  * listFolder/listSubfolders split (see ADR 0004, which superseded ADR
  * 0001's files-only file panel): the tree is now the sole browsing
  * surface, so every expand needs both groups at once rather than a
  * separate files-only panel.
+ *
+ * Two kinds of entry never make it into the result: hidden entries
+ * (dotfiles/dotfolders, or OS-hidden on Windows - see isDotfile and
+ * DirectoryReader.readEntries), and any file without a 3D preview - only a
+ * Renderable format (FormatClassification 'renderable', STL in v1) has one;
+ * Listed formats (STEP/FCStd/SCAD - recognized, but "preview not available")
+ * and unrecognized files are both filtered before the stat() call rather
+ * than listed with a badge/generic icon nothing then lets you view.
  *
  * Subfolders get no stat() call (the tree only needs name/path for them,
  * same as the old listSubfolders); files get full metadata, same as the
@@ -46,12 +69,17 @@ export async function listFolderContents(
   const files: FileEntry[] = []
 
   for (const rawEntry of rawEntries) {
+    if (rawEntry.isHidden || isDotfile(rawEntry.name)) continue
+
     const path = joinPath(folderPath, rawEntry.name)
 
     if (rawEntry.isDirectory) {
       subfolders.push({ name: rawEntry.name, path })
       continue
     }
+
+    const classification = classifyFormat(rawEntry.name)
+    if (classification.kind !== 'renderable') continue
 
     let stat: { size: number; modifiedAt: Date }
     try {
@@ -68,7 +96,7 @@ export async function listFolderContents(
       path,
       size: stat.size,
       modifiedAt: stat.modifiedAt,
-      classification: classifyFormat(rawEntry.name)
+      classification
     })
   }
 
