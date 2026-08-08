@@ -1,5 +1,7 @@
 export * from './formats'
 export * from './listFolder'
+export * from './listSubfolders'
+export * from './sortEntries'
 export * from './stlParser'
 export * from './parseRenderable'
 export * from './locations'

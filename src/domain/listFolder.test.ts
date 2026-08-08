@@ -22,7 +22,6 @@ describe('listFolder', () => {
       {
         name: 'base_plate.stl',
         path: '/Projects/Robot Arm/base_plate.stl',
-        isDirectory: false,
         size: 1234,
         modifiedAt: new Date('2026-08-06T00:00:00Z'),
         classification: { kind: 'renderable', format: 'stl' }
@@ -30,15 +29,17 @@ describe('listFolder', () => {
     ])
   })
 
-  it('classifies directories as other, regardless of name', () => {
-    return listFolder(
-      '/Projects',
-      fakeReader({
-        readEntries: async () => [{ name: 'Robot Arm.stl', isDirectory: true }]
-      })
-    ).then((entries) => {
-      expect(entries[0]).toMatchObject({ isDirectory: true, classification: { kind: 'other' } })
+  it('excludes directory entries — the file panel lists files only, see ADR 0001', async () => {
+    const reader = fakeReader({
+      readEntries: async () => [
+        { name: 'Robot Arm', isDirectory: true },
+        { name: 'base_plate.stl', isDirectory: false }
+      ]
     })
+
+    const entries = await listFolder('/Projects', reader)
+
+    expect(entries.map((e) => e.name)).toEqual(['base_plate.stl'])
   })
 
   it('attaches size/modified metadata to every entry in a mixed folder, including non-CAD files', async () => {
@@ -62,7 +63,6 @@ describe('listFolder', () => {
       {
         name: 'base_plate.stl',
         path: '/Projects/Robot Arm/base_plate.stl',
-        isDirectory: false,
         size: 1200,
         modifiedAt: new Date('2026-08-01T00:00:00Z'),
         classification: { kind: 'renderable', format: 'stl' }
@@ -70,7 +70,6 @@ describe('listFolder', () => {
       {
         name: 'gripper_v3.step',
         path: '/Projects/Robot Arm/gripper_v3.step',
-        isDirectory: false,
         size: 620,
         modifiedAt: new Date('2026-08-02T00:00:00Z'),
         classification: { kind: 'listed', format: 'step' }
@@ -78,7 +77,6 @@ describe('listFolder', () => {
       {
         name: 'notes.txt',
         path: '/Projects/Robot Arm/notes.txt',
-        isDirectory: false,
         size: 48,
         modifiedAt: new Date('2026-08-03T00:00:00Z'),
         classification: { kind: 'other' }
@@ -106,23 +104,5 @@ describe('listFolder', () => {
     const entries = await listFolder('/Projects/Robot Arm', reader)
 
     expect(entries.map((e) => e.name)).toEqual(['base_plate.stl'])
-  })
-
-  it('sorts entries by name', async () => {
-    const reader = fakeReader({
-      readEntries: async () => [
-        { name: 'wrist_bracket.scad', isDirectory: false },
-        { name: 'base_plate.stl', isDirectory: false },
-        { name: 'gripper_v3.step', isDirectory: false }
-      ]
-    })
-
-    const entries = await listFolder('/Projects/Robot Arm', reader)
-
-    expect(entries.map((e) => e.name)).toEqual([
-      'base_plate.stl',
-      'gripper_v3.step',
-      'wrist_bracket.scad'
-    ])
   })
 })

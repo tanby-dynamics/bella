@@ -5,6 +5,7 @@ import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import icon from '../../resources/icon.png?asset'
 import {
   listFolder,
+  listSubfolders,
   parseRenderable,
   enumerateLocations,
   createStore,
@@ -22,6 +23,10 @@ function registerIpcHandlers(): void {
   ipcMain.handle(IPC.homeDirectory, () => homedir())
 
   ipcMain.handle(IPC.listFolder, (_event, path: string) => listFolder(path, fsDirectoryReader))
+
+  ipcMain.handle(IPC.listSubfolders, (_event, path: string) =>
+    listSubfolders(path, fsDirectoryReader)
+  )
 
   ipcMain.handle(
     IPC.parseRenderableFile,

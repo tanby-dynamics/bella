@@ -29,6 +29,19 @@ export function breadcrumbSegments(path: string): BreadcrumbSegment[] {
   return segments
 }
 
+/** True if `path` is at or below `ancestor` in the filesystem tree - used
+ * to decide which Locations-tree nodes lie on the path to the folder Bella
+ * opened at startup, so they can auto-expand. Separator-aware (mixed
+ * `\`/`/` never happens within one path, but ancestor/path always share
+ * one), and requires a full path-segment match so "/Projects" doesn't
+ * false-positive against "/ProjectsOther". */
+export function isAncestorPath(ancestor: string, path: string): boolean {
+  if (ancestor === path) return true
+  const sep = detectSeparator(path)
+  const normalizedAncestor = ancestor.endsWith(sep) ? ancestor : `${ancestor}${sep}`
+  return path.startsWith(normalizedAncestor)
+}
+
 export function fileNameFromPath(path: string): string {
   const sep = detectSeparator(path)
   const parts = path.split(sep).filter(Boolean)

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { classifyFormat } from './formats'
+import { classifyFormat, typeLabel } from './formats'
 
 describe('classifyFormat', () => {
   it('classifies .stl as a renderable format', () => {
@@ -24,5 +24,27 @@ describe('classifyFormat', () => {
 
   it('classifies a file with no extension as other', () => {
     expect(classifyFormat('README')).toEqual({ kind: 'other' })
+  })
+})
+
+describe('typeLabel', () => {
+  it('describes a renderable STL as "STL File"', () => {
+    expect(typeLabel({ kind: 'renderable', format: 'stl' })).toBe('STL File')
+  })
+
+  it('describes a listed STEP as "STEP File"', () => {
+    expect(typeLabel({ kind: 'listed', format: 'step' })).toBe('STEP File')
+  })
+
+  it('describes a listed FCStd as "FreeCAD File"', () => {
+    expect(typeLabel({ kind: 'listed', format: 'fcstd' })).toBe('FreeCAD File')
+  })
+
+  it('describes a listed SCAD as "OpenSCAD File"', () => {
+    expect(typeLabel({ kind: 'listed', format: 'scad' })).toBe('OpenSCAD File')
+  })
+
+  it('describes an unclassified file as the generic "File"', () => {
+    expect(typeLabel({ kind: 'other' })).toBe('File')
   })
 })

@@ -1,13 +1,45 @@
 import { useEffect, useMemo, useState } from 'react'
-import type { Favorite, FileEntry, Location, RenderMode, Settings } from './types'
+import {
+  sortEntries,
+  type ColumnWidths,
+  type Favorite,
+  type FileEntry,
+  type Location,
+  type RenderMode,
+  type Settings,
+  type SortColumn,
+  type SortDirection
+} from './types'
 import type { PreviewState } from './preview'
 import { fileNameFromPath } from './paths'
 import { Toolbar } from './components/Toolbar'
 import { Sidebar } from './components/Sidebar'
-import { FileGrid } from './components/FileGrid'
+import { FileList } from './components/FileList'
 import { PreviewPanel } from './components/PreviewPanel'
 import { StatusBar } from './components/StatusBar'
 import { SettingsPanel } from './components/SettingsPanel'
+
+// Single global sort setting, not remembered per folder (see CONTEXT.md) -
+// this is the fallback before Settings has loaded from the store.
+const DEFAULT_SORT: { column: SortColumn; direction: SortDirection } = {
+  column: 'name',
+  direction: 'asc'
+}
+
+// Fallback column widths before Settings has loaded - matches
+// DEFAULT_STORE_DATA in src/domain/store.ts.
+const DEFAULT_COLUMN_WIDTHS: ColumnWidths = { modifiedAt: 108, type: 92, size: 68 }
+
+// Default direction when a column is first clicked (not yet the active
+// sort) - Name/Type ascending, Date modified/Size descending, matching
+// Explorer's own conventions. Clicking the already-active column toggles
+// instead of falling back to this. See CONTEXT.md.
+const DEFAULT_DIRECTION: Record<SortColumn, SortDirection> = {
+  name: 'asc',
+  type: 'asc',
+  modifiedAt: 'desc',
+  size: 'desc'
+}
 
 function applyTheme(theme: Settings['theme']): void {
   const resolved =
@@ -21,6 +53,10 @@ function applyTheme(theme: Settings['theme']): void {
 
 function App(): React.JSX.Element {
   const [currentFolder, setCurrentFolder] = useState<string | null>(null)
+  // The folder Bella opened at startup - captured once and never updated
+  // again, so the Locations tree only auto-expands to it on initial mount,
+  // not on every later navigation. See LocationTreeNode.
+  const [initialFolder, setInitialFolder] = useState<string | null>(null)
   const [entries, setEntries] = useState<FileEntry[]>([])
   const [selectedPath, setSelectedPath] = useState<string | null>(null)
   const [preview, setPreview] = useState<PreviewState>({ status: 'empty' })
@@ -34,6 +70,16 @@ function App(): React.JSX.Element {
     () => entries.find((entry) => entry.path === selectedPath) ?? null,
     [entries, selectedPath]
   )
+
+  // Global sort - applies across every folder, not remembered per folder
+  // (see CONTEXT.md) - so it lives in Settings alongside theme/render mode
+  // rather than folder-scoped state.
+  const sort = settings?.sort ?? DEFAULT_SORT
+  const sortedEntries = useMemo(
+    () => sortEntries(entries, sort.column, sort.direction),
+    [entries, sort]
+  )
+  const columnWidths = settings?.columnWidths ?? DEFAULT_COLUMN_WIDTHS
 
   useEffect(() => {
     let cancelled = false
@@ -56,7 +102,9 @@ function App(): React.JSX.Element {
       setFavorites(loadedFavorites)
       setLocations(loadedLocations)
 
-      await navigate(lastOpenedFolder ?? homeDirectory)
+      const startFolder = lastOpenedFolder ?? homeDirectory
+      setInitialFolder(startFolder)
+      await navigate(startFolder)
     }
 
     init()
@@ -116,6 +164,20 @@ function App(): React.JSX.Element {
     if (patch.theme) applyTheme(updated.theme)
   }
 
+  async function changeSort(column: SortColumn): Promise<void> {
+    const nextDirection: SortDirection =
+      column === sort.column
+        ? sort.direction === 'asc'
+          ? 'desc'
+          : 'asc'
+        : DEFAULT_DIRECTION[column]
+    await changeSettings({ sort: { column, direction: nextDirection } })
+  }
+
+  async function changeColumnWidths(widths: ColumnWidths): Promise<void> {
+    await changeSettings({ columnWidths: widths })
+  }
+
   return (
     <div className="app">
       <Toolbar
@@ -128,15 +190,19 @@ function App(): React.JSX.Element {
           favorites={favorites}
           locations={locations}
           currentFolder={currentFolder}
+          initialFolder={initialFolder}
           onNavigate={navigate}
           onAddCurrentFolderAsFavorite={addCurrentFolderAsFavorite}
           onRemoveFavorite={removeFavorite}
         />
-        <FileGrid
-          entries={entries}
+        <FileList
+          entries={sortedEntries}
           selectedPath={selectedPath}
           onSelect={selectEntry}
-          onOpenFolder={(entry) => navigate(entry.path)}
+          sort={sort}
+          onSortChange={changeSort}
+          columnWidths={columnWidths}
+          onColumnWidthsChange={changeColumnWidths}
         />
         <PreviewPanel
           selectedEntry={selectedEntry}
