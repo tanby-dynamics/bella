@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useState } from 'react'
 import type {
   Favorite,
   FileEntry,
@@ -10,7 +10,6 @@ import type {
 } from './types'
 import type { PreviewState } from './preview'
 import { fileNameFromPath, parentFolderPath } from './paths'
-import { Toolbar } from './components/Toolbar'
 import { Sidebar } from './components/Sidebar'
 import type { Highlighted, RevealRequest } from './components/LocationTree'
 import { PreviewPanel } from './components/PreviewPanel'
@@ -38,16 +37,15 @@ function applyTheme(theme: Settings['theme']): void {
 function App(): React.JSX.Element {
   // The folder Bella opened at startup - captured once and never updated
   // again, so the Locations tree only auto-expands to it on initial mount.
-  // Also the breadcrumb's fallback before anything's been highlighted. See
-  // LocationTreeNode.
+  // See LocationTreeNode.
   const [initialFolder, setInitialFolder] = useState<string | null>(null)
   // Tells the Locations tree to expand down to and scroll to a folder -
   // set on startup (see init below), and by revealInTree/
-  // selectFolderAndReveal (breadcrumb/Favorite clicks). Purely an
-  // expand-and-scroll signal in itself; it never carries highlight
-  // information - selectFolderAndReveal happens to also highlight the
-  // folder, but that's a separate setState call, not something this
-  // causes. See LocationTreeNode.
+  // selectFolderAndReveal (Favorite clicks). Purely an expand-and-scroll
+  // signal in itself; it never carries highlight information -
+  // selectFolderAndReveal happens to also highlight the folder, but that's
+  // a separate setState call, not something this causes. See
+  // LocationTreeNode.
   const [revealRequest, setRevealRequest] = useState<RevealRequest | null>(null)
   const [highlighted, setHighlighted] = useState<Highlighted | null>(null)
   const [selectedEntry, setSelectedEntry] = useState<FileEntry | null>(null)
@@ -65,18 +63,6 @@ function App(): React.JSX.Element {
   const [updateCheckMessage, setUpdateCheckMessage] = useState<string | null>(null)
 
   const sidebarWidth = settings?.sidebarWidth ?? DEFAULT_SIDEBAR_WIDTH
-
-  // The breadcrumb tracks whatever's currently highlighted in the tree -
-  // a folder's own path, or a file's containing folder - not specifically
-  // the previewed file, so highlighting a folder (which never touches the
-  // preview) still updates "where am I" correctly. There's no separate
-  // "current folder" left to read it from otherwise (see ADR 0004). Before
-  // anything's been highlighted, it falls back to the folder Bella opened
-  // at startup.
-  const breadcrumbPath = useMemo(() => {
-    if (!highlighted) return initialFolder
-    return highlighted.kind === 'folder' ? highlighted.path : parentFolderPath(highlighted.path)
-  }, [highlighted, initialFolder])
 
   useEffect(() => {
     let cancelled = false
@@ -147,8 +133,8 @@ function App(): React.JSX.Element {
   // A file row's click - highlights it and loads it into the preview. The
   // only interaction that changes what's previewed (see ADR 0004): folder
   // clicks/expands never clear it. Also becomes the new "last opened
-  // folder" for next startup's auto-expand/breadcrumb fallback, since
-  // there's no other "current folder" signal left to persist.
+  // folder" for next startup's auto-expand, since there's no other
+  // "current folder" signal left to persist.
   async function selectFile(entry: FileEntry): Promise<void> {
     setHighlighted({ path: entry.path, kind: 'file' })
     setSelectedEntry(entry)
@@ -178,11 +164,11 @@ function App(): React.JSX.Element {
     setRevealRequest((current) => ({ path, nonce: (current?.nonce ?? 0) + 1 }))
   }
 
-  // A Favorite click or a breadcrumb segment click - both mean "go to this
-  // folder": highlight it, as if its own row had been clicked directly in
-  // the tree, and reveal (expand + scroll to) it, even if the tree was
-  // never expanded down to it. Never touches the preview - selecting a
-  // folder this way is exactly like selecting one by clicking its row.
+  // A Favorite click - means "go to this folder": highlight it, as if its
+  // own row had been clicked directly in the tree, and reveal (expand +
+  // scroll to) it, even if the tree was never expanded down to it. Never
+  // touches the preview - selecting a folder this way is exactly like
+  // selecting one by clicking its row.
   function selectFolderAndReveal(path: string): void {
     setHighlighted({ path, kind: 'folder' })
     revealInTree(path)
@@ -271,11 +257,6 @@ function App(): React.JSX.Element {
 
   return (
     <div className="app">
-      <Toolbar
-        breadcrumbPath={breadcrumbPath}
-        onSelectPath={selectFolderAndReveal}
-        onOpenSettings={() => setSettingsOpen(true)}
-      />
       <div className="app__body">
         <Sidebar
           favorites={favorites}
@@ -303,6 +284,7 @@ function App(): React.JSX.Element {
         selectedEntry={selectedEntry}
         appVersion={appVersion}
         onOpenReleaseNotes={() => setReleaseNotesOpen(true)}
+        onOpenSettings={() => setSettingsOpen(true)}
       />
 
       {settingsOpen && settings && (

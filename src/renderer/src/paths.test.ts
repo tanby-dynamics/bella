@@ -1,16 +1,16 @@
 import { describe, expect, it } from 'vitest'
-import { breadcrumbSegments, fileNameFromPath, isAncestorPath, parentFolderPath } from './paths'
+import { pathSegments, fileNameFromPath, isAncestorPath, parentFolderPath } from './paths'
 
-describe('breadcrumbSegments', () => {
+describe('pathSegments', () => {
   it('splits a unix-style path into segments with cumulative paths', () => {
-    expect(breadcrumbSegments('/Projects/Robot Arm')).toEqual([
+    expect(pathSegments('/Projects/Robot Arm')).toEqual([
       { label: 'Projects', path: '/Projects' },
       { label: 'Robot Arm', path: '/Projects/Robot Arm' }
     ])
   })
 
   it('splits a Windows path without doubling the separator after the drive root', () => {
-    expect(breadcrumbSegments('C:\\development\\tanby-dynamics\\bella')).toEqual([
+    expect(pathSegments('C:\\development\\tanby-dynamics\\bella')).toEqual([
       { label: 'C:', path: 'C:\\' },
       { label: 'development', path: 'C:\\development' },
       { label: 'tanby-dynamics', path: 'C:\\development\\tanby-dynamics' },
@@ -19,7 +19,7 @@ describe('breadcrumbSegments', () => {
   })
 
   it('handles a bare Windows drive root', () => {
-    expect(breadcrumbSegments('C:\\')).toEqual([{ label: 'C:', path: 'C:\\' }])
+    expect(pathSegments('C:\\')).toEqual([{ label: 'C:', path: 'C:\\' }])
   })
 })
 

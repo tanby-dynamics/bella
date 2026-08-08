@@ -9,15 +9,15 @@ interface TreeItem {
 }
 
 /** A one-shot request to expand the tree down to `path` and scroll that
- * node into view - `nonce` exists so clicking the same breadcrumb segment
- * (or Favorite) twice in a row still re-triggers the scroll (a path alone
- * wouldn't change between identical clicks, so effects keyed on it wouldn't
- * re-fire). A reveal only expands/scrolls, by itself - it carries no
- * highlight information and the tree's own reveal effect never sets
- * highlightedPath. Callers that want the revealed folder highlighted too
- * (a breadcrumb or Favorite click, not the one-off startup reveal) do so
- * via a separate, App-owned setState alongside dispatching the reveal -
- * see App.tsx's selectFolderAndReveal. See ADR 0004. */
+ * node into view - `nonce` exists so clicking the same Favorite twice in a
+ * row still re-triggers the scroll (a path alone wouldn't change between
+ * identical clicks, so effects keyed on it wouldn't re-fire). A reveal
+ * only expands/scrolls, by itself - it carries no highlight information
+ * and the tree's own reveal effect never sets highlightedPath. Callers
+ * that want the revealed folder highlighted too (a Favorite click, not
+ * the one-off startup reveal) do so via a separate, App-owned setState
+ * alongside dispatching the reveal - see App.tsx's selectFolderAndReveal.
+ * See ADR 0004. */
 export interface RevealRequest {
   path: string
   nonce: number
@@ -50,8 +50,7 @@ interface LocationTreeNodeProps {
    * none) - captured once and never updated, so this only ever drives
    * auto-expansion on initial mount, not on every later interaction. */
   autoExpandPath: string | null
-  /** Set on startup, and by a breadcrumb click or a Favorite click - see
-   * RevealRequest. */
+  /** Set on startup, and by a Favorite click - see RevealRequest. */
   revealRequest: RevealRequest | null
 }
 
@@ -192,7 +191,7 @@ export function LocationTreeNode({
     fetchInitialChildren()
   }, [shouldAutoExpand, item.path])
 
-  // Reveal (breadcrumb or Favorite click): expand this node if it lies on
+  // Reveal (Favorite click): expand this node if it lies on
   // the path to the revealed folder (ancestor or exact match -
   // isAncestorPath covers both), and scroll it into view once it *is* the
   // exact match. Runs on every revealRequest change, including on a

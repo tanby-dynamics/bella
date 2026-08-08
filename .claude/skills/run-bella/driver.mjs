@@ -3,9 +3,9 @@
 //
 // Two ways to use it:
 //   1. Agent path (recommended on this machine - no tmux available):
-//      import { launch, click, clickText, clickBreadcrumb, ss, quit, page }
-//      from this file into a throwaway .mjs script and drive it directly.
-//      See SKILL.md for a worked example.
+//      import { launch, click, clickText, ss, quit, page } from this file
+//      into a throwaway .mjs script and drive it directly. See SKILL.md
+//      for a worked example.
 //   2. Human path: `node driver.mjs` starts an interactive REPL on stdin.
 import { _electron as electron } from 'playwright-core'
 import * as readline from 'node:readline'
@@ -89,31 +89,6 @@ export async function clickText(text) {
   }, text)
 }
 
-// Bella-specific: click the Nth toolbar breadcrumb segment (0-indexed).
-// Segment text is folder names, which vary per machine - index is the
-// reliable handle. Also useful: clickText(folderName) works for both
-// breadcrumb segments and Locations-tree labels since both render plain
-// text nodes.
-export async function clickBreadcrumb(index) {
-  if (!page) throw new Error('launch first')
-  return page.evaluate((i) => {
-    const spans = [...document.querySelectorAll('.toolbar__breadcrumb-link, .toolbar__breadcrumb-current')]
-    const el = spans[Number(i)]
-    if (!el) return `NOT_FOUND (only ${spans.length} segments)`
-    el.click()
-    return 'OK: ' + el.textContent
-  }, index)
-}
-
-export async function breadcrumbText() {
-  if (!page) throw new Error('launch first')
-  return page.evaluate(() =>
-    [...document.querySelectorAll('.toolbar__breadcrumb-link, .toolbar__breadcrumb-current')].map((e) =>
-      e.textContent.trim()
-    )
-  )
-}
-
 // Bella-specific: file rows now render inline in the Locations tree
 // (ADR 0004 folded the old separate file list panel into it) - this
 // returns the names of file rows currently visible (i.e. under an
@@ -171,9 +146,6 @@ if (import.meta.url === `file://${process.argv[1].replace(/\\/g, '/')}` || impor
     },
     async 'click-text'(t) {
       console.log('click-text', JSON.stringify(t), '→', await clickText(t))
-    },
-    async 'click-breadcrumb'(i) {
-      console.log('click-breadcrumb', i, '→', await clickBreadcrumb(i))
     },
     async type(t) {
       if (page) await page.keyboard.type(t, { delay: 30 })

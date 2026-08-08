@@ -1,4 +1,4 @@
-export interface BreadcrumbSegment {
+export interface PathSegment {
   label: string
   path: string
 }
@@ -7,13 +7,13 @@ function detectSeparator(path: string): '\\' | '/' {
   return path.includes('\\') ? '\\' : '/'
 }
 
-/** Splits a folder path into clickable breadcrumb segments, each carrying
- * the full path up to that point. Display-only logic - not part of the
- * domain layer seam. */
-export function breadcrumbSegments(path: string): BreadcrumbSegment[] {
+/** Splits a folder path into segments, each carrying the full path up to
+ * that point. Used by parentFolderPath below - not part of the domain
+ * layer seam. */
+export function pathSegments(path: string): PathSegment[] {
   const sep = detectSeparator(path)
   const parts = path.split(sep).filter(Boolean)
-  const segments: BreadcrumbSegment[] = []
+  const segments: PathSegment[] = []
   let acc = ''
 
   parts.forEach((part, index) => {
@@ -47,14 +47,14 @@ export function isAncestorPath(ancestor: string, path: string): boolean {
 }
 
 /** The folder a file lives directly inside, derived from its own full path.
- * Used to seed the breadcrumb from the selected file (see App.tsx) now that
- * there's no separate "current folder" navigation state to read it from -
- * see ADR 0004. Reuses breadcrumbSegments' path-splitting rather than
- * re-deriving it, so Windows drive-root handling stays in one place. Falls
- * back to the input path itself for a path with no parent segment (e.g. a
- * bare drive root passed by mistake) rather than throwing. */
+ * Used as the new "last opened folder" whenever a file is selected (see
+ * App.tsx) now that there's no separate "current folder" navigation state
+ * to read it from - see ADR 0004. Reuses pathSegments' path-splitting
+ * rather than re-deriving it, so Windows drive-root handling stays in one
+ * place. Falls back to the input path itself for a path with no parent
+ * segment (e.g. a bare drive root passed by mistake) rather than throwing. */
 export function parentFolderPath(filePath: string): string {
-  const segments = breadcrumbSegments(filePath)
+  const segments = pathSegments(filePath)
   return segments.length >= 2 ? segments[segments.length - 2].path : filePath
 }
 

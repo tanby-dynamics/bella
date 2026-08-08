@@ -15,7 +15,7 @@ interface SidebarProps {
   highlighted: Highlighted | null
   /** The folder Bella opened at startup - see LocationTreeNode. */
   initialFolder: string | null
-  /** Set on a breadcrumb click or a Favorite click - see LocationTreeNode. */
+  /** Set on a Favorite click - see LocationTreeNode. */
   revealRequest: RevealRequest | null
   onSelectFavorite: (path: string) => void
   onSelectFolder: (path: string) => void
@@ -55,7 +55,6 @@ export function Sidebar({
   width,
   onWidthChange
 }: SidebarProps): React.JSX.Element {
-  const [favoritesExpanded, setFavoritesExpanded] = useState(true)
   // Only set while a drag is in progress - overrides the persisted width
   // prop for live visual feedback without writing to the store on every
   // pixel of mouse movement, same pattern as FileList's old column resize.
@@ -106,15 +105,7 @@ export function Sidebar({
           position. */}
       <div className="sidebar__scroll">
         <div className="sidebar__section-header">
-          <button
-            type="button"
-            className="sidebar__section-toggle"
-            onClick={() => setFavoritesExpanded((current) => !current)}
-            aria-expanded={favoritesExpanded}
-          >
-            <ChevronIcon expanded={favoritesExpanded} />
             <span>FAVORITES</span>
-          </button>
           {canAddHighlightedFolder && (
             <button
               type="button"
@@ -126,28 +117,27 @@ export function Sidebar({
             </button>
           )}
         </div>
-        {favoritesExpanded &&
-          favorites.map((favorite) => (
-            <div
-              key={favorite.path}
-              className={`sidebar__item${favorite.path === highlightedPath ? ' is-active' : ''}`}
-              onClick={() => onSelectFavorite(favorite.path)}
+        {favorites.map((favorite) => (
+          <div
+            key={favorite.path}
+            className={`sidebar__item${favorite.path === highlightedPath ? ' is-active' : ''}`}
+            onClick={() => onSelectFavorite(favorite.path)}
+          >
+            <StarIcon />
+            <span>{favorite.name}</span>
+            <button
+              type="button"
+              className="sidebar__remove"
+              title="Remove from Favorites"
+              onClick={(event) => {
+                event.stopPropagation()
+                onRemoveFavorite(favorite.path)
+              }}
             >
-              <StarIcon />
-              <span>{favorite.name}</span>
-              <button
-                type="button"
-                className="sidebar__remove"
-                title="Remove from Favorites"
-                onClick={(event) => {
-                  event.stopPropagation()
-                  onRemoveFavorite(favorite.path)
-                }}
-              >
-                ×
-              </button>
-            </div>
-          ))}
+              ×
+            </button>
+          </div>
+        ))}
 
         <div className="sidebar__section-header">
           <span>LOCATIONS</span>

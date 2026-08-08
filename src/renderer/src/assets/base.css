@@ -97,7 +97,7 @@ select {
    VS Code-style: slim, flat, invisible track. */
 
 * {
-  scrollbar-width: thin;
+  scrollbar-width: thick;
   scrollbar-color: var(--scrollbar-thumb) transparent;
 }
 

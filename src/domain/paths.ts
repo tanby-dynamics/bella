@@ -5,7 +5,7 @@
  * parent path, and a hardcoded `/` would mix separators once the parent
  * came from a Windows drive root (`C:\` + `/Users` = `C:\/Users`) -
  * harmless to Node's fs calls, but it corrupts separator-sensitive
- * parsing done elsewhere, e.g. the breadcrumb's path-to-segments split. */
+ * parsing done elsewhere, e.g. pathSegments' path-to-segments split. */
 export function joinPath(folderPath: string, name: string): string {
   const sep = folderPath.includes('\\') ? '\\' : '/'
   return folderPath.endsWith(sep) ? `${folderPath}${name}` : `${folderPath}${sep}${name}`

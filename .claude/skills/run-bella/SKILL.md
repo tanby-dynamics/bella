@@ -30,14 +30,14 @@ renderer's async init settle after `launch()`):
 
 ```js
 // scratch-check.mjs (repo root - delete when done, don't commit)
-import { launch, clickText, clickBreadcrumb, breadcrumbText, treeFileNames, ss, quit } from
+import { launch, clickText, treeFileNames, ss, quit } from
   './.claude/skills/run-bella/driver.mjs'
 
 await launch()
 await new Promise((r) => setTimeout(r, 1000)) // let startup init settle
-console.log(await breadcrumbText())
-console.log(await clickBreadcrumb(1))
-console.log(await breadcrumbText(), await treeFileNames())
+console.log(await treeFileNames())
+await clickText('some-folder')
+console.log(await treeFileNames())
 await ss('after-click')
 await quit()
 ```
@@ -67,8 +67,6 @@ script, or type `launch` at the `driver>` prompt.
 | `ss(name?)` | `ss [name]` | screenshot → `.playwright-shots/<name>.png` |
 | `click(sel)` | `click <css-sel>` | click element (DOM `.click()`, not coordinates) |
 | `clickText(text)` | `click-text <text>` | click button/link/span whose text matches or contains it |
-| `clickBreadcrumb(i)` | `click-breadcrumb <index>` | click the Nth toolbar breadcrumb segment (0-indexed) |
-| `breadcrumbText()` | - | array of current breadcrumb segment labels |
 | `treeFileNames()` | - | array of file names currently visible in the Locations tree (i.e. under an expanded folder) |
 | `evalPage(expr)` | `eval <js>` | evaluate expression in the page, return the value |
 | `text(sel?)` | `text [css-sel]` | `innerText` of an element (or `body`) |
@@ -85,8 +83,9 @@ Locations tree, there's no separate file list panel anymore):
 it), `.sidebar__tree-label` (a folder row's name text),
 `.sidebar__tree-file` (a file row - click selects it and loads the
 preview), `.sidebar__tree-file-name` (a file row's name text),
-`.toolbar__breadcrumb-link` / `.toolbar__breadcrumb-current` (breadcrumb
-segments - click reveals that ancestor in the tree, doesn't navigate).
+`.status-bar__settings` (the "Settings" link in the status bar - opens the
+Settings panel), `.status-bar__version` (the version link next to it -
+opens release notes).
 
 ## Run (human path)
 

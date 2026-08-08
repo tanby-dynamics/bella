@@ -45,7 +45,7 @@
 	- [x] manual test
 	- [x] release note
 	- [x] commit
-- [ ] Remove the file list panel and move files into the location tree. It should work like VS Code's EXPLORER panel - lean on that for expected behaviour. For example, remove icons for directories, but leave them for files. 
+- [x] Remove the file list panel and move files into the location tree. It should work like VS Code's EXPLORER panel - lean on that for expected behaviour. For example, remove icons for directories, but leave them for files. 
 	- [x] grill
 	- [x] spec
 	- [x] implement
@@ -53,15 +53,18 @@
 	- [x] release note
 	- [x] merge
 - [ ] Remove the toolbar - the breadcrumbs and the Settings button. Replace the Settings button with a link "Settings" to the left of the version in the status bar  - it should look like "Settings · v0.2.0". Breadcrumbs won't be replaced, you can remove all of the code that supported breadcrumbs.
-	- [ ] grill
-	- [ ] spec
-	- [ ] implement
-	- [ ] manual tests
-	- [ ] release note
+	- [x] implement
+	- [x] manual tests
+	- [x] release note
 	- [ ] merge
 - [ ] Hide hidden directories and files, dotfiles (files and directories), and non-renderable file types
 	- [ ] implement
 	- [ ] manual tests 
+	- [ ] release note
+	- [ ] merge
+- [ ] Add a context menu to directory entries in the sidebar. Single entry - "Make favorite". If the directory is already a favorite the entry should be "Unfavorite".
+	- [ ] implement
+	- [ ] manual tests
 	- [ ] release note
 	- [ ] merge
 - [ ] Remove the "Default render mode" and just remember the last selected render mode in the preview

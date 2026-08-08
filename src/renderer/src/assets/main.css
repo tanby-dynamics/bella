@@ -10,67 +10,6 @@
   flex-direction: column;
 }
 
-/* Toolbar */
-
-.toolbar {
-  height: 52px;
-  flex-shrink: 0;
-  display: flex;
-  align-items: center;
-  gap: 14px;
-  padding: 0 16px;
-  background: var(--bg-mute);
-  border-bottom: 1px solid var(--border-soft);
-  -webkit-app-region: drag;
-}
-
-.toolbar__breadcrumb {
-  font-size: 13px;
-  color: var(--text-muted);
-}
-
-.toolbar__breadcrumb-sep {
-  color: var(--text-faint);
-  margin: 0 6px;
-}
-
-.toolbar__breadcrumb-link {
-  cursor: pointer;
-  -webkit-app-region: no-drag;
-}
-
-.toolbar__breadcrumb-link:hover {
-  color: var(--text);
-}
-
-.toolbar__breadcrumb-current {
-  font-weight: 600;
-  color: var(--text);
-}
-
-.toolbar__spacer {
-  flex: 1;
-}
-
-.toolbar__settings {
-  display: flex;
-  align-items: center;
-  gap: 7px;
-  background: var(--bg-raised);
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  padding: 0 12px;
-  height: 34px;
-  cursor: pointer;
-  font-size: 12.5px;
-  color: var(--text-muted);
-  -webkit-app-region: no-drag;
-}
-
-.toolbar__settings:hover {
-  color: var(--text);
-}
-
 /* Body */
 
 .app__body {
@@ -457,6 +396,7 @@
   text-overflow: ellipsis;
 }
 
+.status-bar__settings,
 .status-bar__version {
   flex-shrink: 0;
   background: none;
@@ -467,9 +407,14 @@
   cursor: pointer;
 }
 
+.status-bar__settings:hover,
 .status-bar__version:hover {
   color: var(--text);
   text-decoration: underline;
+}
+
+.status-bar__sep {
+  flex-shrink: 0;
 }
 
 /* Settings panel */
