@@ -29,21 +29,26 @@
 	- [x] implement
 	- [x] manual test
 	- [x] merge
-- [ ] Release 0.1.0
+- [x] Release 0.1.0
+- [x] Fix icons
+- [ ] Release 0.1.1
 - [ ] Test installer on Windows
 - [ ] Style the scroll bars in the directory nav and files view to match the theme - similar to VS Code in dark mode
 	- [ ] implement
 	- [ ] manual test
+	- [ ] release note
 	- [ ] commit
 - [ ] Current location bar should be presented like "C: > Documents > etc > Current" and each location should be selectable - nav to that location
 	- [ ] spec
 	- [ ] implement
 	- [ ] manual test
+	- [ ] release note
 	- [ ] commit
 - [ ] Make directory pane and file pane resizable - remember the current widths between restarts
 	- [ ] spec
 	- [ ] implement
 	- [ ] test 
+	- [ ] release note
 	- [ ] merge
 - [ ] Release v0.2.0
 - [ ] Test auto-update
@@ -53,6 +58,7 @@
 - [ ] Implement 3MF format
 - [ ] Implement STEP format - https://github.com/kovacsv/occt-import-js
 - [ ] Implement FreeCAD's `.FCStd` format
+- [ ] Release v0.3.0
 - [ ] Marketing site - bella.tanbydynamics.co
 - [ ] Code signing for macOS
 - [ ] Code signing for Windows

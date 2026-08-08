@@ -13,6 +13,10 @@
   --text-faint: rgba(255, 255, 255, 0.3);
   --hover: rgba(255, 255, 255, 0.06);
   --error: #ff6b6b;
+
+  --scrollbar-thumb: rgba(255, 255, 255, 0.16);
+  --scrollbar-thumb-hover: rgba(255, 255, 255, 0.26);
+  --scrollbar-thumb-active: rgba(255, 255, 255, 0.34);
 }
 
 :root[data-theme='light'] {
@@ -27,6 +31,10 @@
   --text-muted: rgba(0, 0, 0, 0.55);
   --text-faint: rgba(0, 0, 0, 0.35);
   --hover: rgba(0, 0, 0, 0.05);
+
+  --scrollbar-thumb: rgba(0, 0, 0, 0.18);
+  --scrollbar-thumb-hover: rgba(0, 0, 0, 0.28);
+  --scrollbar-thumb-active: rgba(0, 0, 0, 0.38);
 }
 
 @media (prefers-color-scheme: light) {
@@ -42,6 +50,10 @@
     --text-muted: rgba(0, 0, 0, 0.55);
     --text-faint: rgba(0, 0, 0, 0.35);
     --hover: rgba(0, 0, 0, 0.05);
+
+    --scrollbar-thumb: rgba(0, 0, 0, 0.18);
+    --scrollbar-thumb-hover: rgba(0, 0, 0, 0.28);
+    --scrollbar-thumb-active: rgba(0, 0, 0, 0.38);
   }
 }
 
@@ -79,4 +91,40 @@ button,
 select {
   font: inherit;
   color: inherit;
+}
+
+/* Scrollbars — themed to match the app rather than the OS default,
+   VS Code-style: slim, flat, invisible track. */
+
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--scrollbar-thumb) transparent;
+}
+
+::-webkit-scrollbar {
+  width: 12px;
+  height: 12px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: var(--scrollbar-thumb);
+  border: 3px solid transparent;
+  border-radius: 7px;
+  background-clip: padding-box;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background-color: var(--scrollbar-thumb-hover);
+}
+
+::-webkit-scrollbar-thumb:active {
+  background-color: var(--scrollbar-thumb-active);
+}
+
+::-webkit-scrollbar-corner {
+  background: transparent;
 }
