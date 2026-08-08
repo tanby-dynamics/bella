@@ -163,30 +163,34 @@ export function FileList({
       <div className="file-list__header">
         <span>{entries.length} items</span>
       </div>
-      <div
-        className="file-list__row file-list__row--head"
-        style={{ gridTemplateColumns: gridTemplateColumns(widths) }}
-      >
-        {COLUMNS.map((column) => (
-          <div key={column.key} className={`file-list__col file-list__col--${column.key}`}>
-            <button
-              type="button"
-              className={`file-list__sort-btn${sort.column === column.key ? ' is-active' : ''}`}
-              onClick={() => onSortChange(column.key)}
-            >
-              <span>{column.label}</span>
-              {sort.column === column.key && <SortArrowIcon direction={sort.direction} />}
-            </button>
-            {column.resizable && (
-              <div
-                className="file-list__col-resizer"
-                onMouseDown={(event) => startResize(event, column.key as ResizableColumn)}
-              />
-            )}
-          </div>
-        ))}
-      </div>
-      <div className="file-list__body">
+      {/* Header row and data rows share this one scroll container (with the
+          header pinned via position: sticky) rather than scrolling
+          independently - otherwise the body's scrollbar gutter narrows its
+          rows without narrowing the header, and the columns drift apart. */}
+      <div className="file-list__scroll">
+        <div
+          className="file-list__row file-list__row--head"
+          style={{ gridTemplateColumns: gridTemplateColumns(widths) }}
+        >
+          {COLUMNS.map((column) => (
+            <div key={column.key} className={`file-list__col file-list__col--${column.key}`}>
+              <button
+                type="button"
+                className={`file-list__sort-btn${sort.column === column.key ? ' is-active' : ''}`}
+                onClick={() => onSortChange(column.key)}
+              >
+                <span>{column.label}</span>
+                {sort.column === column.key && <SortArrowIcon direction={sort.direction} />}
+              </button>
+              {column.resizable && (
+                <div
+                  className="file-list__col-resizer"
+                  onMouseDown={(event) => startResize(event, column.key as ResizableColumn)}
+                />
+              )}
+            </div>
+          ))}
+        </div>
         {entries.length === 0 ? (
           <div className="file-list__empty">This folder is empty</div>
         ) : (

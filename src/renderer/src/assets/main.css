@@ -228,10 +228,10 @@
   width: 460px;
   flex-shrink: 0;
   border-right: 1px solid var(--border-soft);
-  overflow: auto;
   background: var(--bg-soft);
   display: flex;
   flex-direction: column;
+  min-height: 0;
 }
 
 .file-list__header {
@@ -241,7 +241,9 @@
   flex-shrink: 0;
 }
 
-.file-list__body {
+.file-list__scroll {
+  flex: 1;
+  min-height: 0;
   overflow: auto;
 }
 
@@ -255,6 +257,9 @@
 }
 
 .file-list__row--head {
+  position: sticky;
+  top: 0;
+  z-index: 2;
   height: 30px;
   flex-shrink: 0;
   border-top: 1px solid var(--border-soft);
