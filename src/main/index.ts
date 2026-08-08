@@ -14,8 +14,9 @@ import {
 import { fsDirectoryReader } from './adapters/fsDirectoryReader'
 import { osDriveLister } from './adapters/osDriveLister'
 import { fileStoreBackend } from './adapters/fileStoreBackend'
-import { IPC, type ParseRenderableFileResult } from '../shared/ipc'
+import { IPC, type ParseRenderableFileResult, type UpdateCheckResult } from '../shared/ipc'
 import { readFile } from 'node:fs/promises'
+import * as updater from './updater'
 
 const store = createStore(fileStoreBackend)
 
@@ -63,6 +64,39 @@ function registerIpcHandlers(): void {
   })
 
   ipcMain.handle(IPC.resetConfig, () => store.resetAll())
+
+  ipcMain.handle(IPC.getAppVersion, () => app.getVersion())
+
+  ipcMain.handle(
+    IPC.checkForUpdate,
+    async (_event, bypassSkip: boolean): Promise<UpdateCheckResult> => {
+      const result = await updater.checkForUpdate()
+
+      // A manual "Check for updates" click always shows the result - only
+      // the silent startup check honours a previously Skipped Version. See
+      // CONTEXT.md.
+      if (!bypassSkip && result.available) {
+        const skipped = await store.getSkippedUpdateVersion()
+        if (skipped === result.version) return { available: false }
+      }
+
+      return result
+    }
+  )
+
+  ipcMain.handle(IPC.startUpdateDownload, (event) => {
+    updater.startDownload((status) => {
+      event.sender.send(IPC.updateDownloadStatus, status)
+    })
+  })
+
+  ipcMain.handle(IPC.quitAndInstallUpdate, () => updater.quitAndInstall())
+
+  ipcMain.handle(IPC.skipUpdateVersion, (_event, version: string) =>
+    store.setSkippedUpdateVersion(version)
+  )
+
+  ipcMain.handle(IPC.openReleasesPage, () => updater.openReleasesPage())
 }
 
 function createWindow(): void {

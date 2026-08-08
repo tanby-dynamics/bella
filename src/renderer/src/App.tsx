@@ -8,7 +8,9 @@ import {
   type RenderMode,
   type Settings,
   type SortColumn,
-  type SortDirection
+  type SortDirection,
+  type UpdateCheckResult,
+  type UpdateDownloadStatus
 } from './types'
 import type { PreviewState } from './preview'
 import { fileNameFromPath } from './paths'
@@ -18,6 +20,10 @@ import { FileList } from './components/FileList'
 import { PreviewPanel } from './components/PreviewPanel'
 import { StatusBar } from './components/StatusBar'
 import { SettingsPanel } from './components/SettingsPanel'
+import { ReleaseNotesModal } from './components/ReleaseNotesModal'
+import { UpdatePrompt } from './components/UpdatePrompt'
+
+type AvailableUpdate = Extract<UpdateCheckResult, { available: true }>
 
 // Single global sort setting, not remembered per folder (see CONTEXT.md) -
 // this is the fallback before Settings has loaded from the store.
@@ -65,6 +71,12 @@ function App(): React.JSX.Element {
   const [locations, setLocations] = useState<Location[]>([])
   const [settings, setSettings] = useState<Settings | null>(null)
   const [settingsOpen, setSettingsOpen] = useState(false)
+  const [appVersion, setAppVersion] = useState<string | null>(null)
+  const [releaseNotesOpen, setReleaseNotesOpen] = useState(false)
+  const [updateAvailable, setUpdateAvailable] = useState<AvailableUpdate | null>(null)
+  const [downloadStatus, setDownloadStatus] = useState<UpdateDownloadStatus | null>(null)
+  const [checkingForUpdates, setCheckingForUpdates] = useState(false)
+  const [updateCheckMessage, setUpdateCheckMessage] = useState<string | null>(null)
 
   const selectedEntry = useMemo(
     () => entries.find((entry) => entry.path === selectedPath) ?? null,
@@ -85,14 +97,21 @@ function App(): React.JSX.Element {
     let cancelled = false
 
     async function init(): Promise<void> {
-      const [loadedSettings, loadedFavorites, loadedLocations, lastOpenedFolder, homeDirectory] =
-        await Promise.all([
-          window.api.getSettings(),
-          window.api.listFavorites(),
-          window.api.listLocations(),
-          window.api.getLastOpenedFolder(),
-          window.api.getHomeDirectory()
-        ])
+      const [
+        loadedSettings,
+        loadedFavorites,
+        loadedLocations,
+        lastOpenedFolder,
+        homeDirectory,
+        version
+      ] = await Promise.all([
+        window.api.getSettings(),
+        window.api.listFavorites(),
+        window.api.listLocations(),
+        window.api.getLastOpenedFolder(),
+        window.api.getHomeDirectory(),
+        window.api.getAppVersion()
+      ])
 
       if (cancelled) return
 
@@ -101,16 +120,32 @@ function App(): React.JSX.Element {
       applyTheme(loadedSettings.theme)
       setFavorites(loadedFavorites)
       setLocations(loadedLocations)
+      setAppVersion(version)
 
       const startFolder = lastOpenedFolder ?? homeDirectory
       setInitialFolder(startFolder)
       await navigate(startFolder)
+
+      // Silent startup Update Check - never surfaces an error, and honours
+      // a previously Skipped Version (bypassSkip: false). See CONTEXT.md.
+      if (loadedSettings.checkForUpdatesOnStartup) {
+        try {
+          const result = await window.api.checkForUpdate(false)
+          if (!cancelled && result.available) setUpdateAvailable(result)
+        } catch {
+          // Offline / GitHub unreachable - no error surfaced to the user.
+        }
+      }
     }
 
     init()
     return () => {
       cancelled = true
     }
+  }, [])
+
+  useEffect(() => {
+    return window.api.onUpdateDownloadStatus(setDownloadStatus)
   }, [])
 
   async function navigate(path: string): Promise<void> {
@@ -186,6 +221,50 @@ function App(): React.JSX.Element {
     await changeSettings({ columnWidths: widths })
   }
 
+  async function checkForUpdatesManually(): Promise<void> {
+    setCheckingForUpdates(true)
+    setUpdateCheckMessage(null)
+    try {
+      const result = await window.api.checkForUpdate(true)
+      if (result.available) {
+        setSettingsOpen(false)
+        setUpdateAvailable(result)
+      } else {
+        setUpdateCheckMessage("You're up to date.")
+      }
+    } catch {
+      setUpdateCheckMessage("Couldn't check for updates - check your connection and try again.")
+    } finally {
+      setCheckingForUpdates(false)
+    }
+  }
+
+  function updateNow(): void {
+    if (updateAvailable?.canSelfUpdate) {
+      setDownloadStatus(null)
+      window.api.startUpdateDownload()
+    } else {
+      window.api.openReleasesPage()
+      setUpdateAvailable(null)
+    }
+  }
+
+  function restartAndInstall(): void {
+    window.api.quitAndInstallUpdate()
+  }
+
+  function remindLater(): void {
+    setUpdateAvailable(null)
+    setDownloadStatus(null)
+  }
+
+  async function skipUpdate(): Promise<void> {
+    if (!updateAvailable) return
+    await window.api.skipUpdateVersion(updateAvailable.version)
+    setUpdateAvailable(null)
+    setDownloadStatus(null)
+  }
+
   return (
     <div className="app">
       <Toolbar
@@ -220,7 +299,12 @@ function App(): React.JSX.Element {
           onOpen={openSelected}
         />
       </div>
-      <StatusBar selectedEntry={selectedEntry} currentFolder={currentFolder} />
+      <StatusBar
+        selectedEntry={selectedEntry}
+        currentFolder={currentFolder}
+        appVersion={appVersion}
+        onOpenReleaseNotes={() => setReleaseNotesOpen(true)}
+      />
 
       {settingsOpen && settings && (
         <SettingsPanel
@@ -228,6 +312,23 @@ function App(): React.JSX.Element {
           onChange={changeSettings}
           onReset={resetConfiguration}
           onClose={() => setSettingsOpen(false)}
+          onCheckForUpdates={checkForUpdatesManually}
+          checkingForUpdates={checkingForUpdates}
+          updateCheckMessage={updateCheckMessage}
+        />
+      )}
+
+      {releaseNotesOpen && <ReleaseNotesModal onClose={() => setReleaseNotesOpen(false)} />}
+
+      {updateAvailable && (
+        <UpdatePrompt
+          version={updateAvailable.version}
+          canSelfUpdate={updateAvailable.canSelfUpdate}
+          downloadStatus={downloadStatus}
+          onUpdateNow={updateNow}
+          onRestartAndInstall={restartAndInstall}
+          onRemindLater={remindLater}
+          onSkip={skipUpdate}
         />
       )}
     </div>

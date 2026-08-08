@@ -5,6 +5,12 @@ interface SettingsPanelProps {
   onChange: (patch: Partial<Settings>) => void
   onReset: () => void
   onClose: () => void
+  onCheckForUpdates: () => void
+  checkingForUpdates: boolean
+  /** Result message from the last manual "Check for updates" click - null
+   * before the first click, or once a newer Version is found (the Update
+   * Prompt takes over from there instead). See CONTEXT.md. */
+  updateCheckMessage: string | null
 }
 
 const THEMES: Theme[] = ['system', 'light', 'dark']
@@ -14,7 +20,10 @@ export function SettingsPanel({
   settings,
   onChange,
   onReset,
-  onClose
+  onClose,
+  onCheckForUpdates,
+  checkingForUpdates,
+  updateCheckMessage
 }: SettingsPanelProps): React.JSX.Element {
   function handleReset(): void {
     const confirmed = window.confirm(
@@ -60,6 +69,29 @@ export function SettingsPanel({
             ))}
           </select>
         </label>
+
+        <label className="settings-panel__field settings-panel__field--checkbox">
+          <input
+            type="checkbox"
+            checked={settings.checkForUpdatesOnStartup}
+            onChange={(event) => onChange({ checkForUpdatesOnStartup: event.target.checked })}
+          />
+          <span>Check for updates on startup</span>
+        </label>
+
+        <div className="settings-panel__field">
+          <button
+            type="button"
+            className="settings-panel__action"
+            onClick={onCheckForUpdates}
+            disabled={checkingForUpdates}
+          >
+            {checkingForUpdates ? 'Checking…' : 'Check now for updates'}
+          </button>
+          {updateCheckMessage && (
+            <span className="settings-panel__update-message">{updateCheckMessage}</span>
+          )}
+        </div>
 
         <div className="settings-panel__danger-zone">
           <button type="button" className="settings-panel__reset" onClick={handleReset}>
