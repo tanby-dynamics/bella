@@ -109,7 +109,6 @@ function TreeFileRow({
       role="button"
       tabIndex={0}
     >
-      <span className="sidebar__chevron-spacer" />
       {badge ? <CubeIcon color={isHighlighted ? 'var(--accent)' : badge.color} /> : <FileIcon />}
       <span className="sidebar__tree-file-name">{entry.name}</span>
     </div>

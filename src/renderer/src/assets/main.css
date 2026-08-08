@@ -242,18 +242,13 @@
 }
 
 /* Tree file rows - files rendered inline in the Locations tree alongside
-   folders, replacing the old separate file list panel. See ADR 0004. */
-
+   folders, replacing the old separate file list panel. See ADR 0004. No
+   chevron (or chevron-shaped spacer) here - folder rows have no icon, so
+   a file's icon sits at the same x as its parent's chevron would, at the
+   depth directly below it, rather than being pushed in an extra icon's
+   width to "align" with a folder icon that doesn't exist. */
 .sidebar__tree-file {
   gap: 8px;
-}
-
-/* Specificity needs to beat the generic ".sidebar__item span { flex: 1; ... }"
-   rule above, which would otherwise stretch this into filling the row. */
-.sidebar__tree-file .sidebar__chevron-spacer {
-  flex: none;
-  width: 22px;
-  height: 22px;
 }
 
 .sidebar__tree-file-name {

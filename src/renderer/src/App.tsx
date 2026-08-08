@@ -38,7 +38,7 @@ function applyTheme(theme: Settings['theme']): void {
 function App(): React.JSX.Element {
   // The folder Bella opened at startup - captured once and never updated
   // again, so the Locations tree only auto-expands to it on initial mount.
-  // Also the breadcrumb's fallback before any file has been selected. See
+  // Also the breadcrumb's fallback before anything's been highlighted. See
   // LocationTreeNode.
   const [initialFolder, setInitialFolder] = useState<string | null>(null)
   // Set by a breadcrumb click or a Favorite click - tells the Locations
@@ -62,14 +62,17 @@ function App(): React.JSX.Element {
 
   const sidebarWidth = settings?.sidebarWidth ?? DEFAULT_SIDEBAR_WIDTH
 
-  // The breadcrumb tracks the selected file's containing folder - there's
-  // no separate "current folder" left to read it from (see ADR 0004).
-  // Before anything's been selected, it falls back to the folder Bella
-  // opened at startup.
-  const breadcrumbPath = useMemo(
-    () => (selectedEntry ? parentFolderPath(selectedEntry.path) : initialFolder),
-    [selectedEntry, initialFolder]
-  )
+  // The breadcrumb tracks whatever's currently highlighted in the tree -
+  // a folder's own path, or a file's containing folder - not specifically
+  // the previewed file, so highlighting a folder (which never touches the
+  // preview) still updates "where am I" correctly. There's no separate
+  // "current folder" left to read it from otherwise (see ADR 0004). Before
+  // anything's been highlighted, it falls back to the folder Bella opened
+  // at startup.
+  const breadcrumbPath = useMemo(() => {
+    if (!highlighted) return initialFolder
+    return highlighted.kind === 'folder' ? highlighted.path : parentFolderPath(highlighted.path)
+  }, [highlighted, initialFolder])
 
   useEffect(() => {
     let cancelled = false
