@@ -41,6 +41,37 @@ file, one of:
 application for that file type. Distinct from selecting a file in the list,
 which updates Bella's own 3D preview in place.
 
+**Version** — the semver number identifying a running build
+(`app.getVersion()`), sourced from the git tag that produced it — not from
+the `package.json` version field, which stays a static placeholder. See
+[ADR 0002](docs/adr/0002-git-tag-driven-versioning-and-release-notes.md).
+
+**Release** — the published, tagged artifact set for a Version: installers
+for each platform plus the matching entry in Release Notes, published as a
+GitHub Release.
+_Avoid_: Build, version (a Release is the published bundle; a Version is
+just the number)
+
+**Release Notes** — the hand-maintained changelog (`release-notes.md`), the
+single source of truth for what changed in each Release — both the in-app
+history view and each GitHub Release's description are derived from it, not
+authored separately. See
+[ADR 0002](docs/adr/0002-git-tag-driven-versioning-and-release-notes.md).
+_Avoid_: Changelog
+
+**Update Check** — the app's comparison, on startup or triggered manually
+from Settings, of its own Version against the latest published Release, to
+decide whether to show the Update Prompt.
+
+**Update Prompt** — the in-app modal shown when an Update Check finds a
+newer Release, offering to update now, remind later, or skip that Release's
+Version.
+_Avoid_: Nag, nag window
+
+**Skipped Version** — a Version the user has dismissed via "Skip this
+version" on the Update Prompt; suppresses the Update Prompt for that exact
+Version only — a later Release still prompts.
+
 ## Decisions (not yet ADR-worthy, tracked here for now)
 
 - **No Volume metadata.** Volume is only well-defined for a closed
@@ -109,3 +140,29 @@ which updates Bella's own 3D preview in place.
 - **Row icons are type icons, not renders.** Each file-list row shows an
   icon/color keyed off file extension, not a generated snapshot of the
   model's actual geometry.
+- **Self-update is Windows/Linux only.** electron-updater's silent
+  download-and-restart flow only runs on the NSIS and AppImage builds. The
+  macOS build still runs Update Checks and shows the Update Prompt, but its
+  action opens the GitHub Releases page in the browser instead —
+  self-update requires a signed, notarized app and no certificate exists
+  yet. See
+  [ADR 0003](docs/adr/0003-electron-updater-github-provider-scoped-to-windows-linux.md).
+- **Update Checks fail silently.** No network / GitHub unreachable on
+  startup just means no Update Prompt that session — never an error
+  dialog.
+- **Skipped Version is app state, not a Setting.** Stored alongside
+  `lastOpenedFolder` in the local app-config file, not exposed in the
+  Settings panel — it's not something the user configures, just something
+  the app remembers.
+- **Manual update checks bypass Skipped Version.** The "Check for updates"
+  button in Settings always shows the Update Prompt if a newer Release
+  exists, even if the user previously skipped it — an explicit check
+  shouldn't be silently suppressed.
+- **Release workflow guards the changelog.** The tag-triggered GitHub
+  Action fails the build if the top entry in `release-notes.md` doesn't
+  match the pushed tag, catching a forgotten changelog update before it
+  ships.
+- **GitHub Releases are drafted, not auto-published.** The build workflow
+  creates a draft release (installers attached, body extracted from the
+  matching Release Notes entry) — a human reviews and publishes it, rather
+  than the workflow publishing unattended.
