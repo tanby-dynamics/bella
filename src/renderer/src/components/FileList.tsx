@@ -1,18 +1,34 @@
-import { typeLabel, type FileEntry, type SortColumn, type SortDirection } from '../types'
+import { useRef, useState } from 'react'
+import {
+  typeLabel,
+  type ColumnWidths,
+  type FileEntry,
+  type SortColumn,
+  type SortDirection
+} from '../types'
 import { FORMAT_BADGES } from '../formatBadges'
 import { formatDate, formatFileSize } from '../paths'
+
+type ResizableColumn = keyof ColumnWidths
+
+const MIN_COLUMN_WIDTH = 50
 
 interface Column {
   key: SortColumn
   label: string
+  resizable: boolean
 }
 
 const COLUMNS: Column[] = [
-  { key: 'name', label: 'Name' },
-  { key: 'modifiedAt', label: 'Date modified' },
-  { key: 'type', label: 'Type' },
-  { key: 'size', label: 'Size' }
+  { key: 'name', label: 'Name', resizable: false },
+  { key: 'modifiedAt', label: 'Date modified', resizable: true },
+  { key: 'type', label: 'Type', resizable: true },
+  { key: 'size', label: 'Size', resizable: true }
 ]
+
+function gridTemplateColumns(widths: ColumnWidths): string {
+  return `minmax(0, 1fr) ${widths.modifiedAt}px ${widths.type}px ${widths.size}px`
+}
 
 interface FileListProps {
   entries: FileEntry[]
@@ -20,6 +36,8 @@ interface FileListProps {
   onSelect: (entry: FileEntry) => void
   sort: { column: SortColumn; direction: SortDirection }
   onSortChange: (column: SortColumn) => void
+  columnWidths: ColumnWidths
+  onColumnWidthsChange: (widths: ColumnWidths) => void
 }
 
 function SortArrowIcon({ direction }: { direction: SortDirection }): React.JSX.Element {
@@ -31,7 +49,12 @@ function SortArrowIcon({ direction }: { direction: SortDirection }): React.JSX.E
       fill="none"
       style={{ transform: direction === 'desc' ? 'rotate(180deg)' : undefined }}
     >
-      <path d="M12 5v14M6 11l6-6 6 6" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" />
+      <path
+        d="M12 5v14M6 11l6-6 6 6"
+        stroke="currentColor"
+        strokeWidth="2.2"
+        strokeLinecap="round"
+      />
     </svg>
   )
 }
@@ -56,11 +79,13 @@ function CubeIcon({ color }: { color: string }): React.JSX.Element {
 function FileListRow({
   entry,
   isSelected,
-  onSelect
+  onSelect,
+  columnWidths
 }: {
   entry: FileEntry
   isSelected: boolean
   onSelect: () => void
+  columnWidths: ColumnWidths
 }): React.JSX.Element {
   const badge =
     entry.classification.kind !== 'other' ? FORMAT_BADGES[entry.classification.format] : undefined
@@ -68,6 +93,7 @@ function FileListRow({
   return (
     <div
       className={`file-list__row${isSelected ? ' is-selected' : ''}`}
+      style={{ gridTemplateColumns: gridTemplateColumns(columnWidths) }}
       onClick={onSelect}
       role="button"
       tabIndex={0}
@@ -90,26 +116,74 @@ export function FileList({
   selectedPath,
   onSelect,
   sort,
-  onSortChange
+  onSortChange,
+  columnWidths,
+  onColumnWidthsChange
 }: FileListProps): React.JSX.Element {
+  // Only set while a drag is in progress - overrides the persisted
+  // columnWidths prop for live visual feedback without writing to the store
+  // on every pixel of mouse movement. null the rest of the time, so the
+  // persisted prop is always the source of truth outside of an active drag
+  // (no prop->state sync effect needed).
+  const [dragWidths, setDragWidths] = useState<ColumnWidths | null>(null)
+  const dragRef = useRef<{ column: ResizableColumn; startX: number; startWidth: number } | null>(
+    null
+  )
+  const widths = dragWidths ?? columnWidths
+
+  function startResize(event: React.MouseEvent, column: ResizableColumn): void {
+    event.preventDefault()
+    event.stopPropagation()
+    dragRef.current = { column, startX: event.clientX, startWidth: columnWidths[column] }
+    setDragWidths(columnWidths)
+
+    function onMouseMove(moveEvent: MouseEvent): void {
+      const drag = dragRef.current
+      if (!drag) return
+      const next = Math.max(MIN_COLUMN_WIDTH, drag.startWidth + (moveEvent.clientX - drag.startX))
+      setDragWidths((current) => ({ ...(current ?? columnWidths), [drag.column]: next }))
+    }
+
+    function onMouseUp(): void {
+      document.removeEventListener('mousemove', onMouseMove)
+      document.removeEventListener('mouseup', onMouseUp)
+      dragRef.current = null
+      setDragWidths((current) => {
+        if (current) onColumnWidthsChange(current)
+        return null
+      })
+    }
+
+    document.addEventListener('mousemove', onMouseMove)
+    document.addEventListener('mouseup', onMouseUp)
+  }
+
   return (
     <div className="file-list">
       <div className="file-list__header">
         <span>{entries.length} items</span>
       </div>
-      <div className="file-list__row file-list__row--head">
+      <div
+        className="file-list__row file-list__row--head"
+        style={{ gridTemplateColumns: gridTemplateColumns(widths) }}
+      >
         {COLUMNS.map((column) => (
-          <button
-            key={column.key}
-            type="button"
-            className={`file-list__col file-list__col--${column.key}${
-              sort.column === column.key ? ' is-active' : ''
-            }`}
-            onClick={() => onSortChange(column.key)}
-          >
-            <span>{column.label}</span>
-            {sort.column === column.key && <SortArrowIcon direction={sort.direction} />}
-          </button>
+          <div key={column.key} className={`file-list__col file-list__col--${column.key}`}>
+            <button
+              type="button"
+              className={`file-list__sort-btn${sort.column === column.key ? ' is-active' : ''}`}
+              onClick={() => onSortChange(column.key)}
+            >
+              <span>{column.label}</span>
+              {sort.column === column.key && <SortArrowIcon direction={sort.direction} />}
+            </button>
+            {column.resizable && (
+              <div
+                className="file-list__col-resizer"
+                onMouseDown={(event) => startResize(event, column.key as ResizableColumn)}
+              />
+            )}
+          </div>
         ))}
       </div>
       <div className="file-list__body">
@@ -122,6 +196,7 @@ export function FileList({
               entry={entry}
               isSelected={entry.path === selectedPath}
               onSelect={() => onSelect(entry)}
+              columnWidths={widths}
             />
           ))
         )}

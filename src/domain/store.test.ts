@@ -62,7 +62,8 @@ describe('store', () => {
     expect(await store.getSettings()).toEqual({
       theme: 'system',
       defaultRenderMode: 'shaded',
-      sort: { column: 'name', direction: 'asc' }
+      sort: { column: 'name', direction: 'asc' },
+      columnWidths: { modifiedAt: 108, type: 92, size: 68 }
     })
   })
 
@@ -74,7 +75,8 @@ describe('store', () => {
     expect(await store.getSettings()).toEqual({
       theme: 'dark',
       defaultRenderMode: 'shaded',
-      sort: { column: 'name', direction: 'asc' }
+      sort: { column: 'name', direction: 'asc' },
+      columnWidths: { modifiedAt: 108, type: 92, size: 68 }
     })
   })
 
@@ -86,7 +88,31 @@ describe('store', () => {
     expect(await store.getSettings()).toEqual({
       theme: 'system',
       defaultRenderMode: 'shaded',
-      sort: { column: 'size', direction: 'desc' }
+      sort: { column: 'size', direction: 'desc' },
+      columnWidths: { modifiedAt: 108, type: 92, size: 68 }
+    })
+  })
+
+  it('has default column widths', async () => {
+    const store = createStore(fakeBackend())
+
+    expect((await store.getSettings()).columnWidths).toEqual({
+      modifiedAt: 108,
+      type: 92,
+      size: 68
+    })
+  })
+
+  it('updates the column widths independently, leaving the rest untouched', async () => {
+    const store = createStore(fakeBackend())
+
+    await store.setSettings({ columnWidths: { modifiedAt: 140, type: 92, size: 68 } })
+
+    expect(await store.getSettings()).toEqual({
+      theme: 'system',
+      defaultRenderMode: 'shaded',
+      sort: { column: 'name', direction: 'asc' },
+      columnWidths: { modifiedAt: 140, type: 92, size: 68 }
     })
   })
 })

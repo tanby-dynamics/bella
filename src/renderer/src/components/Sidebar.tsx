@@ -6,6 +6,8 @@ interface SidebarProps {
   favorites: Favorite[]
   locations: Location[]
   currentFolder: string | null
+  /** The folder Bella opened at startup - see LocationTreeNode. */
+  initialFolder: string | null
   onNavigate: (path: string) => void
   onAddCurrentFolderAsFavorite: () => void
   onRemoveFavorite: (path: string) => void
@@ -27,6 +29,7 @@ export function Sidebar({
   favorites,
   locations,
   currentFolder,
+  initialFolder,
   onNavigate,
   onAddCurrentFolderAsFavorite,
   onRemoveFavorite
@@ -90,6 +93,7 @@ export function Sidebar({
           depth={0}
           currentFolder={currentFolder}
           onNavigate={onNavigate}
+          autoExpandPath={initialFolder}
         />
       ))}
     </div>

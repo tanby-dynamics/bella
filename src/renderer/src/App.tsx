@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import {
   sortEntries,
+  type ColumnWidths,
   type Favorite,
   type FileEntry,
   type Location,
@@ -25,6 +26,10 @@ const DEFAULT_SORT: { column: SortColumn; direction: SortDirection } = {
   direction: 'asc'
 }
 
+// Fallback column widths before Settings has loaded - matches
+// DEFAULT_STORE_DATA in src/domain/store.ts.
+const DEFAULT_COLUMN_WIDTHS: ColumnWidths = { modifiedAt: 108, type: 92, size: 68 }
+
 // Default direction when a column is first clicked (not yet the active
 // sort) - Name/Type ascending, Date modified/Size descending, matching
 // Explorer's own conventions. Clicking the already-active column toggles
@@ -48,6 +53,10 @@ function applyTheme(theme: Settings['theme']): void {
 
 function App(): React.JSX.Element {
   const [currentFolder, setCurrentFolder] = useState<string | null>(null)
+  // The folder Bella opened at startup - captured once and never updated
+  // again, so the Locations tree only auto-expands to it on initial mount,
+  // not on every later navigation. See LocationTreeNode.
+  const [initialFolder, setInitialFolder] = useState<string | null>(null)
   const [entries, setEntries] = useState<FileEntry[]>([])
   const [selectedPath, setSelectedPath] = useState<string | null>(null)
   const [preview, setPreview] = useState<PreviewState>({ status: 'empty' })
@@ -70,6 +79,7 @@ function App(): React.JSX.Element {
     () => sortEntries(entries, sort.column, sort.direction),
     [entries, sort]
   )
+  const columnWidths = settings?.columnWidths ?? DEFAULT_COLUMN_WIDTHS
 
   useEffect(() => {
     let cancelled = false
@@ -92,7 +102,9 @@ function App(): React.JSX.Element {
       setFavorites(loadedFavorites)
       setLocations(loadedLocations)
 
-      await navigate(lastOpenedFolder ?? homeDirectory)
+      const startFolder = lastOpenedFolder ?? homeDirectory
+      setInitialFolder(startFolder)
+      await navigate(startFolder)
     }
 
     init()
@@ -162,6 +174,10 @@ function App(): React.JSX.Element {
     await changeSettings({ sort: { column, direction: nextDirection } })
   }
 
+  async function changeColumnWidths(widths: ColumnWidths): Promise<void> {
+    await changeSettings({ columnWidths: widths })
+  }
+
   return (
     <div className="app">
       <Toolbar
@@ -174,6 +190,7 @@ function App(): React.JSX.Element {
           favorites={favorites}
           locations={locations}
           currentFolder={currentFolder}
+          initialFolder={initialFolder}
           onNavigate={navigate}
           onAddCurrentFolderAsFavorite={addCurrentFolderAsFavorite}
           onRemoveFavorite={removeFavorite}
@@ -184,6 +201,8 @@ function App(): React.JSX.Element {
           onSelect={selectEntry}
           sort={sort}
           onSortChange={changeSort}
+          columnWidths={columnWidths}
+          onColumnWidthsChange={changeColumnWidths}
         />
         <PreviewPanel
           selectedEntry={selectedEntry}
