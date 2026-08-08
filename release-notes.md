@@ -1,5 +1,3 @@
-# Release Notes
-
 <!--
 Keep-a-Changelog-style, newest entry first: `## v<semver> - <date>`.
 Update this file (add a new entry at the top) in the same PR/commit that

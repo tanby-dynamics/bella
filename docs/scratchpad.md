@@ -18,14 +18,14 @@
 	- [x] implement
 	- [x] manual test
 	- [x] commit
-- [ ] Add a button to the Settings screen to "Reset configuration" - show a confirmation dialog, then clear all of the stored configuration and apply it immediately
-	- [ ] implement
-	- [ ] manual test
-	- [ ] commit
+- [x] Add a button to the Settings screen to "Reset configuration" - show a confirmation dialog, then clear all of the stored configuration and apply it immediately
+	- [x] implement
+	- [x] manual test
+	- [x] commit
 - [ ] Two related features:
 	- Add versioning and release notes to the application. I want to have a list of release notes that are easy to append to before pushing the new version - if possible a markdown file that I can maintain, that gets rendered to a view within the app. Show version number in footer - click version number to view release notes. Add GH action to build installers - I want to use git tags with the version number to trigger the GH action.
 	- Automatic application updates. On startup, show a nag window if there is a new version. Click to download and install the new version. Add a configurable setting to enable/disable checking for new version on startup - default to enabled.
-	- [ ] spec
+	- [x] spec
 	- [ ] implement
 	- [ ] manual test
 	- [ ] merge

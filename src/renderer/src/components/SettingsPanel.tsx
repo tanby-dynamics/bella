@@ -86,7 +86,7 @@ export function SettingsPanel({
             onClick={onCheckForUpdates}
             disabled={checkingForUpdates}
           >
-            {checkingForUpdates ? 'Checking…' : 'Check for updates'}
+            {checkingForUpdates ? 'Checking…' : 'Check now for updates'}
           </button>
           {updateCheckMessage && (
             <span className="settings-panel__update-message">{updateCheckMessage}</span>
