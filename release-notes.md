@@ -9,6 +9,8 @@ file's top entry doesn't match the pushed tag. See ADR 0002.
 ## v0.2.0 - 2026-08-08
 
 - Fix breadcrumb display in the header
+- Consolidate directory and file views into the location pane
+- Make the location pane resizable
 
 ## v0.1.2 - 2026-08-08
 
