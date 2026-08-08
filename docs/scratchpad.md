@@ -2,40 +2,63 @@
 
 ## 20260808
 
-- [ ] v1 MVP
-	- [ ] manual test
-	- [ ] merge
+- [x] v1 MVP
+	- [x] manual test
+	- [x] merge
 - [ ] "Locations" should be a hierarchical directory browser, while the files panel should only show files
-- [ ] Replace the thumbnails view with a list - we're dropping the thumbnails view as it doesn't add much value. The file browser list should be similar to Windows Explorer's list view - "Name", "Date modified", "Type", and "Size" columns. THe columns should be sortable, and the sort selection should be remembered when navigating to other directories and persisted between application startups
-- [ ] Last used location should be retained for the next application startup - open the last opened location
-- [ ] Implement versioning and add version to footer
-- [ ] Add GH action to build installers
+	- [x] spec
+	- [ ] implement
+	- [ ] test
+- [ ] Replace the thumbnails view with a list - we're dropping the thumbnails view as it doesn't add much value. The file browser list should be similar to Windows Explorer's list view - "Name", "Date modified", "Type", and "Size" columns. The columns should be sortable, and the sort selection should be remembered when navigating to other directories and persisted between application startups
+	- [x] spec
+	- [ ] implement
+	- [ ] test
+- [ ] Application icon - I've got icons in the `build` folder, I want them to be used for the application's title icon
+- [ ] Add a button to the Settings screen to "Reset configuration" - show a confirmation dialog, then clear all of the stored configuration and apply it immediately
+- [ ] 
+- [ ] Two related features:
+	- Add versioning and release notes to the application. I want to have a list of release notes that are easy to append to before pushing the new version - if possible a markdown file that I can maintain, that gets rendered to a view within the app. Show version number in footer - click version number to view release notes. Add GH action to build installers - I want to use git tags with the version number to trigger the GH action.
+	- Automatic application updates. On startup, show a nag window if there is a new version. Click to download and install the new version. Add a configurable setting to enable/disable checking for new version on startup - default to enabled.
+	- [ ] spec
+	- [ ] implement
+	- [ ] test
+	- [ ] merge
+- [ ] Style scroll bars in the directory nav and files view to match the theme - similar to VS Code in dark mode
+- [ ] Current location bar should be presented like "C: > Documents > etc > Current" and each location should be selectable - nav to that location
+	- [ ] spec
+	- [ ] implement
+	- [ ] test
+	- [ ] merge
+- [ ] Save window position between restarts - make sure the window won't be offscreen when it's position is restored
+	- [ ] spec
+	- [ ] implement
+	- [ ] test
+	- [ ] merge
+- [ ] Make directory pane and file pane resizable - remember the current widths between restarts
+	- [ ] spec
+	- [ ] implement
+	- [ ] test 
+	- [ ] merge
+- [ ] 
+- [ ] Configurable accent colors - defaults of `#f5a623 #4fd1c5 #ff8a9d #9aa3ff` or assign your own
+- [ ] Configurable render colour - defaults of `#f5a623 #4fd1c5 #ff8a9d #9aa3ff` or assign your own. Note that this shouldn't override colors specified in the previewed file - if the file is in a format that has colors the preview should use those colors
 - [ ] Implement OBJ and MTL formats
 - [ ] Implement 3MF format
 - [ ] Implement STEP format - https://github.com/kovacsv/occt-import-js
 - [ ] Implement FreeCAD's `.FCStd` format
-- [ ] Icon
+- [ ] Marketing site - bella.tanbydynamics.co
+- [ ] Code signing for macOS
+- [ ] Code signing for Windows
+- [ ] 
 - [ ] 
 
 
-1. agreed, but we should it build it in a way that makes new formats easy to add in the future
-2. agree, os-wide browsing
-3. for now it will be read-only but simple file management will be added in the future
-4. cross platform
-5. 5. agreed for now
-6. agreed
-7. the volume indicator isn't required - descope it
-8. agreed
-9. agreed
-10. agreed
-11. agreed
-12. agreed
-13. agreed
-14. agreed
-15. agreed
-16. agreed
-17. agreed---
-18. agreed
-19. agreed
-20. agreed---
-21. 
+1. agreed
+2. agreed
+3. agreed
+
+
+
+
+
+

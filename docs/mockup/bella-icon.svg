@@ -1,0 +1,21 @@
+<svg width="200" height="200" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bg-export" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#2e3038"></stop>
+      <stop offset="100%" stop-color="#181a1f"></stop>
+    </linearGradient>
+    <linearGradient id="fur-export" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#faf5ec"></stop>
+      <stop offset="100%" stop-color="#eee3cf"></stop>
+    </linearGradient>
+  </defs>
+  <rect x="0" y="0" width="200" height="200" rx="44" fill="url(#bg-export)"></rect>
+  <ellipse cx="52" cy="110" rx="26" ry="40" fill="#f5a623" transform="rotate(-18 52 110)"></ellipse>
+  <ellipse cx="148" cy="110" rx="26" ry="40" fill="#f5a623" transform="rotate(18 148 110)"></ellipse>
+  <ellipse cx="100" cy="112" rx="54" ry="48" fill="url(#fur-export)"></ellipse>
+  <path d="M52 96 Q62 72 80 84 Q90 66 100 84 Q110 66 120 84 Q138 72 148 96 Q100 78 52 96Z" fill="url(#fur-export)"></path>
+  <circle cx="82" cy="112" r="6.5" fill="#26211b"></circle>
+  <circle cx="118" cy="112" r="6.5" fill="#26211b"></circle>
+  <ellipse cx="100" cy="134" rx="9" ry="6.5" fill="#26211b"></ellipse>
+  <path d="M100 140 v6" stroke="#26211b" stroke-width="3" stroke-linecap="round"></path>
+</svg>
