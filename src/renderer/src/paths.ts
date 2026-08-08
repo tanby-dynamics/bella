@@ -22,7 +22,11 @@ export function breadcrumbSegments(path: string): BreadcrumbSegment[] {
       segments.push({ label: part, path: acc })
       return
     }
-    acc = acc ? `${acc}${sep}${part}` : `${sep}${part}`
+    // The drive-root branch above already leaves `acc` ending in `sep`
+    // (`C:\`) - joining the next part with another `sep` would double it
+    // up (`C:\\development`). Append bare in that case; otherwise join
+    // normally, or - for a bare Unix root - prepend the leading `sep`.
+    acc = acc.endsWith(sep) ? `${acc}${part}` : acc ? `${acc}${sep}${part}` : `${sep}${part}`
     segments.push({ label: part, path: acc })
   })
 

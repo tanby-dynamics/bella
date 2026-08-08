@@ -1,4 +1,5 @@
 export * from './formats'
+export * from './paths'
 export * from './listFolder'
 export * from './listSubfolders'
 export * from './sortEntries'

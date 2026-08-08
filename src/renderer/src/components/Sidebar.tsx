@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import type { Favorite, Location } from '../types'
-import { ChevronIcon, LocationTreeNode } from './LocationTree'
+import { ChevronIcon, LocationTreeNode, type RevealRequest } from './LocationTree'
 
 interface SidebarProps {
   favorites: Favorite[]
@@ -8,6 +8,8 @@ interface SidebarProps {
   currentFolder: string | null
   /** The folder Bella opened at startup - see LocationTreeNode. */
   initialFolder: string | null
+  /** Set on a breadcrumb click - see LocationTreeNode. */
+  revealRequest: RevealRequest | null
   onNavigate: (path: string) => void
   onAddCurrentFolderAsFavorite: () => void
   onRemoveFavorite: (path: string) => void
@@ -30,6 +32,7 @@ export function Sidebar({
   locations,
   currentFolder,
   initialFolder,
+  revealRequest,
   onNavigate,
   onAddCurrentFolderAsFavorite,
   onRemoveFavorite
@@ -94,6 +97,7 @@ export function Sidebar({
           currentFolder={currentFolder}
           onNavigate={onNavigate}
           autoExpandPath={initialFolder}
+          revealRequest={revealRequest}
         />
       ))}
     </div>

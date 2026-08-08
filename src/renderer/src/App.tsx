@@ -16,6 +16,7 @@ import type { PreviewState } from './preview'
 import { fileNameFromPath } from './paths'
 import { Toolbar } from './components/Toolbar'
 import { Sidebar } from './components/Sidebar'
+import type { RevealRequest } from './components/LocationTree'
 import { FileList } from './components/FileList'
 import { PreviewPanel } from './components/PreviewPanel'
 import { StatusBar } from './components/StatusBar'
@@ -63,6 +64,12 @@ function App(): React.JSX.Element {
   // again, so the Locations tree only auto-expands to it on initial mount,
   // not on every later navigation. See LocationTreeNode.
   const [initialFolder, setInitialFolder] = useState<string | null>(null)
+  // Set only by breadcrumb clicks (see navigateFromBreadcrumb) - tells the
+  // Locations tree to expand down to and scroll to that folder. Unlike
+  // initialFolder this changes throughout the app's lifetime, so it's a
+  // request object (nonce included) rather than a plain path, letting the
+  // tree re-scroll even if the same segment is clicked twice in a row.
+  const [revealRequest, setRevealRequest] = useState<RevealRequest | null>(null)
   const [entries, setEntries] = useState<FileEntry[]>([])
   const [selectedPath, setSelectedPath] = useState<string | null>(null)
   const [preview, setPreview] = useState<PreviewState>({ status: 'empty' })
@@ -155,6 +162,16 @@ function App(): React.JSX.Element {
     const loadedEntries = await window.api.listFolder(path)
     setEntries(loadedEntries)
     await window.api.setLastOpenedFolder(path)
+  }
+
+  // Breadcrumb click, specifically - reveals the target folder in the
+  // Locations tree in addition to the plain navigate() every navigation
+  // source triggers. Scoped to breadcrumb because it's the one nav path
+  // that can jump to a folder the tree was never expanded down to
+  // (Favorites can too, but only the breadcrumb was asked for here).
+  async function navigateFromBreadcrumb(path: string): Promise<void> {
+    await navigate(path)
+    setRevealRequest((current) => ({ path, nonce: (current?.nonce ?? 0) + 1 }))
   }
 
   async function selectEntry(entry: FileEntry): Promise<void> {
@@ -269,7 +286,7 @@ function App(): React.JSX.Element {
     <div className="app">
       <Toolbar
         currentFolder={currentFolder}
-        onNavigate={navigate}
+        onNavigate={navigateFromBreadcrumb}
         onOpenSettings={() => setSettingsOpen(true)}
       />
       <div className="app__body">
@@ -278,6 +295,7 @@ function App(): React.JSX.Element {
           locations={locations}
           currentFolder={currentFolder}
           initialFolder={initialFolder}
+          revealRequest={revealRequest}
           onNavigate={navigate}
           onAddCurrentFolderAsFavorite={addCurrentFolderAsFavorite}
           onRemoveFavorite={removeFavorite}
@@ -301,7 +319,6 @@ function App(): React.JSX.Element {
       </div>
       <StatusBar
         selectedEntry={selectedEntry}
-        currentFolder={currentFolder}
         appVersion={appVersion}
         onOpenReleaseNotes={() => setReleaseNotesOpen(true)}
       />

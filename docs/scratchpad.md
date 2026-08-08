@@ -31,20 +31,27 @@
 	- [x] merge
 - [x] Release 0.1.0
 - [x] Fix icons
-- [ ] Release 0.1.1
-- [ ] Test installer on Windows
-- [ ] Style the scroll bars in the directory nav and files view to match the theme - similar to VS Code in dark mode
+- [x] Release 0.1.1
+- [x] Fix linux release
+- [x] Release 0.1.2
+- [x] Test installer on Windows
+- [x] Style the scroll bars in the directory nav and files view to match the theme - similar to VS Code in dark mode
+	- [x] implement
+	- [x] manual test
+	- [x] release note
+	- [x] commit
+- [ ] Current location bar should be presented like "C: > Documents > etc > Current" and each node should be selectable - nav to that location
 	- [ ] implement
 	- [ ] manual test
 	- [ ] release note
 	- [ ] commit
-- [ ] Current location bar should be presented like "C: > Documents > etc > Current" and each location should be selectable - nav to that location
+- [ ] Remove the file list panel and move files into the location tree. It should work like VS Code's EXPLORER panel. Remove icons for directories, but leave them for files. 
 	- [ ] spec
 	- [ ] implement
-	- [ ] manual test
+	- [ ] test 
 	- [ ] release note
-	- [ ] commit
-- [ ] Make directory pane and file pane resizable - remember the current widths between restarts
+	- [ ] merge
+- [ ] Hide non-recognised file types and dotfiles
 	- [ ] spec
 	- [ ] implement
 	- [ ] test 
@@ -55,9 +62,29 @@
 - [ ] Configurable accent colors - defaults of `#f5a623 #4fd1c5 #ff8a9d #9aa3ff` or assign your own
 - [ ] Configurable render colour - defaults of `#f5a623 #4fd1c5 #ff8a9d #9aa3ff` or assign your own. Note that this shouldn't override colors specified in the previewed file - if the file is in a format that has colors the preview should use those colors
 - [ ] Implement OBJ and MTL formats
+	- [ ] spec
+	- [ ] implement
+	- [ ] test 
+	- [ ] release note
+	- [ ] merge
 - [ ] Implement 3MF format
+	- [ ] spec
+	- [ ] implement
+	- [ ] test 
+	- [ ] release note
+	- [ ] merge
 - [ ] Implement STEP format - https://github.com/kovacsv/occt-import-js
+	- [ ] spec
+	- [ ] implement
+	- [ ] test 
+	- [ ] release note
+	- [ ] merge
 - [ ] Implement FreeCAD's `.FCStd` format
+	- [ ] spec
+	- [ ] implement
+	- [ ] test 
+	- [ ] release note
+	- [ ] merge
 - [ ] Release v0.3.0
 - [ ] Marketing site - bella.tanbydynamics.co
 - [ ] Code signing for macOS

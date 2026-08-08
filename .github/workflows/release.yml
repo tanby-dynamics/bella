@@ -27,10 +27,25 @@ jobs:
         with:
           name: notes-body
           path: notes-body.md
+      # electron-builder's GitHub publisher looks for an existing release
+      # for the tag and only creates one if it finds none. The three
+      # matrix legs below run in parallel, so if none of them create the
+      # release until they start publishing, they race and each creates
+      # its own duplicate ("untagged-...") release, splitting the
+      # installers across them. Creating it once here, serially, before
+      # the matrix starts means every leg finds the same release already
+      # in place.
+      - name: Ensure draft release exists
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          if ! gh release view "$GITHUB_REF_NAME" --repo tanby-dynamics/bella >/dev/null 2>&1; then
+            gh release create "$GITHUB_REF_NAME" --draft --title "$GITHUB_REF_NAME" --notes-file notes-body.md --repo tanby-dynamics/bella
+          fi
 
-  # Builds installers for each platform and publishes them to a draft
-  # GitHub Release (created on first upload, reused by the other matrix
-  # legs). The Version comes from the tag, not package.json - see ADR 0002.
+  # Builds installers for each platform and publishes them to the draft
+  # GitHub Release created above. The version comes from the tag, not
+  # package.json - see ADR 0002.
   build:
     needs: check-notes
     strategy:

@@ -7,6 +7,16 @@ interface TreeItem {
   path: string
 }
 
+/** A one-shot request to expand the tree down to `path` and scroll that
+ * node into view - `nonce` exists so clicking the same breadcrumb segment
+ * twice in a row still re-triggers the scroll (a path alone wouldn't
+ * change between identical clicks, so effects keyed on it wouldn't
+ * re-fire). */
+export interface RevealRequest {
+  path: string
+  nonce: number
+}
+
 interface LocationTreeNodeProps {
   item: TreeItem
   depth: number
@@ -17,6 +27,14 @@ interface LocationTreeNodeProps {
    * auto-expansion on initial mount, not on every later navigation. See
    * CONTEXT.md: the tree otherwise never auto-syncs to the current folder. */
   autoExpandPath: string | null
+  /** Set when the user clicks a breadcrumb segment - unlike
+   * autoExpandPath this fires repeatedly over the tree's lifetime, so
+   * breadcrumb navigation (which, unlike tree/Favorites navigation, can
+   * jump to a folder the tree has never expanded down to) still reveals
+   * and scrolls to the matching node. Scoped to breadcrumb clicks only,
+   * not every navigation - see CONTEXT.md's "tree does not auto-sync"
+   * decision, which this deliberately narrows rather than overturns. */
+  revealRequest: RevealRequest | null
 }
 
 export function ChevronIcon({ expanded }: { expanded: boolean }): React.JSX.Element {
@@ -70,7 +88,8 @@ export function LocationTreeNode({
   depth,
   currentFolder,
   onNavigate,
-  autoExpandPath
+  autoExpandPath,
+  revealRequest
 }: LocationTreeNodeProps): React.JSX.Element {
   // Computed once per node (autoExpandPath/item.path are both stable for a
   // given node instance) - drives the *initial* state directly rather than
@@ -82,6 +101,7 @@ export function LocationTreeNode({
   const [children, setChildren] = useState<Subfolder[] | null>(null)
   const [loading, setLoading] = useState(shouldAutoExpand)
   const fetchStartedRef = useRef(false)
+  const itemRef = useRef<HTMLDivElement>(null)
 
   async function loadChildren(): Promise<Subfolder[]> {
     const subfolders = await window.api.listSubfolders(item.path)
@@ -136,9 +156,26 @@ export function LocationTreeNode({
     fetchInitialChildren()
   }, [shouldAutoExpand, item.path])
 
+  // Breadcrumb-triggered reveal: expand this node if it lies on the path
+  // to the revealed folder (ancestor or exact match - isAncestorPath
+  // covers both), and scroll it into view once it *is* the exact match.
+  // Runs on every revealRequest change, including on a freshly-mounted
+  // child node's first render (a parent expanding is what mounts it), so
+  // the reveal cascades one tree level at a time the same way the
+  // startup auto-expand does.
+  useEffect(() => {
+    if (!revealRequest || !isAncestorPath(item.path, revealRequest.path)) return
+    if (!expanded) void expand()
+    if (item.path === revealRequest.path) {
+      itemRef.current?.scrollIntoView({ block: 'nearest' })
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [revealRequest])
+
   return (
     <div>
       <div
+        ref={itemRef}
         className={`sidebar__item sidebar__tree-item${item.path === currentFolder ? ' is-active' : ''}`}
         style={{ paddingLeft: 10 + depth * 16 }}
       >
@@ -170,6 +207,7 @@ export function LocationTreeNode({
               currentFolder={currentFolder}
               onNavigate={onNavigate}
               autoExpandPath={autoExpandPath}
+              revealRequest={revealRequest}
             />
           ))}
         </div>

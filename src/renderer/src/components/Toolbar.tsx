@@ -31,7 +31,7 @@ export function Toolbar({
       <div className="toolbar__breadcrumb">
         {segments.map((segment, index) => (
           <span key={segment.path}>
-            {index > 0 && <span className="toolbar__breadcrumb-sep">/</span>}
+            {index > 0 && <span className="toolbar__breadcrumb-sep">&gt;</span>}
             <span
               className={
                 index === segments.length - 1

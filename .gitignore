@@ -142,3 +142,6 @@ vite.config.js.timestamp-*
 vite.config.ts.timestamp-*
 .vite/
 .obsidian
+
+# Screenshots from the run-bella Playwright driver
+.playwright-shots/

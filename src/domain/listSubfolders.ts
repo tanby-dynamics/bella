@@ -1,12 +1,9 @@
 import type { DirectoryReader } from './listFolder'
+import { joinPath } from './paths'
 
 export interface Subfolder {
   name: string
   path: string
-}
-
-function joinPath(folderPath: string, name: string): string {
-  return `${folderPath}/${name}`
 }
 
 /** Lists a folder's immediate subfolders only, for lazy tree expansion -

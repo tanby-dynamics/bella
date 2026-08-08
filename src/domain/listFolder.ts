@@ -1,4 +1,5 @@
 import { classifyFormat, type FormatClassification } from './formats'
+import { joinPath } from './paths'
 
 export interface DirectoryReader {
   readEntries(path: string): Promise<Array<{ name: string; isDirectory: boolean }>>
@@ -11,10 +12,6 @@ export interface FileEntry {
   size: number
   modifiedAt: Date
   classification: FormatClassification
-}
-
-function joinPath(folderPath: string, name: string): string {
-  return `${folderPath}/${name}`
 }
 
 /** Lists the files (not folders) directly inside a folder, unsorted -
