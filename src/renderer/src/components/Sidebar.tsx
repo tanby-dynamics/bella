@@ -1,6 +1,6 @@
 import { useRef, useState } from 'react'
 import type { Favorite, FileEntry, Location } from '../types'
-import { ChevronIcon, LocationTreeNode, type Highlighted, type RevealRequest } from './LocationTree'
+import { LocationTreeNode, type Highlighted, type RevealRequest } from './LocationTree'
 
 const MIN_SIDEBAR_WIDTH = 180
 const MAX_SIDEBAR_WIDTH = 560
