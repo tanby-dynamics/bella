@@ -34,7 +34,7 @@ export function PreviewPanel({
             <div className="preview-panel__file-info">
               <span className="preview-panel__file-name">{selectedEntry.name}</span>
               <button type="button" className="preview-panel__open" onClick={onOpen}>
-                Open
+                Open in default app
               </button>
             </div>
             {preview.status === 'ready' && (
