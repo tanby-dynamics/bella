@@ -25,4 +25,21 @@ describe('parseRenderable', () => {
       vertices: [0, 0, 0, 1, 0, 0, 0, 1, 0]
     })
   })
+
+  it('dispatches obj to the OBJ parser, passing through resolved MTL sources', () => {
+    const mtl = ['newmtl red', 'Kd 1 0 0', ''].join('\n')
+    const obj = ['v 0 0 0', 'v 1 0 0', 'v 0 1 0', 'usemtl red', 'f 1 2 3', ''].join('\n')
+
+    const result = parseRenderable('obj', Buffer.from(obj, 'utf8'), {
+      materialSources: new Map([['scene.mtl', mtl]])
+    })
+
+    expect(result).toEqual({
+      ok: true,
+      triangleCount: 1,
+      boundingBox: { min: [0, 0, 0], max: [1, 1, 0] },
+      vertices: [0, 0, 0, 1, 0, 0, 0, 1, 0],
+      colors: [1, 0, 0, 1, 0, 0, 1, 0, 0]
+    })
+  })
 })

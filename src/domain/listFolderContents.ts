@@ -49,10 +49,11 @@ function isDotfile(name: string): boolean {
  * Two kinds of entry never make it into the result: hidden entries
  * (dotfiles/dotfolders, or OS-hidden on Windows - see isDotfile and
  * DirectoryReader.readEntries), and any file without a 3D preview - only a
- * Renderable format (FormatClassification 'renderable', STL in v1) has one;
- * Listed formats (STEP/FCStd/SCAD - recognized, but "preview not available")
- * and unrecognized files are both filtered before the stat() call rather
- * than listed with a badge/generic icon nothing then lets you view.
+ * Renderable format (FormatClassification 'renderable', STL/OBJ) has one;
+ * Listed formats (STEP/FCStd/SCAD/MTL - recognized, but "preview not
+ * available") and unrecognized files are both filtered before the stat()
+ * call rather than listed with a badge/generic icon nothing then lets you
+ * view.
  *
  * Subfolders get no stat() call (the tree only needs name/path for them,
  * same as the old listSubfolders); files get full metadata, same as the

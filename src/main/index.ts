@@ -1,11 +1,12 @@
 import { app, shell, BrowserWindow, ipcMain } from 'electron'
-import { basename, join } from 'path'
+import { basename, dirname, join } from 'path'
 import { homedir } from 'node:os'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import icon from '../../resources/icon.png?asset'
 import {
   listFolderContents,
   parseRenderable,
+  extractMtlLibNames,
   enumerateLocations,
   createStore,
   classifyFormat,
@@ -19,6 +20,31 @@ import { readFile } from 'node:fs/promises'
 import * as updater from './updater'
 
 const store = createStore(fileStoreBackend)
+
+/** Reads every MTL file an OBJ's `mtllib` directive(s) reference, resolved
+ * relative to the OBJ's own directory (the only location OBJ exporters ever
+ * write a relative mtllib path against). A missing/unreadable MTL is simply
+ * left out of the map rather than failing the whole preview - parseObj
+ * treats "no materials resolved" as "fall back to Settings.renderColor",
+ * not an error. This is the one piece of OBJ+MTL handling that needs fs
+ * access, which is why it lives here rather than in the pure domain parser -
+ * see objParser.ts. */
+async function resolveMtlSources(objPath: string, objBytes: Buffer): Promise<Map<string, string>> {
+  const names = extractMtlLibNames(objBytes.toString('utf8'))
+  const sources = new Map<string, string>()
+  await Promise.all(
+    names.map(async (name) => {
+      try {
+        const bytes = await readFile(join(dirname(objPath), name))
+        sources.set(name, bytes.toString('utf8'))
+      } catch {
+        // Missing/unreadable MTL - the referenced faces fall back to the
+        // neutral color (see objParser.ts) rather than the render failing.
+      }
+    })
+  )
+  return sources
+}
 
 function registerIpcHandlers(): void {
   ipcMain.handle(IPC.homeDirectory, () => homedir())
@@ -38,6 +64,13 @@ function registerIpcHandlers(): void {
         return { ok: false, error: 'not-renderable' }
       }
       const bytes = await readFile(path)
+
+      if (classification.format === 'obj') {
+        return parseRenderable('obj', bytes, {
+          materialSources: await resolveMtlSources(path, bytes)
+        })
+      }
+
       return parseRenderable(classification.format, bytes)
     }
   )

@@ -10,6 +10,12 @@ export interface StlParseSuccess {
   boundingBox: { min: [number, number, number]; max: [number, number, number] }
   /** Flat [x, y, z, x, y, z, ...] positions, 9 numbers per triangle, in file order. */
   vertices: number[]
+  /** Flat [r, g, b, r, g, b, ...] per-vertex color in [0,1], aligned 1:1 with
+   * `vertices` (one RGB triple per vertex position). Present only when the
+   * format supplies its own material color - OBJ+MTL, via objParser.ts.
+   * Absent for STL, which carries no color of its own; the viewer falls
+   * back to Settings.renderColor when this is undefined. See CONTEXT.md. */
+  colors?: number[]
 }
 
 export interface StlParseFailure {

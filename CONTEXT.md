@@ -6,16 +6,19 @@ filesystem and previewing CAD files in a 3D viewer.
 ## Terms
 
 **Renderable format** — a CAD file format Bella can parse into a mesh and
-display in the 3D viewer. v1: STL only. The set of renderable formats is
+display in the 3D viewer. STL, OBJ. The set of renderable formats is
 expected to grow over time.
 
 **Listed format** — a recognized CAD file format with no 3D preview yet;
 would show a badge/icon and a "preview not available" state instead of a
-render, if selected. v1: STEP, FCStd, SCAD. Classified by the same
+render, if selected. STEP, FCStd, SCAD, MTL. Classified by the same
 `classifyFormat` a Renderable format is, but as of the "no-preview formats
 stay out of the tree" decision below, a Listed-format file never actually
 reaches the tree to be selected - the classification exists for the
-metadata/preview UI to fall back on if that changes.
+metadata/preview UI to fall back on if that changes. MTL is Listed rather
+than Renderable even though Bella does read it (see "OBJ's MTL sidecar"
+below) - it's a material sidecar, not a mesh format, so it never gets a 3D
+preview of its own.
 
 **Favorite** — a user-pinned folder shown in the sidebar for quick access.
 
@@ -158,16 +161,33 @@ Version only — a later Release still prompts.
   macOS/Linux). A file without a 3D preview is filtered too, before its
   metadata is even read: that's both an unrecognized file
   (FormatClassification `other`) and a Listed-format file (`step`/`fcstd`/
-  `scad` - recognized, but no preview implemented) - only a Renderable
-  format (STL in v1) makes it into the tree. This is a `listFolderContents`
+  `scad`/`mtl` - recognized, but no preview implemented) - only a Renderable
+  format (STL, OBJ) makes it into the tree. This is a `listFolderContents`
   filter, not a user-facing toggle - there's no way to reveal these entries
   in v1, and no way to select a Listed-format file at all right now (its
   "preview not available" state in the preview/metadata panels is
   currently unreachable through the tree, kept for when a Listed format
   gains a preview and becomes Renderable).
-- **v1 Renderable format set**: STL only. Other plain-mesh formats
-  (OBJ, PLY, ...) can be added later given the format handling is
-  designed to be extensible; nothing else is in scope until needed.
+- **Renderable format set**: STL, OBJ. Other plain-mesh formats (PLY, ...)
+  can be added later given the format handling is designed to be
+  extensible; nothing else is in scope until needed.
+- **OBJ's MTL sidecar is resolved directly from disk, not through the
+  tree.** An OBJ's `mtllib` directive(s) name one or more `.mtl` files,
+  read relative to the OBJ's own directory when the OBJ is parsed for
+  preview (`resolveMtlSources` in `src/main/index.ts`) - the MTL never
+  needs to be Selected or even visible in the tree itself (and, being a
+  Listed format, isn't - see above). A missing/unreadable MTL, or an
+  MTL that doesn't define a material a `usemtl` line asks for, isn't a
+  parse failure: those faces just render with the same neutral fallback
+  color used before any material is set. Only each material's `Kd`
+  (diffuse) color is read - no textures (`map_Kd`), specular/ambient
+  terms, or transparency.
+- **An OBJ's own material color takes precedence over Settings.renderColor**,
+  the same "format's own color wins over the fallback" rule renderColor was
+  already documented to leave room for (see `Settings.renderColor`) - if
+  every face resolves to a material color, the render color Setting has no
+  visible effect on that file. If the OBJ has no `mtllib`/`usemtl` at all,
+  it's treated the same as STL: colorless, so renderColor applies normally.
 - **Empty preview state**: when no file is selected (empty folder, or
   before any selection), the preview panel shows an explicit empty state
   ("No file selected" / "This folder is empty") and the metadata panel

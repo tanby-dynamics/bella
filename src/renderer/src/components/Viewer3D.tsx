@@ -5,10 +5,16 @@ import type { RenderMode } from '../types'
 
 interface Viewer3DProps {
   vertices: number[]
+  /** Flat per-vertex RGB in [0,1], aligned 1:1 with `vertices` - present only
+   * for a format that supplies its own material color (OBJ+MTL). When set,
+   * it's rendered as-is via vertex colors and `renderColor` is ignored - a
+   * format's own color takes precedence over the fallback. See
+   * StlParseSuccess.colors and Settings.renderColor. */
+  colors?: number[]
   boundingBox: { min: [number, number, number]; max: [number, number, number] }
   renderMode: RenderMode
-  /** Fallback mesh color for formats with no color info of their own (all of
-   * v1's Renderable formats - just STL). See Settings.renderColor. */
+  /** Fallback mesh color for formats with no color info of their own (e.g.
+   * STL). See Settings.renderColor. */
   renderColor: string
 }
 
@@ -68,6 +74,7 @@ function applyRenderMode(material: THREE.MeshStandardMaterial, renderMode: Rende
 
 export function Viewer3D({
   vertices,
+  colors,
   boundingBox,
   renderMode,
   renderColor
@@ -150,10 +157,13 @@ export function Viewer3D({
     current.mesh.geometry.dispose()
     const geometry = new THREE.BufferGeometry()
     geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3))
+    if (colors) {
+      geometry.setAttribute('color', new THREE.BufferAttribute(new Float32Array(colors), 3))
+    }
     geometry.computeVertexNormals()
     current.mesh.geometry = geometry
     frameCamera(current.camera, current.controls, boundingBox)
-  }, [vertices, boundingBox])
+  }, [vertices, colors, boundingBox])
 
   // Apply render mode.
   useEffect(() => {
@@ -162,12 +172,17 @@ export function Viewer3D({
     applyRenderMode(current.material, renderMode)
   }, [renderMode])
 
-  // Apply render color.
+  // Apply render color - moot when the mesh carries its own per-vertex
+  // colors (OBJ+MTL): that color takes precedence, so renderColor is
+  // ignored and the material's base color is left white so the vertex
+  // colors show unmodified (MeshStandardMaterial multiplies the two).
   useEffect(() => {
     const current = refs.current
     if (!current) return
-    current.material.color = new THREE.Color(renderColor)
-  }, [renderColor])
+    current.material.vertexColors = !!colors
+    current.material.color = new THREE.Color(colors ? '#ffffff' : renderColor)
+    current.material.needsUpdate = true
+  }, [renderColor, colors])
 
   function zoomBy(factor: number): void {
     const current = refs.current

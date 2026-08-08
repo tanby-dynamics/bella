@@ -1,5 +1,5 @@
-export type RenderableFormatId = 'stl'
-export type ListedFormatId = 'step' | 'fcstd' | 'scad'
+export type RenderableFormatId = 'stl' | 'obj'
+export type ListedFormatId = 'step' | 'fcstd' | 'scad' | 'mtl'
 
 export type FormatClassification =
   | { kind: 'renderable'; format: RenderableFormatId }
@@ -7,13 +7,22 @@ export type FormatClassification =
   | { kind: 'other' }
 
 const RENDERABLE_EXTENSIONS: Record<string, RenderableFormatId> = {
-  stl: 'stl'
+  stl: 'stl',
+  obj: 'obj'
 }
 
+// MTL is a material sidecar for OBJ, not a mesh format of its own - it never
+// gets a 3D preview, so it's Listed rather than Renderable (see objParser.ts,
+// which resolves an OBJ's mtllib reference(s) directly from disk rather than
+// through this classification). Listed today means "filtered out of the
+// tree" the same as an unrecognized file (see CONTEXT.md's "Hidden and
+// no-preview entries" decision) - classifying it here rather than leaving it
+// `other` just keeps it correctly labeled if that filtering ever changes.
 const LISTED_EXTENSIONS: Record<string, ListedFormatId> = {
   step: 'step',
   fcstd: 'fcstd',
-  scad: 'scad'
+  scad: 'scad',
+  mtl: 'mtl'
 }
 
 function extensionOf(fileName: string): string {
@@ -24,12 +33,18 @@ function extensionOf(fileName: string): string {
 const LISTED_TYPE_LABELS: Record<ListedFormatId, string> = {
   step: 'STEP File',
   fcstd: 'FreeCAD File',
-  scad: 'OpenSCAD File'
+  scad: 'OpenSCAD File',
+  mtl: 'MTL Material File'
+}
+
+const RENDERABLE_TYPE_LABELS: Record<RenderableFormatId, string> = {
+  stl: 'STL File',
+  obj: 'OBJ File'
 }
 
 export function typeLabel(classification: FormatClassification): string {
   if (classification.kind === 'renderable') {
-    return 'STL File'
+    return RENDERABLE_TYPE_LABELS[classification.format]
   }
 
   if (classification.kind === 'listed') {

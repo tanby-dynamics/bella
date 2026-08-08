@@ -6,6 +6,14 @@ describe('classifyFormat', () => {
     expect(classifyFormat('base_plate.stl')).toEqual({ kind: 'renderable', format: 'stl' })
   })
 
+  it('classifies .obj as a renderable format', () => {
+    expect(classifyFormat('base_plate.obj')).toEqual({ kind: 'renderable', format: 'obj' })
+  })
+
+  it('classifies .mtl as a listed format (a material sidecar, not a mesh of its own)', () => {
+    expect(classifyFormat('base_plate.mtl')).toEqual({ kind: 'listed', format: 'mtl' })
+  })
+
   it('classifies .step as a listed (recognized but unsupported) format', () => {
     expect(classifyFormat('gripper_v3.step')).toEqual({ kind: 'listed', format: 'step' })
   })
@@ -30,6 +38,14 @@ describe('classifyFormat', () => {
 describe('typeLabel', () => {
   it('describes a renderable STL as "STL File"', () => {
     expect(typeLabel({ kind: 'renderable', format: 'stl' })).toBe('STL File')
+  })
+
+  it('describes a renderable OBJ as "OBJ File"', () => {
+    expect(typeLabel({ kind: 'renderable', format: 'obj' })).toBe('OBJ File')
+  })
+
+  it('describes a listed MTL as "MTL Material File"', () => {
+    expect(typeLabel({ kind: 'listed', format: 'mtl' })).toBe('MTL Material File')
   })
 
   it('describes a listed STEP as "STEP File"', () => {

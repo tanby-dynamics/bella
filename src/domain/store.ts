@@ -32,10 +32,9 @@ export interface Settings {
   /** The mesh color the 3D viewer falls back to for a Renderable-format
    * file, same choices as accentColor (COLOR_PRESETS or custom) but
    * configured and persisted independently. A format that carries its own
-   * color info takes precedence over this fallback - moot in v1 since STL,
-   * the only Renderable format, has none, but the setting stays a fallback
-   * rather than a forced override so that stays true once such a format
-   * exists. */
+   * color info takes precedence over this fallback - STL has none, so it
+   * always uses this setting; OBJ uses it only when it (or its resolved MTL)
+   * supplies no material color of its own. See StlParseSuccess.colors. */
   renderColor: string
 }
 

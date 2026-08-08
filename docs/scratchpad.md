@@ -20,68 +20,74 @@
   - [x] release note
   - [x] commit
 - [ ] Fix auto update
-- [ ] Add preview for OBJ and MTL formats
-  - [ ] Prompt: Implement preview for OBJ and MTL formats
-  - [ ] spec
-  - [ ] implement
-  - [ ] test
-  - [ ] release note
-  - [ ] merge
+- [x] Add preview for OBJ and MTL formats
+	- [x] Prompt: Implement preview for OBJ and MTL formats
+	- [x] implement
+	- [x] test
+	- [x] release note
+	- [x] merge
 - [ ] Add preview for 3MF format
-  - [ ] Prompt: Implement preview for 3MF format
-  - [ ] spec
-  - [ ] implement
-  - [ ] test
-  - [ ] release note
-  - [ ] merge
+	- [ ] Prompt: Implement preview for 3MF format
+	- [ ] spec
+	- [ ] implement
+	- [ ] test
+	- [ ] release note
+	- [ ] merge
 - [ ] Add preview for STEP format
-  - [ ] Prompt: Implement preview for STEP format using https://github.com/kovacsv/occt-import-js
-  - [ ] spec
-  - [ ] implement
-  - [ ] test
-  - [ ] release note
-  - [ ] merge
+	- [ ] Prompt: Implement preview for STEP format using https://github.com/kovacsv/occt-import-js
+	- [ ] spec
+	- [ ] implement
+	- [ ] test
+	- [ ] release note
+	- [ ] merge
 - [ ] Add preview for FreeCAD's format
-  - [ ] Prompt: Implement preview for FreeCAD's `.FCStd` format
-  - [ ] spec
-  - [ ] implement
-  - [ ] test
-  - [ ] release note
-  - [ ] merge
+	- [ ] Prompt: Implement preview for FreeCAD's `.FCStd` format
+	- [ ] spec
+	- [ ] implement
+	- [ ] test
+	- [ ] release note
+	- [ ] merge
+- [ ] Add preview for OpenSCAD format
+	- [ ] Prompt: Implement preview for OpenSCAD format
+	- [ ] spec
+	- [ ] implement
+	- [ ] test
+	- [ ] release note
+	- [ ] merge
 - [ ] Release v0.3.0
 - [ ] Marketing site - bella.tanbydynamics.co
 - [ ] Code signing for macOS
-  - [ ] What do I have to do to set up code signing for macOS?
+	- [ ] What do I have to do to set up code signing for macOS?
 - [ ] Code signing for Windows
-  - [ ] What do I have to do to set up code signing for Windows?
+	- [ ] What do I have to do to set up code signing for Windows?
 - [ ] Tabbed preview
-  - [ ] Prompt: I want to be able to open multiple previews via tabs. This should work similarly to VS Code's tabbing - single clicking a file opens the preview in a transient tab with the file name italicised, double clicking the file or double clicking the tab changes the tab to persistent (non-italicised). Opening a file's preview with a transient tab present closes the transient tab and replaces it with the new preview tab. Click the x or middle click the tab to close it. Tabs should be re-orderable by dragging and dropping. No support for splitting at the moment - only a single preview will actually be visible at a time.
-  - [ ] spec
-  - [ ] implement
-  - [ ] test
-  - [ ] release note
-  - [ ] merge
+	- [ ] Prompt: I want to be able to open multiple previews via tabs. This should work similarly to VS Code's tabbing - single clicking a file opens the preview in a transient tab with the file name italicised, double clicking the file or double clicking the tab changes the tab to persistent (non-italicised). Opening a file's preview with a transient tab present closes the transient tab and replaces it with the new preview tab. Click the x or middle click the tab to close it. Tabs should be re-orderable by dragging and dropping. No support for splitting at the moment - only a single preview will actually be visible at a time.
+	- [ ] spec
+	- [ ] implement
+	- [ ] test
+	- [ ] release note
+	- [ ] merge
 - [ ] Drag and drop reordering of favorites
-  - [ ] Prompt: xxx
-  - [ ] spec
-  - [ ] implement
-  - [ ] test
-  - [ ] release note
-  - [ ] merge
+	- [ ] Prompt: xxx
+	- [ ] spec
+	- [ ] implement
+	- [ ] test
+	- [ ] release note
+	- [ ] merge
 - [ ] Preview PNG, GIF, and JPEG files
-  - [ ] Prompt: xxx
-  - [ ] spec
-  - [ ] implement
-  - [ ] test
-  - [ ] release note
-  - [ ] merge
+	- [ ] Prompt: xxx
+	- [ ] spec
+	- [ ] implement
+	- [ ] test
+	- [ ] release note
+	- [ ] merge
 - [ ] Preview .md and .txt files
-  - [ ] Prompt: xxx
-  - [ ] spec
-  - [ ] implement
-  - [ ] test
-  - [ ] release note
-  - [ ] merge
+	- [ ] Prompt: xxx
+	- [ ] spec
+	- [ ] implement
+	- [ ] test
+	- [ ] release note
+	- [ ] merge
 - [ ] Release v0.4.0
 - [ ]
 

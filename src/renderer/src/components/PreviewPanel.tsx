@@ -76,6 +76,7 @@ export function PreviewPanel({
         {preview.status === 'ready' && (
           <Viewer3D
             vertices={preview.data.vertices}
+            colors={preview.data.colors}
             boundingBox={preview.data.boundingBox}
             renderMode={renderMode}
             renderColor={renderColor}
