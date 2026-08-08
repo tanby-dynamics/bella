@@ -99,65 +99,72 @@ export function Sidebar({
 
   return (
     <div className="sidebar" style={{ width: displayWidth }}>
-      <div className="sidebar__section-header">
-        <button
-          type="button"
-          className="sidebar__section-toggle"
-          onClick={() => setFavoritesExpanded((current) => !current)}
-          aria-expanded={favoritesExpanded}
-        >
-          <ChevronIcon expanded={favoritesExpanded} />
-          <span>FAVORITES</span>
-        </button>
-        {canAddHighlightedFolder && (
+      {/* Scroll (vertical only - see .sidebar__scroll) is scoped to this
+          inner wrapper, not the outer .sidebar div, so the resizer below -
+          positioned half outside the sidebar's own box - isn't clipped by
+          an overflow:auto ancestor and stays draggable at any scroll
+          position. */}
+      <div className="sidebar__scroll">
+        <div className="sidebar__section-header">
           <button
             type="button"
-            className="sidebar__add-favorite"
-            title="Add to Favorites"
-            onClick={onAddHighlightedFolderAsFavorite}
+            className="sidebar__section-toggle"
+            onClick={() => setFavoritesExpanded((current) => !current)}
+            aria-expanded={favoritesExpanded}
           >
-            +
+            <ChevronIcon expanded={favoritesExpanded} />
+            <span>FAVORITES</span>
           </button>
-        )}
-      </div>
-      {favoritesExpanded &&
-        favorites.map((favorite) => (
-          <div
-            key={favorite.path}
-            className={`sidebar__item${favorite.path === highlightedPath ? ' is-active' : ''}`}
-            onClick={() => onSelectFavorite(favorite.path)}
-          >
-            <StarIcon />
-            <span>{favorite.name}</span>
+          {canAddHighlightedFolder && (
             <button
               type="button"
-              className="sidebar__remove"
-              title="Remove from Favorites"
-              onClick={(event) => {
-                event.stopPropagation()
-                onRemoveFavorite(favorite.path)
-              }}
+              className="sidebar__add-favorite"
+              title="Add to Favorites"
+              onClick={onAddHighlightedFolderAsFavorite}
             >
-              ×
+              +
             </button>
-          </div>
-        ))}
+          )}
+        </div>
+        {favoritesExpanded &&
+          favorites.map((favorite) => (
+            <div
+              key={favorite.path}
+              className={`sidebar__item${favorite.path === highlightedPath ? ' is-active' : ''}`}
+              onClick={() => onSelectFavorite(favorite.path)}
+            >
+              <StarIcon />
+              <span>{favorite.name}</span>
+              <button
+                type="button"
+                className="sidebar__remove"
+                title="Remove from Favorites"
+                onClick={(event) => {
+                  event.stopPropagation()
+                  onRemoveFavorite(favorite.path)
+                }}
+              >
+                ×
+              </button>
+            </div>
+          ))}
 
-      <div className="sidebar__section-header">
-        <span>LOCATIONS</span>
+        <div className="sidebar__section-header">
+          <span>LOCATIONS</span>
+        </div>
+        {locations.map((location) => (
+          <LocationTreeNode
+            key={location.path}
+            item={location}
+            depth={0}
+            highlightedPath={highlightedPath}
+            onSelectFolder={onSelectFolder}
+            onSelectFile={onSelectFile}
+            autoExpandPath={initialFolder}
+            revealRequest={revealRequest}
+          />
+        ))}
       </div>
-      {locations.map((location) => (
-        <LocationTreeNode
-          key={location.path}
-          item={location}
-          depth={0}
-          highlightedPath={highlightedPath}
-          onSelectFolder={onSelectFolder}
-          onSelectFile={onSelectFile}
-          autoExpandPath={initialFolder}
-          revealRequest={revealRequest}
-        />
-      ))}
 
       <div className="sidebar__resizer" onMouseDown={startResize} />
     </div>
