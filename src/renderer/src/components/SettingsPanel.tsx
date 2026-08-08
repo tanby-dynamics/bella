@@ -1,6 +1,67 @@
-import { ACCENT_COLOR_PRESETS, type Settings, type Theme } from '../types'
+import { COLOR_PRESETS, type Settings, type Theme } from '../types'
 
 const HEX_COLOR_PATTERN = /^#[0-9a-f]{6}$/i
+
+interface ColorSettingProps {
+  /** What the color controls, e.g. "accent color" / "render color" - used
+   * in field labels and aria-labels. */
+  noun: string
+  value: string
+  onChange: (color: string) => void
+}
+
+// Shared by every color Setting (accent color, render color): a row of
+// preset swatches plus a native color picker and free-typed hex fallback,
+// all driving the same committed value.
+function ColorSetting({ noun, value, onChange }: ColorSettingProps): React.JSX.Element {
+  function handleHexInput(input: string): void {
+    if (HEX_COLOR_PATTERN.test(input)) onChange(input)
+  }
+
+  return (
+    <div className="color-setting">
+      <div className="color-setting__swatches">
+        {COLOR_PRESETS.map((color) => (
+          <button
+            key={color}
+            type="button"
+            className={
+              'color-setting__swatch' +
+              (value.toLowerCase() === color.toLowerCase() ? ' is-selected' : '')
+            }
+            style={{ background: color }}
+            aria-label={`Use ${color} as the ${noun}`}
+            onClick={() => onChange(color)}
+          />
+        ))}
+      </div>
+      <div className="color-setting__custom">
+        <input
+          type="color"
+          value={value}
+          onChange={(event) => onChange(event.target.value)}
+          aria-label={`Pick a custom ${noun}`}
+        />
+        <input
+          type="text"
+          className="color-setting__hex"
+          // Uncontrolled, keyed to the committed color: free typing (e.g. a
+          // partial "#f5a" mid-edit) isn't fought by a controlled value
+          // snapping back every keystroke, and the field still remounts to
+          // show the latest committed color whenever it changes from
+          // elsewhere (a preset click, the color picker, or a config
+          // reset) - without setState-in-effect syncing.
+          key={value}
+          defaultValue={value}
+          onChange={(event) => handleHexInput(event.target.value)}
+          placeholder={COLOR_PRESETS[0]}
+          spellCheck={false}
+          aria-label={`${noun[0].toUpperCase() + noun.slice(1)} hex code`}
+        />
+      </div>
+    </div>
+  )
+}
 
 interface SettingsPanelProps {
   settings: Settings
@@ -33,10 +94,6 @@ export function SettingsPanel({
     if (confirmed) onReset()
   }
 
-  function handleAccentColorInput(value: string): void {
-    if (HEX_COLOR_PATTERN.test(value)) onChange({ accentColor: value })
-  }
-
   return (
     <div className="settings-overlay" onClick={onClose}>
       <div className="settings-panel" onClick={(event) => event.stopPropagation()}>
@@ -63,50 +120,20 @@ export function SettingsPanel({
 
         <div className="settings-panel__field">
           <span>Accent color</span>
-          <div className="accent-color-picker">
-            <div className="accent-color-swatches">
-              {ACCENT_COLOR_PRESETS.map((color) => (
-                <button
-                  key={color}
-                  type="button"
-                  className={
-                    'accent-color-swatch' +
-                    (settings.accentColor.toLowerCase() === color.toLowerCase()
-                      ? ' is-selected'
-                      : '')
-                  }
-                  style={{ background: color }}
-                  aria-label={`Use ${color} as the accent color`}
-                  onClick={() => onChange({ accentColor: color })}
-                />
-              ))}
-            </div>
-            <div className="accent-color-custom">
-              <input
-                type="color"
-                value={settings.accentColor}
-                onChange={(event) => onChange({ accentColor: event.target.value })}
-                aria-label="Pick a custom accent color"
-              />
-              <input
-                type="text"
-                className="accent-color-hex"
-                // Uncontrolled, keyed to the committed color: free typing
-                // (e.g. a partial "#f5a" mid-edit) isn't fought by a
-                // controlled value snapping back every keystroke, and the
-                // field still remounts to show the latest committed color
-                // whenever it changes from elsewhere (a preset click, the
-                // color picker, or a config reset) - without setState-in-
-                // effect syncing.
-                key={settings.accentColor}
-                defaultValue={settings.accentColor}
-                onChange={(event) => handleAccentColorInput(event.target.value)}
-                placeholder="#f5a623"
-                spellCheck={false}
-                aria-label="Accent color hex code"
-              />
-            </div>
-          </div>
+          <ColorSetting
+            noun="accent color"
+            value={settings.accentColor}
+            onChange={(color) => onChange({ accentColor: color })}
+          />
+        </div>
+
+        <div className="settings-panel__field">
+          <span>Render color</span>
+          <ColorSetting
+            noun="render color"
+            value={settings.renderColor}
+            onChange={(color) => onChange({ renderColor: color })}
+          />
         </div>
 
         <label className="settings-panel__field settings-panel__field--checkbox">

@@ -6,10 +6,11 @@ export interface Favorite {
 export type Theme = 'light' | 'dark' | 'system'
 export type RenderMode = 'shaded' | 'wireframe' | 'xray'
 
-/** Preset choices offered alongside the free-form hex/color-picker input -
- * not an exhaustive set, just the app's suggested starting points. The
- * first entry doubles as the default accent (see DEFAULT_STORE_DATA). */
-export const ACCENT_COLOR_PRESETS = ['#f5a623', '#4fd1c5', '#ff8a9d', '#9aa3ff'] as const
+/** Preset choices offered alongside the free-form hex/color-picker input,
+ * shared by every color Setting (accent color, render color, ...) - not an
+ * exhaustive set, just the app's suggested starting points. The first entry
+ * doubles as each Setting's own default (see DEFAULT_STORE_DATA). */
+export const COLOR_PRESETS = ['#f5a623', '#4fd1c5', '#ff8a9d', '#9aa3ff'] as const
 
 export interface Settings {
   theme: Theme
@@ -24,10 +25,18 @@ export interface Settings {
   checkForUpdatesOnStartup: boolean
   /** The single accent color used for highlights/emphasis across the whole
    * app (buttons, active states, icons, etc.) - not per-file-type, just one
-   * app-wide choice. A hex string, either one of ACCENT_COLOR_PRESETS or a
-   * user-supplied custom color. Distinct from any future 3D-viewer render
-   * color - that's a separate, format-aware Setting. */
+   * app-wide choice. A hex string, either one of COLOR_PRESETS or a
+   * user-supplied custom color. Distinct from renderColor, the 3D viewer's
+   * mesh color. */
   accentColor: string
+  /** The mesh color the 3D viewer falls back to for a Renderable-format
+   * file, same choices as accentColor (COLOR_PRESETS or custom) but
+   * configured and persisted independently. A format that carries its own
+   * color info takes precedence over this fallback - moot in v1 since STL,
+   * the only Renderable format, has none, but the setting stays a fallback
+   * rather than a forced override so that stays true once such a format
+   * exists. */
+  renderColor: string
 }
 
 export interface StoreData {
@@ -52,7 +61,8 @@ export const DEFAULT_STORE_DATA: StoreData = {
     theme: 'system',
     sidebarWidth: 220,
     checkForUpdatesOnStartup: true,
-    accentColor: ACCENT_COLOR_PRESETS[0]
+    accentColor: COLOR_PRESETS[0],
+    renderColor: COLOR_PRESETS[0]
   },
   skippedUpdateVersion: null,
   lastRenderMode: 'shaded'

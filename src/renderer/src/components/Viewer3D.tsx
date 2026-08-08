@@ -7,7 +7,9 @@ interface Viewer3DProps {
   vertices: number[]
   boundingBox: { min: [number, number, number]; max: [number, number, number] }
   renderMode: RenderMode
-  accentColor: string
+  /** Fallback mesh color for formats with no color info of their own (all of
+   * v1's Renderable formats - just STL). See Settings.renderColor. */
+  renderColor: string
 }
 
 interface SceneRefs {
@@ -68,7 +70,7 @@ export function Viewer3D({
   vertices,
   boundingBox,
   renderMode,
-  accentColor
+  renderColor
 }: Viewer3DProps): React.JSX.Element {
   const containerRef = useRef<HTMLDivElement>(null)
   const refs = useRef<SceneRefs | null>(null)
@@ -99,7 +101,7 @@ export function Viewer3D({
     scene.add(fill)
 
     const material = new THREE.MeshStandardMaterial({
-      color: new THREE.Color(accentColor),
+      color: new THREE.Color(renderColor),
       metalness: 0.1,
       roughness: 0.6,
       side: THREE.DoubleSide
@@ -160,12 +162,12 @@ export function Viewer3D({
     applyRenderMode(current.material, renderMode)
   }, [renderMode])
 
-  // Apply accent color.
+  // Apply render color.
   useEffect(() => {
     const current = refs.current
     if (!current) return
-    current.material.color = new THREE.Color(accentColor)
-  }, [accentColor])
+    current.material.color = new THREE.Color(renderColor)
+  }, [renderColor])
 
   function zoomBy(factor: number): void {
     const current = refs.current

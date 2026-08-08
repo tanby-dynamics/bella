@@ -56,14 +56,15 @@ describe('store', () => {
     expect(await store.getLastOpenedFolder()).toBe('D:\\Projects\\Robot Arm')
   })
 
-  it('has default settings (system theme, 220px sidebar, update checks on, orange accent)', async () => {
+  it('has default settings (system theme, 220px sidebar, update checks on, orange accent and render color)', async () => {
     const store = createStore(fakeBackend())
 
     expect(await store.getSettings()).toEqual({
       theme: 'system',
       sidebarWidth: 220,
       checkForUpdatesOnStartup: true,
-      accentColor: '#f5a623'
+      accentColor: '#f5a623',
+      renderColor: '#f5a623'
     })
   })
 
@@ -76,7 +77,8 @@ describe('store', () => {
       theme: 'dark',
       sidebarWidth: 220,
       checkForUpdatesOnStartup: true,
-      accentColor: '#f5a623'
+      accentColor: '#f5a623',
+      renderColor: '#f5a623'
     })
   })
 
@@ -89,7 +91,8 @@ describe('store', () => {
       theme: 'system',
       sidebarWidth: 280,
       checkForUpdatesOnStartup: true,
-      accentColor: '#f5a623'
+      accentColor: '#f5a623',
+      renderColor: '#f5a623'
     })
   })
 
@@ -102,7 +105,8 @@ describe('store', () => {
       theme: 'system',
       sidebarWidth: 220,
       checkForUpdatesOnStartup: false,
-      accentColor: '#f5a623'
+      accentColor: '#f5a623',
+      renderColor: '#f5a623'
     })
   })
 
@@ -115,7 +119,22 @@ describe('store', () => {
       theme: 'system',
       sidebarWidth: 220,
       checkForUpdatesOnStartup: true,
-      accentColor: '#4fd1c5'
+      accentColor: '#4fd1c5',
+      renderColor: '#f5a623'
+    })
+  })
+
+  it('updates the render color independently, leaving the rest untouched', async () => {
+    const store = createStore(fakeBackend())
+
+    await store.setSettings({ renderColor: '#ff8a9d' })
+
+    expect(await store.getSettings()).toEqual({
+      theme: 'system',
+      sidebarWidth: 220,
+      checkForUpdatesOnStartup: true,
+      accentColor: '#f5a623',
+      renderColor: '#ff8a9d'
     })
   })
 
@@ -128,7 +147,8 @@ describe('store', () => {
           theme: 'dark',
           sidebarWidth: 280,
           checkForUpdatesOnStartup: false,
-          accentColor: '#9aa3ff'
+          accentColor: '#9aa3ff',
+          renderColor: '#4fd1c5'
         },
         skippedUpdateVersion: '0.2.0',
         lastRenderMode: 'wireframe'
@@ -188,6 +208,7 @@ describe('store - Skipped Version', () => {
     expect((await store.getSettings()).checkForUpdatesOnStartup).toBe(true)
     expect((await store.getSettings()).sidebarWidth).toBe(220)
     expect((await store.getSettings()).accentColor).toBe('#f5a623')
+    expect((await store.getSettings()).renderColor).toBe('#f5a623')
     expect(await store.getLastRenderMode()).toBe('shaded')
     // Fields the old config did have are preserved, not clobbered by defaults.
     expect((await store.getSettings()).theme).toBe('dark')

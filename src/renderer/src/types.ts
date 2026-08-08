@@ -4,7 +4,7 @@
 export type { FileEntry, Subfolder, FolderContents } from '../../domain/listFolderContents'
 export type { Location } from '../../domain/locations'
 export type { Favorite, Settings, Theme, RenderMode, StoreData } from '../../domain/store'
-export { ACCENT_COLOR_PRESETS } from '../../domain/store'
+export { COLOR_PRESETS } from '../../domain/store'
 export type { StlParseSuccess } from '../../domain/stlParser'
 export type { FormatClassification } from '../../domain/formats'
 export type { UpdateCheckResult, UpdateDownloadStatus } from '../../shared/ipc'

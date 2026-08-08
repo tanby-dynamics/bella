@@ -1,12 +1,13 @@
 import { useEffect, useState } from 'react'
-import type {
-  Favorite,
-  FileEntry,
-  Location,
-  RenderMode,
-  Settings,
-  UpdateCheckResult,
-  UpdateDownloadStatus
+import {
+  COLOR_PRESETS,
+  type Favorite,
+  type FileEntry,
+  type Location,
+  type RenderMode,
+  type Settings,
+  type UpdateCheckResult,
+  type UpdateDownloadStatus
 } from './types'
 import type { PreviewState } from './preview'
 import { parentFolderPath } from './paths'
@@ -70,6 +71,7 @@ function App(): React.JSX.Element {
   const [updateCheckMessage, setUpdateCheckMessage] = useState<string | null>(null)
 
   const sidebarWidth = settings?.sidebarWidth ?? DEFAULT_SIDEBAR_WIDTH
+  const renderColor = settings?.renderColor ?? COLOR_PRESETS[0]
 
   // Expands + scrolls the tree to `path`, without touching what's
   // highlighted - used for the one-off startup reveal (see init below),
@@ -300,6 +302,7 @@ function App(): React.JSX.Element {
           renderMode={renderMode}
           onRenderModeChange={changeRenderMode}
           onOpen={openSelected}
+          renderColor={renderColor}
         />
       </div>
       <StatusBar

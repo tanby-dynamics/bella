@@ -9,14 +9,14 @@ const RENDER_MODES: { id: RenderMode; label: string }[] = [
   { id: 'xray', label: 'X-ray' }
 ]
 
-const ACCENT_COLOR = '#f5a623'
-
 interface PreviewPanelProps {
   selectedEntry: FileEntry | null
   preview: PreviewState
   renderMode: RenderMode
   onRenderModeChange: (mode: RenderMode) => void
   onOpen: () => void
+  /** The configured Settings.renderColor - see Viewer3D. */
+  renderColor: string
 }
 
 export function PreviewPanel({
@@ -24,7 +24,8 @@ export function PreviewPanel({
   preview,
   renderMode,
   onRenderModeChange,
-  onOpen
+  onOpen,
+  renderColor
 }: PreviewPanelProps): React.JSX.Element {
   return (
     <div className="preview-panel">
@@ -77,7 +78,7 @@ export function PreviewPanel({
             vertices={preview.data.vertices}
             boundingBox={preview.data.boundingBox}
             renderMode={renderMode}
-            accentColor={ACCENT_COLOR}
+            renderColor={renderColor}
           />
         )}
       </div>

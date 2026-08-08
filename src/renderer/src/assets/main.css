@@ -492,18 +492,18 @@
   color: var(--text);
 }
 
-.accent-color-picker {
+.color-setting {
   display: flex;
   align-items: center;
   gap: 10px;
 }
 
-.accent-color-swatches {
+.color-setting__swatches {
   display: flex;
   gap: 6px;
 }
 
-.accent-color-swatch {
+.color-setting__swatch {
   width: 22px;
   height: 22px;
   flex-shrink: 0;
@@ -513,11 +513,11 @@
   cursor: pointer;
 }
 
-.accent-color-swatch.is-selected {
+.color-setting__swatch.is-selected {
   border-color: var(--text);
 }
 
-.accent-color-custom {
+.color-setting__custom {
   flex: 1;
   display: flex;
   align-items: center;
@@ -525,7 +525,7 @@
   min-width: 0;
 }
 
-.accent-color-custom input[type='color'] {
+.color-setting__custom input[type='color'] {
   flex-shrink: 0;
   width: 28px;
   height: 28px;
@@ -536,16 +536,16 @@
   cursor: pointer;
 }
 
-.accent-color-custom input[type='color']::-webkit-color-swatch-wrapper {
+.color-setting__custom input[type='color']::-webkit-color-swatch-wrapper {
   padding: 0;
 }
 
-.accent-color-custom input[type='color']::-webkit-color-swatch {
+.color-setting__custom input[type='color']::-webkit-color-swatch {
   border: none;
   border-radius: 3px;
 }
 
-.accent-color-hex {
+.color-setting__hex {
   flex: 1;
   min-width: 0;
   background: var(--bg-raised);
