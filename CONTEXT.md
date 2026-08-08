@@ -146,7 +146,9 @@ Version only — a later Release still prompts.
   separate piece of state from the highlight — see ADR 0004.
 - **3D viewer interaction**: mouse-drag to orbit, scroll-wheel to zoom
   (primary); on-screen +/- buttons perform the same zoom as a secondary,
-  accessible control.
+  accessible control. No damping/inertia on orbit - the camera tracks the
+  mouse directly and stops the instant the drag ends, rather than
+  drifting on afterward.
 - **No search/filter** within a folder in v1.
 - **Hidden and no-preview entries are filtered out of the tree**, not
   shown-but-unstyled. "Hidden" is a dotfile/dotfolder (leading `.`, every

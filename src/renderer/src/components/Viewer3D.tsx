@@ -85,8 +85,10 @@ export function Viewer3D({
     renderer.setPixelRatio(window.devicePixelRatio)
     container.appendChild(renderer.domElement)
 
+    // Damping off: the camera tracks the mouse directly, with no inertia/
+    // "floaty" drift once the drag ends.
     const controls = new OrbitControls(camera, renderer.domElement)
-    controls.enableDamping = true
+    controls.enableDamping = false
 
     scene.add(new THREE.AmbientLight(0xffffff, 0.6))
     const key = new THREE.DirectionalLight(0xffffff, 1.2)

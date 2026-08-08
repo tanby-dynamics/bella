@@ -74,12 +74,12 @@
 	- [x] manual tests
 	- [x] release note
 	- [x] commit
-- [ ] Remove floaty animation in the preview
-	- [ ] Prompt: Remove floaty animation in the preview - changing the preview with the mouse should take effect immediately
-	- [ ] implement
-	- [ ] manual tests 
-	- [ ] release note
-	- [ ] commit
+- [x] Remove floaty animation in the preview
+	- [x] Prompt: Remove floaty animation in the preview - changing the preview with the mouse should take effect immediately
+	- [x] implement
+	- [x] manual tests 
+	- [x] release note
+	- [x] commit
 - [ ] Release v0.2.0
 - [ ] Test auto-update
 - [ ] Configurable accent colors

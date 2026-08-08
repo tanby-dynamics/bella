@@ -15,6 +15,7 @@ file's top entry doesn't match the pushed tag. See ADR 0002.
 - Hide all non-renderable files
 - Move favorite flagging into context menu
 - Remove default render mode configuration setting and remember the last selected render mode in the preview
+- Remove floaty animation in the preview
 
 ## v0.1.2 - 2026-08-08
 
