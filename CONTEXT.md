@@ -85,12 +85,16 @@ Version only — a later Release still prompts.
   separate file list panel and no "current folder" concept — expanding a
   folder anywhere in the tree reveals its subfolders and files together,
   inline, and any number of folders can be expanded independently at
-  once (a VS Code Explorer-style hierarchy). The breadcrumb tracks the
-  *selected file's* containing folder instead of a navigated-to folder;
-  clicking a segment reveals (expands + scrolls to) that ancestor in the
-  tree rather than navigating anywhere, and the tree still does not
-  auto-expand/sync to follow it outside of that explicit reveal. See ADR
-  0004, which supersedes ADR 0001.
+  once (a VS Code Explorer-style hierarchy). The breadcrumb tracks
+  whatever's currently *highlighted* — a folder's own path, or a
+  selected file's containing folder — instead of a navigated-to folder.
+  Clicking a breadcrumb segment (or a Favorite) highlights that folder,
+  the same as clicking its row directly, and reveals (expands + scrolls
+  to) it in the tree — it doesn't navigate anywhere, since the tree is
+  the only browsing surface, but it does select, so the breadcrumb
+  itself updates to match. The tree still does not otherwise
+  auto-expand/sync to follow the highlight. See ADR 0004, which
+  supersedes ADR 0001.
 - **Tree chevrons are unconditional.** Every folder node in the tree
   shows an expand affordance, even if it turns out to have no children —
   avoids an eager per-node child-existence check. A folder row is a

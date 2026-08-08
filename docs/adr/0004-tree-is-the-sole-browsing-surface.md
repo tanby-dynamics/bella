@@ -22,9 +22,13 @@ folder's files at a time, and the breadcrumb tracked that current folder.
 With no separate panel left to swap, there's no single "folder you're in"
 either - any number of tree nodes can be expanded independently, the same
 way a VS Code Explorer works. The breadcrumb's anchor changes accordingly:
-it now tracks the *selected file's* containing folder rather than a
-navigated-to folder, and a breadcrumb click reveals (expands + scrolls to)
-that ancestor in the tree rather than navigating anywhere.
+it tracks whatever's currently *highlighted* in the tree - a folder's own
+path, or a selected file's containing folder - rather than a navigated-to
+folder. Clicking a breadcrumb segment (or a Favorite) highlights that
+folder, the same as clicking its row directly, and reveals (expands +
+scrolls to) it in the tree; it doesn't navigate anywhere, since the tree
+is the only browsing surface, but it does select, so the breadcrumb
+itself updates to match what was just clicked.
 
 Folder rows lost their split chevron/label click targets - previously the
 chevron toggled expand/collapse and the label navigated, two different

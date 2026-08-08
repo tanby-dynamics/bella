@@ -41,9 +41,13 @@ function App(): React.JSX.Element {
   // Also the breadcrumb's fallback before anything's been highlighted. See
   // LocationTreeNode.
   const [initialFolder, setInitialFolder] = useState<string | null>(null)
-  // Set by a breadcrumb click or a Favorite click - tells the Locations
-  // tree to expand down to and scroll to that folder, without changing
-  // what's highlighted. See LocationTreeNode.
+  // Tells the Locations tree to expand down to and scroll to a folder -
+  // set on startup (see init below), and by revealInTree/
+  // selectFolderAndReveal (breadcrumb/Favorite clicks). Purely an
+  // expand-and-scroll signal in itself; it never carries highlight
+  // information - selectFolderAndReveal happens to also highlight the
+  // folder, but that's a separate setState call, not something this
+  // causes. See LocationTreeNode.
   const [revealRequest, setRevealRequest] = useState<RevealRequest | null>(null)
   const [highlighted, setHighlighted] = useState<Highlighted | null>(null)
   const [selectedEntry, setSelectedEntry] = useState<FileEntry | null>(null)
@@ -167,20 +171,21 @@ function App(): React.JSX.Element {
     }
   }
 
-  // A Favorite click - reveals (expands + scrolls to) that folder in the
-  // tree, same as a breadcrumb segment, and highlights it as if its own row
-  // had been clicked directly (unlike a breadcrumb reveal, which leaves the
-  // highlight untouched - a Favorite click is a deliberate "go to this
-  // folder", not just an aid for locating the already-selected file).
-  function selectFavorite(path: string): void {
-    setHighlighted({ path, kind: 'folder' })
-    revealInTree(path)
-  }
-
-  // Breadcrumb segment click - expands and scrolls the tree to that
-  // ancestor folder without changing what's highlighted or previewed.
+  // Expands + scrolls the tree to `path`, without touching what's
+  // highlighted - used for the one-off startup reveal (see init above),
+  // where nothing's been clicked yet so nothing should be highlighted.
   function revealInTree(path: string): void {
     setRevealRequest((current) => ({ path, nonce: (current?.nonce ?? 0) + 1 }))
+  }
+
+  // A Favorite click or a breadcrumb segment click - both mean "go to this
+  // folder": highlight it, as if its own row had been clicked directly in
+  // the tree, and reveal (expand + scroll to) it, even if the tree was
+  // never expanded down to it. Never touches the preview - selecting a
+  // folder this way is exactly like selecting one by clicking its row.
+  function selectFolderAndReveal(path: string): void {
+    setHighlighted({ path, kind: 'folder' })
+    revealInTree(path)
   }
 
   async function openSelected(): Promise<void> {
@@ -268,7 +273,7 @@ function App(): React.JSX.Element {
     <div className="app">
       <Toolbar
         breadcrumbPath={breadcrumbPath}
-        onRevealPath={revealInTree}
+        onSelectPath={selectFolderAndReveal}
         onOpenSettings={() => setSettingsOpen(true)}
       />
       <div className="app__body">
@@ -278,7 +283,7 @@ function App(): React.JSX.Element {
           highlighted={highlighted}
           initialFolder={initialFolder}
           revealRequest={revealRequest}
-          onSelectFavorite={selectFavorite}
+          onSelectFavorite={selectFolderAndReveal}
           onSelectFolder={selectFolder}
           onSelectFile={selectFile}
           onAddHighlightedFolderAsFavorite={addHighlightedFolderAsFavorite}

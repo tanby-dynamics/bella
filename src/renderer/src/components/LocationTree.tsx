@@ -12,8 +12,12 @@ interface TreeItem {
  * node into view - `nonce` exists so clicking the same breadcrumb segment
  * (or Favorite) twice in a row still re-triggers the scroll (a path alone
  * wouldn't change between identical clicks, so effects keyed on it wouldn't
- * re-fire). A reveal only expands/scrolls - it never changes which row is
- * highlighted. See ADR 0004. */
+ * re-fire). A reveal only expands/scrolls, by itself - it carries no
+ * highlight information and the tree's own reveal effect never sets
+ * highlightedPath. Callers that want the revealed folder highlighted too
+ * (a breadcrumb or Favorite click, not the one-off startup reveal) do so
+ * via a separate, App-owned setState alongside dispatching the reveal -
+ * see App.tsx's selectFolderAndReveal. See ADR 0004. */
 export interface RevealRequest {
   path: string
   nonce: number
@@ -46,7 +50,8 @@ interface LocationTreeNodeProps {
    * none) - captured once and never updated, so this only ever drives
    * auto-expansion on initial mount, not on every later interaction. */
   autoExpandPath: string | null
-  /** Set by a breadcrumb click or a Favorite click - see RevealRequest. */
+  /** Set on startup, and by a breadcrumb click or a Favorite click - see
+   * RevealRequest. */
   revealRequest: RevealRequest | null
 }
 

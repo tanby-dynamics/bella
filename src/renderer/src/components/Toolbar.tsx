@@ -1,14 +1,17 @@
 import { breadcrumbSegments } from '../paths'
 
 interface ToolbarProps {
-  /** The selected file's containing folder, or the last-opened folder
-   * before anything's been selected - there's no "current folder" concept
-   * left to read this from directly (see ADR 0004). */
+  /** Whatever's currently highlighted in the tree - a folder's own path, or
+   * a selected file's containing folder - or the last-opened folder before
+   * anything's been highlighted. There's no "current folder" concept left
+   * to read this from directly (see ADR 0004). */
   breadcrumbPath: string | null
-  /** Clicking a segment reveals (expands + scrolls to) that ancestor in the
-   * Locations tree - it doesn't navigate anywhere, since the tree is the
-   * only browsing surface now. */
-  onRevealPath: (path: string) => void
+  /** Clicking a segment highlights that folder in the Locations tree (same
+   * as clicking its row directly) and reveals (expands + scrolls to) it -
+   * it doesn't navigate anywhere, since the tree is the only browsing
+   * surface now, but it does select, so the breadcrumb itself updates to
+   * match. */
+  onSelectPath: (path: string) => void
   onOpenSettings: () => void
 }
 
@@ -27,7 +30,7 @@ function SettingsIcon(): React.JSX.Element {
 
 export function Toolbar({
   breadcrumbPath,
-  onRevealPath,
+  onSelectPath,
   onOpenSettings
 }: ToolbarProps): React.JSX.Element {
   const segments = breadcrumbPath ? breadcrumbSegments(breadcrumbPath) : []
@@ -44,7 +47,7 @@ export function Toolbar({
                   ? 'toolbar__breadcrumb-current'
                   : 'toolbar__breadcrumb-link'
               }
-              onClick={() => onRevealPath(segment.path)}
+              onClick={() => onSelectPath(segment.path)}
             >
               {segment.label}
             </span>
