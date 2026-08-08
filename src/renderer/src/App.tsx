@@ -164,6 +164,14 @@ function App(): React.JSX.Element {
     if (patch.theme) applyTheme(updated.theme)
   }
 
+  async function resetConfiguration(): Promise<void> {
+    const defaults = await window.api.resetConfig()
+    setSettings(defaults.settings)
+    setRenderMode(defaults.settings.defaultRenderMode)
+    applyTheme(defaults.settings.theme)
+    setFavorites(defaults.favorites)
+  }
+
   async function changeSort(column: SortColumn): Promise<void> {
     const nextDirection: SortDirection =
       column === sort.column
@@ -218,6 +226,7 @@ function App(): React.JSX.Element {
         <SettingsPanel
           settings={settings}
           onChange={changeSettings}
+          onReset={resetConfiguration}
           onClose={() => setSettingsOpen(false)}
         />
       )}

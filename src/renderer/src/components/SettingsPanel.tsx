@@ -3,6 +3,7 @@ import type { RenderMode, Settings, Theme } from '../types'
 interface SettingsPanelProps {
   settings: Settings
   onChange: (patch: Partial<Settings>) => void
+  onReset: () => void
   onClose: () => void
 }
 
@@ -12,8 +13,16 @@ const RENDER_MODES: RenderMode[] = ['shaded', 'wireframe', 'xray']
 export function SettingsPanel({
   settings,
   onChange,
+  onReset,
   onClose
 }: SettingsPanelProps): React.JSX.Element {
+  function handleReset(): void {
+    const confirmed = window.confirm(
+      'Reset configuration? This clears your favorites, last-opened folder, and settings back to defaults. This cannot be undone.'
+    )
+    if (confirmed) onReset()
+  }
+
   return (
     <div className="settings-overlay" onClick={onClose}>
       <div className="settings-panel" onClick={(event) => event.stopPropagation()}>
@@ -51,6 +60,12 @@ export function SettingsPanel({
             ))}
           </select>
         </label>
+
+        <div className="settings-panel__danger-zone">
+          <button type="button" className="settings-panel__reset" onClick={handleReset}>
+            Reset configuration
+          </button>
+        </div>
       </div>
     </div>
   )

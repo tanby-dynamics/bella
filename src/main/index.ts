@@ -61,6 +61,8 @@ function registerIpcHandlers(): void {
     await store.setSettings(patch)
     return store.getSettings()
   })
+
+  ipcMain.handle(IPC.resetConfig, () => store.resetAll())
 }
 
 function createWindow(): void {

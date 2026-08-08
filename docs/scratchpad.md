@@ -14,10 +14,10 @@
 	- [x] spec
 	- [x] implement
 	- [x] manual test
-- [ ] Application icon - I've got icons in the `build` folder, I want them to be used for the application's title icon
-	- [ ] implement
-	- [ ] manual test
-	- [ ] commit
+- [x] Application icon - I've got icons in the `build` folder, I want them to be used for the application's title icon
+	- [x] implement
+	- [x] manual test
+	- [x] commit
 - [ ] Add a button to the Settings screen to "Reset configuration" - show a confirmation dialog, then clear all of the stored configuration and apply it immediately
 	- [ ] implement
 	- [ ] manual test

@@ -5,7 +5,14 @@ export type { FileEntry } from '../../domain/listFolder'
 export type { Subfolder } from '../../domain/listSubfolders'
 export type { SortColumn, SortDirection } from '../../domain/sortEntries'
 export type { Location } from '../../domain/locations'
-export type { Favorite, Settings, Theme, RenderMode, ColumnWidths } from '../../domain/store'
+export type {
+  Favorite,
+  Settings,
+  Theme,
+  RenderMode,
+  ColumnWidths,
+  StoreData
+} from '../../domain/store'
 export type { StlParseSuccess } from '../../domain/stlParser'
 export type { FormatClassification } from '../../domain/formats'
 

@@ -13,7 +13,8 @@ export const IPC = {
   getLastOpenedFolder: 'session:getLastOpenedFolder',
   setLastOpenedFolder: 'session:setLastOpenedFolder',
   getSettings: 'settings:get',
-  setSettings: 'settings:set'
+  setSettings: 'settings:set',
+  resetConfig: 'config:reset'
 } as const
 
 /** Result of asking the main process to parse a file the renderer believes is

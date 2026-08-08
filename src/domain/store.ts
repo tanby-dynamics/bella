@@ -58,6 +58,10 @@ export interface Store {
   setLastOpenedFolder(path: string): Promise<void>
   getSettings(): Promise<Settings>
   setSettings(patch: Partial<Settings>): Promise<void>
+  /** Clears all stored configuration (favorites, last-opened folder,
+   * settings) back to defaults and returns the reset data, so callers can
+   * apply it immediately without a separate round of reads. */
+  resetAll(): Promise<StoreData>
 }
 
 export function createStore(backend: StoreBackend): Store {
@@ -102,6 +106,11 @@ export function createStore(backend: StoreBackend): Store {
     async setSettings(patch) {
       const data = await readData()
       await backend.write({ ...data, settings: { ...data.settings, ...patch } })
+    },
+
+    async resetAll() {
+      await backend.write(DEFAULT_STORE_DATA)
+      return DEFAULT_STORE_DATA
     }
   }
 }

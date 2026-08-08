@@ -115,4 +115,26 @@ describe('store', () => {
       columnWidths: { modifiedAt: 140, type: 92, size: 68 }
     })
   })
+
+  it('resetAll clears favorites, last-opened folder, and settings back to defaults', async () => {
+    const store = createStore(
+      fakeBackend({
+        favorites: [{ name: '3D Projects', path: 'D:\\3D Projects' }],
+        lastOpenedFolder: 'D:\\3D Projects',
+        settings: {
+          theme: 'dark',
+          defaultRenderMode: 'wireframe',
+          sort: { column: 'size', direction: 'desc' },
+          columnWidths: { modifiedAt: 140, type: 92, size: 68 }
+        }
+      })
+    )
+
+    const result = await store.resetAll()
+
+    expect(result).toEqual(DEFAULT_STORE_DATA)
+    expect(await store.getFavorites()).toEqual([])
+    expect(await store.getLastOpenedFolder()).toBeNull()
+    expect(await store.getSettings()).toEqual(DEFAULT_STORE_DATA.settings)
+  })
 })

@@ -4,7 +4,7 @@ import { IPC, type ParseRenderableFileResult } from '../shared/ipc'
 import type { FileEntry } from '../domain/listFolder'
 import type { Subfolder } from '../domain/listSubfolders'
 import type { Location } from '../domain/locations'
-import type { Favorite, Settings } from '../domain/store'
+import type { Favorite, Settings, StoreData } from '../domain/store'
 
 const api = {
   getHomeDirectory: (): Promise<string> => ipcRenderer.invoke(IPC.homeDirectory),
@@ -23,7 +23,8 @@ const api = {
     ipcRenderer.invoke(IPC.setLastOpenedFolder, path),
   getSettings: (): Promise<Settings> => ipcRenderer.invoke(IPC.getSettings),
   setSettings: (patch: Partial<Settings>): Promise<Settings> =>
-    ipcRenderer.invoke(IPC.setSettings, patch)
+    ipcRenderer.invoke(IPC.setSettings, patch),
+  resetConfig: (): Promise<StoreData> => ipcRenderer.invoke(IPC.resetConfig)
 }
 
 export type BellaApi = typeof api

@@ -602,3 +602,24 @@
   padding: 8px 10px;
   color: var(--text);
 }
+
+.settings-panel__danger-zone {
+  padding-top: 16px;
+  border-top: 1px solid var(--border-soft);
+}
+
+.settings-panel__reset {
+  width: 100%;
+  background: none;
+  border: 1px solid var(--error);
+  border-radius: 6px;
+  padding: 8px 10px;
+  color: var(--error);
+  font-size: 12.5px;
+  cursor: pointer;
+}
+
+.settings-panel__reset:hover {
+  background: var(--error);
+  color: var(--bg-panel);
+}
