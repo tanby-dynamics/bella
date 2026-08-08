@@ -651,6 +651,26 @@
   gap: 8px;
 }
 
+.settings-panel__action {
+  align-self: flex-start;
+  background: var(--bg-raised);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 8px 10px;
+  color: var(--text);
+  font-size: 12.5px;
+  cursor: pointer;
+}
+
+.settings-panel__action:hover:not(:disabled) {
+  background: var(--hover);
+}
+
+.settings-panel__action:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
 .settings-panel__update-message {
   color: var(--text-faint);
 }

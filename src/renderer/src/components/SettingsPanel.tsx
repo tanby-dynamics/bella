@@ -80,7 +80,12 @@ export function SettingsPanel({
         </label>
 
         <div className="settings-panel__field">
-          <button type="button" onClick={onCheckForUpdates} disabled={checkingForUpdates}>
+          <button
+            type="button"
+            className="settings-panel__action"
+            onClick={onCheckForUpdates}
+            disabled={checkingForUpdates}
+          >
             {checkingForUpdates ? 'Checking…' : 'Check for updates'}
           </button>
           {updateCheckMessage && (
