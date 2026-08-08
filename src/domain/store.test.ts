@@ -56,14 +56,13 @@ describe('store', () => {
     expect(await store.getLastOpenedFolder()).toBe('D:\\Projects\\Robot Arm')
   })
 
-  it('has default settings (system theme, shaded render mode, name-ascending sort, update checks on)', async () => {
+  it('has default settings (system theme, shaded render mode, 220px sidebar, update checks on)', async () => {
     const store = createStore(fakeBackend())
 
     expect(await store.getSettings()).toEqual({
       theme: 'system',
       defaultRenderMode: 'shaded',
-      sort: { column: 'name', direction: 'asc' },
-      columnWidths: { modifiedAt: 108, type: 92, size: 68 },
+      sidebarWidth: 220,
       checkForUpdatesOnStartup: true
     })
   })
@@ -76,46 +75,20 @@ describe('store', () => {
     expect(await store.getSettings()).toEqual({
       theme: 'dark',
       defaultRenderMode: 'shaded',
-      sort: { column: 'name', direction: 'asc' },
-      columnWidths: { modifiedAt: 108, type: 92, size: 68 },
+      sidebarWidth: 220,
       checkForUpdatesOnStartup: true
     })
   })
 
-  it('updates the sort setting independently, leaving the rest untouched', async () => {
+  it('updates the sidebar width independently, leaving the rest untouched', async () => {
     const store = createStore(fakeBackend())
 
-    await store.setSettings({ sort: { column: 'size', direction: 'desc' } })
+    await store.setSettings({ sidebarWidth: 280 })
 
     expect(await store.getSettings()).toEqual({
       theme: 'system',
       defaultRenderMode: 'shaded',
-      sort: { column: 'size', direction: 'desc' },
-      columnWidths: { modifiedAt: 108, type: 92, size: 68 },
-      checkForUpdatesOnStartup: true
-    })
-  })
-
-  it('has default column widths', async () => {
-    const store = createStore(fakeBackend())
-
-    expect((await store.getSettings()).columnWidths).toEqual({
-      modifiedAt: 108,
-      type: 92,
-      size: 68
-    })
-  })
-
-  it('updates the column widths independently, leaving the rest untouched', async () => {
-    const store = createStore(fakeBackend())
-
-    await store.setSettings({ columnWidths: { modifiedAt: 140, type: 92, size: 68 } })
-
-    expect(await store.getSettings()).toEqual({
-      theme: 'system',
-      defaultRenderMode: 'shaded',
-      sort: { column: 'name', direction: 'asc' },
-      columnWidths: { modifiedAt: 140, type: 92, size: 68 },
+      sidebarWidth: 280,
       checkForUpdatesOnStartup: true
     })
   })
@@ -128,8 +101,7 @@ describe('store', () => {
     expect(await store.getSettings()).toEqual({
       theme: 'system',
       defaultRenderMode: 'shaded',
-      sort: { column: 'name', direction: 'asc' },
-      columnWidths: { modifiedAt: 108, type: 92, size: 68 },
+      sidebarWidth: 220,
       checkForUpdatesOnStartup: false
     })
   })
@@ -142,8 +114,7 @@ describe('store', () => {
         settings: {
           theme: 'dark',
           defaultRenderMode: 'wireframe',
-          sort: { column: 'size', direction: 'desc' },
-          columnWidths: { modifiedAt: 140, type: 92, size: 68 },
+          sidebarWidth: 280,
           checkForUpdatesOnStartup: false
         },
         skippedUpdateVersion: '0.2.0'
@@ -185,22 +156,22 @@ describe('store - Skipped Version', () => {
 
   it('fills in defaults for fields missing from an older on-disk config', async () => {
     // Simulates a config file written before checkForUpdatesOnStartup /
-    // skippedUpdateVersion existed.
+    // skippedUpdateVersion / sidebarWidth existed (the last replaced the
+    // old sort/columnWidths fields - see ADR 0004).
     const store = createStore(
       fakeBackend({
         favorites: [],
         lastOpenedFolder: null,
         settings: {
           theme: 'dark',
-          defaultRenderMode: 'shaded',
-          sort: { column: 'name', direction: 'asc' },
-          columnWidths: { modifiedAt: 108, type: 92, size: 68 }
+          defaultRenderMode: 'shaded'
         }
       } as unknown as StoreData)
     )
 
     expect(await store.getSkippedUpdateVersion()).toBeNull()
     expect((await store.getSettings()).checkForUpdatesOnStartup).toBe(true)
+    expect((await store.getSettings()).sidebarWidth).toBe(220)
     // Fields the old config did have are preserved, not clobbered by defaults.
     expect((await store.getSettings()).theme).toBe('dark')
   })

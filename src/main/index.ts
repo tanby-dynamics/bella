@@ -4,8 +4,7 @@ import { homedir } from 'node:os'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import icon from '../../resources/icon.png?asset'
 import {
-  listFolder,
-  listSubfolders,
+  listFolderContents,
   parseRenderable,
   enumerateLocations,
   createStore,
@@ -23,10 +22,8 @@ const store = createStore(fileStoreBackend)
 function registerIpcHandlers(): void {
   ipcMain.handle(IPC.homeDirectory, () => homedir())
 
-  ipcMain.handle(IPC.listFolder, (_event, path: string) => listFolder(path, fsDirectoryReader))
-
-  ipcMain.handle(IPC.listSubfolders, (_event, path: string) =>
-    listSubfolders(path, fsDirectoryReader)
+  ipcMain.handle(IPC.listFolderContents, (_event, path: string) =>
+    listFolderContents(path, fsDirectoryReader)
   )
 
   ipcMain.handle(

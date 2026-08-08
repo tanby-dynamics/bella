@@ -46,6 +46,18 @@ export function isAncestorPath(ancestor: string, path: string): boolean {
   return path.startsWith(normalizedAncestor)
 }
 
+/** The folder a file lives directly inside, derived from its own full path.
+ * Used to seed the breadcrumb from the selected file (see App.tsx) now that
+ * there's no separate "current folder" navigation state to read it from -
+ * see ADR 0004. Reuses breadcrumbSegments' path-splitting rather than
+ * re-deriving it, so Windows drive-root handling stays in one place. Falls
+ * back to the input path itself for a path with no parent segment (e.g. a
+ * bare drive root passed by mistake) rather than throwing. */
+export function parentFolderPath(filePath: string): string {
+  const segments = breadcrumbSegments(filePath)
+  return segments.length >= 2 ? segments[segments.length - 2].path : filePath
+}
+
 export function fileNameFromPath(path: string): string {
   const sep = detectSeparator(path)
   const parts = path.split(sep).filter(Boolean)

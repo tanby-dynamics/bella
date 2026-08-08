@@ -45,13 +45,14 @@
 	- [x] manual test
 	- [x] release note
 	- [x] commit
-- [ ] grill: Remove the file list panel and move files into the location tree. It should work like VS Code's EXPLORER panel - lean on that for expected behaviour. For example, remove icons for directories, but leave them for files. 
-	- [ ] spec
+- [ ] Remove the file list panel and move files into the location tree. It should work like VS Code's EXPLORER panel - lean on that for expected behaviour. For example, remove icons for directories, but leave them for files. 
+	- [x] grill
+	- [x] spec
 	- [ ] implement
 	- [ ] manual tests
 	- [ ] release note
 	- [ ] merge
-- [ ] Hide non-recognised file types and dotfiles
+- [ ] Hide hidden directories and files, dotfiles (files and directories), and non-recognised file types and dotfiles
 	- [ ] spec
 	- [ ] implement
 	- [ ] manual tests 
@@ -59,8 +60,8 @@
 	- [ ] merge
 - [ ] Release v0.2.0
 - [ ] Test auto-update
-- [ ] Configurable accent colors - defaults of `#f5a623 #4fd1c5 #ff8a9d #9aa3ff` or assign your own
-- [ ] Configurable render colour - defaults of `#f5a623 #4fd1c5 #ff8a9d #9aa3ff` or assign your own. Note that this shouldn't override colors specified in the previewed file - if the file is in a format that has colors the preview should use those colors
+- [ ] Configurable accent colors - defaults of `#f5a623 #4fd1c5 #ff8a9d #9aa3ff` or assign your own (hex code and color picker)
+- [ ] Configurable render colour - defaults of `#f5a623 #4fd1c5 #ff8a9d #9aa3ff` or assign your own (hex code and color picker). Note that this shouldn't override colors specified in the previewed file - if the file is in a format that has colors the preview should use those colors
 - [ ] Implement OBJ and MTL formats
 	- [ ] spec
 	- [ ] implement

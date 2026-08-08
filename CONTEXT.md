@@ -17,18 +17,19 @@ browser (badge, icon) but has no 3D preview yet; shown with a
 
 **Browsing scope** — unrestricted and OS-wide: any drive, folder, or network
 share reachable from the OS, not limited to app-defined workspaces or
-project roots. The file list shows every *file* in the current folder, not
-just CAD files, and no subfolders (see Location below for folder
-navigation) — CAD files (Renderable or Listed formats) get an extension
-badge and preview support; everything else gets a generic file icon and no
-preview.
+project roots. Expanding a folder anywhere in the Locations tree reveals
+every *file* inside it (not just CAD files) alongside its subfolders — CAD
+files (Renderable or Listed formats) get an extension badge and preview
+support; everything else gets a generic file icon and no preview. See ADR
+0004: the tree is the sole browsing surface, there's no separate file list.
 
 **Location** — a filesystem root shown in the sidebar's tree (e.g. "This
 PC", a drive, a network share), auto-enumerated from the OS and lazily
-expandable to browse its subfolders. Distinct from Favorite: Locations are
-what the OS offers, Favorites are what the user pins. The term applies only
-to these top-level roots — the tree's expandable subfolder nodes underneath
-a Location aren't themselves Locations, just folders being browsed.
+expandable to browse its subfolders and files. Distinct from Favorite:
+Locations are what the OS offers, Favorites are what the user pins. The
+term applies only to these top-level roots — the tree's expandable
+subfolder nodes underneath a Location aren't themselves Locations, just
+folders being browsed.
 
 **Render mode** — the 3D viewer's display style for a Renderable-format
 file, one of:
@@ -80,18 +81,24 @@ Version only — a later Release still prompts.
   Metadata panel v1 fields: Dimensions, Triangle count, Modified date.
 - **v1 Settings scope**: theme (light/dark/system) and default render
   mode. Nothing file-management-related until that feature exists.
-- **Folder navigation is tree-only.** The file panel lists files only —
-  no folders, no click-to-navigate. Changing folder happens exclusively
-  via the Locations sidebar tree (lazily expandable per Location, one
-  level of subfolders at a time). The breadcrumb is a passive "you are
-  here" indicator with click-to-jump to an ancestor, not an independent
-  navigation control, and the tree does not auto-expand/sync to follow
-  it.
+- **The Locations tree is the sole browsing surface.** There's no
+  separate file list panel and no "current folder" concept — expanding a
+  folder anywhere in the tree reveals its subfolders and files together,
+  inline, and any number of folders can be expanded independently at
+  once (a VS Code Explorer-style hierarchy). The breadcrumb tracks the
+  *selected file's* containing folder instead of a navigated-to folder;
+  clicking a segment reveals (expands + scrolls to) that ancestor in the
+  tree rather than navigating anywhere, and the tree still does not
+  auto-expand/sync to follow it outside of that explicit reveal. See ADR
+  0004, which supersedes ADR 0001.
 - **Tree chevrons are unconditional.** Every folder node in the tree
-  shows an expand affordance, even if it turns out to have no
-  subfolders — avoids an eager per-node child-existence check. Chevron
-  and label are separate click targets: chevron expands/collapses,
-  label navigates.
+  shows an expand affordance, even if it turns out to have no children —
+  avoids an eager per-node child-existence check. A folder row is a
+  single click target (unlike the old chevron/label split): clicking it
+  toggles expand/collapse and highlights the row in the same click, since
+  there's no separate "navigate" action left to disambiguate from
+  "expand." Selecting/highlighting a folder never touches the preview —
+  only selecting a *different file* does.
 - **No synthetic "This PC" grouping node.** Locations stay flat
   top-level roots (drives, shares), matching how they're enumerated
   today — no wrapper node introduced purely for grouping.
@@ -99,23 +106,31 @@ Version only — a later Release still prompts.
   visual treatment as the tree) but no drag-to-reorder and no
   auto-suggested "frequent folders" — pinning/unpinning only, same as
   today.
-- **File-listing domain functions are split by purpose**, not filtered
-  client-side: one domain function returns files only for the file
-  panel, a separate function returns immediate subfolders only for tree
-  expansion. See [ADR 0001](docs/adr/0001-file-panel-files-only-navigation-via-tree.md).
-- **File list view is fixed at list (Explorer-style)**, sortable by
-  column (Name, Date modified, Type, Size). Sort is a single global
-  (column, direction) setting — not per-folder — persisted across
-  restarts; clicking the active column toggles direction; sensible
-  per-column defaults (Name/Type ascending, Date modified/Size
-  descending on first click).
+- **One domain function returns a folder's subfolders and files
+  together** (`listFolderContents`), pre-sorted folders-first then
+  alphabetically (case-insensitive) within each group — replaces the old
+  files-only/subfolders-only split. See [ADR 0004](docs/adr/0004-tree-is-the-sole-browsing-surface.md),
+  which supersedes [ADR 0001](docs/adr/0001-file-panel-files-only-navigation-via-tree.md).
+- **Tree sort order is fixed**, not user-configurable: folders first,
+  then files, both alphabetical/case-insensitive. There's no column-based
+  sort UI or persisted sort setting anymore (see ADR 0004) — Type and
+  Size for the selected file show in the status bar instead.
+- **The sidebar/tree panel is resizable**, its width persisted across
+  restarts as `sidebarWidth` — the sole survivor of the old
+  resizable-columns persistence, now that files render as tree rows
+  rather than list columns.
 - **Metadata panel for Listed formats** shows only file size and Modified
   date — Dimensions and Triangle count require parsing geometry Bella
   doesn't understand for these formats, so they're omitted rather than
   shown empty.
 - **App state persists** across restarts in a local app-config file:
-  Favorites list, last-opened folder, and the global sort setting.
-- **Selection is single-file only** in v1 — no multi-select.
+  Favorites list, last-opened folder (now updated whenever a file is
+  selected, since there's no separate "navigate to a folder" event
+  anymore — see ADR 0004), and the sidebar width.
+- **Selection is single-file only** in v1 — no multi-select. The tree's
+  highlight can land on a folder too (for visual feedback while
+  browsing), but only a file selection drives the preview, and it's a
+  separate piece of state from the highlight — see ADR 0004.
 - **3D viewer interaction**: mouse-drag to orbit, scroll-wheel to zoom
   (primary); on-screen +/- buttons perform the same zoom as a secondary,
   accessible control.

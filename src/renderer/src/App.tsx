@@ -1,23 +1,18 @@
 import { useEffect, useMemo, useState } from 'react'
-import {
-  sortEntries,
-  type ColumnWidths,
-  type Favorite,
-  type FileEntry,
-  type Location,
-  type RenderMode,
-  type Settings,
-  type SortColumn,
-  type SortDirection,
-  type UpdateCheckResult,
-  type UpdateDownloadStatus
+import type {
+  Favorite,
+  FileEntry,
+  Location,
+  RenderMode,
+  Settings,
+  UpdateCheckResult,
+  UpdateDownloadStatus
 } from './types'
 import type { PreviewState } from './preview'
-import { fileNameFromPath } from './paths'
+import { fileNameFromPath, parentFolderPath } from './paths'
 import { Toolbar } from './components/Toolbar'
 import { Sidebar } from './components/Sidebar'
-import type { RevealRequest } from './components/LocationTree'
-import { FileList } from './components/FileList'
+import type { Highlighted, RevealRequest } from './components/LocationTree'
 import { PreviewPanel } from './components/PreviewPanel'
 import { StatusBar } from './components/StatusBar'
 import { SettingsPanel } from './components/SettingsPanel'
@@ -26,27 +21,9 @@ import { UpdatePrompt } from './components/UpdatePrompt'
 
 type AvailableUpdate = Extract<UpdateCheckResult, { available: true }>
 
-// Single global sort setting, not remembered per folder (see CONTEXT.md) -
-// this is the fallback before Settings has loaded from the store.
-const DEFAULT_SORT: { column: SortColumn; direction: SortDirection } = {
-  column: 'name',
-  direction: 'asc'
-}
-
-// Fallback column widths before Settings has loaded - matches
+// Fallback sidebar width before Settings has loaded - matches
 // DEFAULT_STORE_DATA in src/domain/store.ts.
-const DEFAULT_COLUMN_WIDTHS: ColumnWidths = { modifiedAt: 108, type: 92, size: 68 }
-
-// Default direction when a column is first clicked (not yet the active
-// sort) - Name/Type ascending, Date modified/Size descending, matching
-// Explorer's own conventions. Clicking the already-active column toggles
-// instead of falling back to this. See CONTEXT.md.
-const DEFAULT_DIRECTION: Record<SortColumn, SortDirection> = {
-  name: 'asc',
-  type: 'asc',
-  modifiedAt: 'desc',
-  size: 'desc'
-}
+const DEFAULT_SIDEBAR_WIDTH = 220
 
 function applyTheme(theme: Settings['theme']): void {
   const resolved =
@@ -59,19 +36,17 @@ function applyTheme(theme: Settings['theme']): void {
 }
 
 function App(): React.JSX.Element {
-  const [currentFolder, setCurrentFolder] = useState<string | null>(null)
   // The folder Bella opened at startup - captured once and never updated
-  // again, so the Locations tree only auto-expands to it on initial mount,
-  // not on every later navigation. See LocationTreeNode.
+  // again, so the Locations tree only auto-expands to it on initial mount.
+  // Also the breadcrumb's fallback before any file has been selected. See
+  // LocationTreeNode.
   const [initialFolder, setInitialFolder] = useState<string | null>(null)
-  // Set only by breadcrumb clicks (see navigateFromBreadcrumb) - tells the
-  // Locations tree to expand down to and scroll to that folder. Unlike
-  // initialFolder this changes throughout the app's lifetime, so it's a
-  // request object (nonce included) rather than a plain path, letting the
-  // tree re-scroll even if the same segment is clicked twice in a row.
+  // Set by a breadcrumb click or a Favorite click - tells the Locations
+  // tree to expand down to and scroll to that folder, without changing
+  // what's highlighted. See LocationTreeNode.
   const [revealRequest, setRevealRequest] = useState<RevealRequest | null>(null)
-  const [entries, setEntries] = useState<FileEntry[]>([])
-  const [selectedPath, setSelectedPath] = useState<string | null>(null)
+  const [highlighted, setHighlighted] = useState<Highlighted | null>(null)
+  const [selectedEntry, setSelectedEntry] = useState<FileEntry | null>(null)
   const [preview, setPreview] = useState<PreviewState>({ status: 'empty' })
   const [renderMode, setRenderMode] = useState<RenderMode>('shaded')
   const [favorites, setFavorites] = useState<Favorite[]>([])
@@ -85,20 +60,16 @@ function App(): React.JSX.Element {
   const [checkingForUpdates, setCheckingForUpdates] = useState(false)
   const [updateCheckMessage, setUpdateCheckMessage] = useState<string | null>(null)
 
-  const selectedEntry = useMemo(
-    () => entries.find((entry) => entry.path === selectedPath) ?? null,
-    [entries, selectedPath]
-  )
+  const sidebarWidth = settings?.sidebarWidth ?? DEFAULT_SIDEBAR_WIDTH
 
-  // Global sort - applies across every folder, not remembered per folder
-  // (see CONTEXT.md) - so it lives in Settings alongside theme/render mode
-  // rather than folder-scoped state.
-  const sort = settings?.sort ?? DEFAULT_SORT
-  const sortedEntries = useMemo(
-    () => sortEntries(entries, sort.column, sort.direction),
-    [entries, sort]
+  // The breadcrumb tracks the selected file's containing folder - there's
+  // no separate "current folder" left to read it from (see ADR 0004).
+  // Before anything's been selected, it falls back to the folder Bella
+  // opened at startup.
+  const breadcrumbPath = useMemo(
+    () => (selectedEntry ? parentFolderPath(selectedEntry.path) : initialFolder),
+    [selectedEntry, initialFolder]
   )
-  const columnWidths = settings?.columnWidths ?? DEFAULT_COLUMN_WIDTHS
 
   useEffect(() => {
     let cancelled = false
@@ -128,10 +99,15 @@ function App(): React.JSX.Element {
       setFavorites(loadedFavorites)
       setLocations(loadedLocations)
       setAppVersion(version)
-
       const startFolder = lastOpenedFolder ?? homeDirectory
       setInitialFolder(startFolder)
-      await navigate(startFolder)
+      // The tree auto-expands down to startFolder synchronously (see
+      // LocationTreeNode's shouldAutoExpand, driven by initialFolder/
+      // autoExpandPath) - that alone doesn't scroll it into view, though.
+      // Reveal reuses the same ancestor-chain check, finds those nodes
+      // already expanded, and just does the scroll. See ADR 0004 / user
+      // story 15.
+      revealInTree(startFolder)
 
       // Silent startup Update Check - never surfaces an error, and honours
       // a previously Skipped Version (bypassSkip: false). See CONTEXT.md.
@@ -155,28 +131,22 @@ function App(): React.JSX.Element {
     return window.api.onUpdateDownloadStatus(setDownloadStatus)
   }, [])
 
-  async function navigate(path: string): Promise<void> {
-    setCurrentFolder(path)
-    setSelectedPath(null)
-    setPreview({ status: 'empty' })
-    const loadedEntries = await window.api.listFolder(path)
-    setEntries(loadedEntries)
-    await window.api.setLastOpenedFolder(path)
+  // A folder row's click - highlights it, but never touches the preview.
+  // Expand/collapse is handled locally by the tree node itself.
+  function selectFolder(path: string): void {
+    setHighlighted({ path, kind: 'folder' })
   }
 
-  // Breadcrumb click, specifically - reveals the target folder in the
-  // Locations tree in addition to the plain navigate() every navigation
-  // source triggers. Scoped to breadcrumb because it's the one nav path
-  // that can jump to a folder the tree was never expanded down to
-  // (Favorites can too, but only the breadcrumb was asked for here).
-  async function navigateFromBreadcrumb(path: string): Promise<void> {
-    await navigate(path)
-    setRevealRequest((current) => ({ path, nonce: (current?.nonce ?? 0) + 1 }))
-  }
-
-  async function selectEntry(entry: FileEntry): Promise<void> {
-    setSelectedPath(entry.path)
+  // A file row's click - highlights it and loads it into the preview. The
+  // only interaction that changes what's previewed (see ADR 0004): folder
+  // clicks/expands never clear it. Also becomes the new "last opened
+  // folder" for next startup's auto-expand/breadcrumb fallback, since
+  // there's no other "current folder" signal left to persist.
+  async function selectFile(entry: FileEntry): Promise<void> {
+    setHighlighted({ path: entry.path, kind: 'file' })
+    setSelectedEntry(entry)
     setRenderMode(settings?.defaultRenderMode ?? 'shaded')
+    await window.api.setLastOpenedFolder(parentFolderPath(entry.path))
 
     if (entry.classification.kind !== 'renderable') {
       setPreview({ status: 'not-available' })
@@ -194,14 +164,33 @@ function App(): React.JSX.Element {
     }
   }
 
+  // A Favorite click - reveals (expands + scrolls to) that folder in the
+  // tree, same as a breadcrumb segment, and highlights it as if its own row
+  // had been clicked directly (unlike a breadcrumb reveal, which leaves the
+  // highlight untouched - a Favorite click is a deliberate "go to this
+  // folder", not just an aid for locating the already-selected file).
+  function selectFavorite(path: string): void {
+    setHighlighted({ path, kind: 'folder' })
+    revealInTree(path)
+  }
+
+  // Breadcrumb segment click - expands and scrolls the tree to that
+  // ancestor folder without changing what's highlighted or previewed.
+  function revealInTree(path: string): void {
+    setRevealRequest((current) => ({ path, nonce: (current?.nonce ?? 0) + 1 }))
+  }
+
   async function openSelected(): Promise<void> {
     if (!selectedEntry) return
     await window.api.openExternal(selectedEntry.path)
   }
 
-  async function addCurrentFolderAsFavorite(): Promise<void> {
-    if (!currentFolder) return
-    await window.api.addFavorite({ name: fileNameFromPath(currentFolder), path: currentFolder })
+  async function addHighlightedFolderAsFavorite(): Promise<void> {
+    if (highlighted?.kind !== 'folder') return
+    await window.api.addFavorite({
+      name: fileNameFromPath(highlighted.path),
+      path: highlighted.path
+    })
     setFavorites(await window.api.listFavorites())
   }
 
@@ -224,18 +213,8 @@ function App(): React.JSX.Element {
     setFavorites(defaults.favorites)
   }
 
-  async function changeSort(column: SortColumn): Promise<void> {
-    const nextDirection: SortDirection =
-      column === sort.column
-        ? sort.direction === 'asc'
-          ? 'desc'
-          : 'asc'
-        : DEFAULT_DIRECTION[column]
-    await changeSettings({ sort: { column, direction: nextDirection } })
-  }
-
-  async function changeColumnWidths(widths: ColumnWidths): Promise<void> {
-    await changeSettings({ columnWidths: widths })
+  async function changeSidebarWidth(width: number): Promise<void> {
+    await changeSettings({ sidebarWidth: width })
   }
 
   async function checkForUpdatesManually(): Promise<void> {
@@ -285,29 +264,24 @@ function App(): React.JSX.Element {
   return (
     <div className="app">
       <Toolbar
-        currentFolder={currentFolder}
-        onNavigate={navigateFromBreadcrumb}
+        breadcrumbPath={breadcrumbPath}
+        onRevealPath={revealInTree}
         onOpenSettings={() => setSettingsOpen(true)}
       />
       <div className="app__body">
         <Sidebar
           favorites={favorites}
           locations={locations}
-          currentFolder={currentFolder}
+          highlighted={highlighted}
           initialFolder={initialFolder}
           revealRequest={revealRequest}
-          onNavigate={navigate}
-          onAddCurrentFolderAsFavorite={addCurrentFolderAsFavorite}
+          onSelectFavorite={selectFavorite}
+          onSelectFolder={selectFolder}
+          onSelectFile={selectFile}
+          onAddHighlightedFolderAsFavorite={addHighlightedFolderAsFavorite}
           onRemoveFavorite={removeFavorite}
-        />
-        <FileList
-          entries={sortedEntries}
-          selectedPath={selectedPath}
-          onSelect={selectEntry}
-          sort={sort}
-          onSortChange={changeSort}
-          columnWidths={columnWidths}
-          onColumnWidthsChange={changeColumnWidths}
+          width={sidebarWidth}
+          onWidthChange={changeSidebarWidth}
         />
         <PreviewPanel
           selectedEntry={selectedEntry}

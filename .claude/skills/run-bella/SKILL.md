@@ -30,14 +30,14 @@ renderer's async init settle after `launch()`):
 
 ```js
 // scratch-check.mjs (repo root - delete when done, don't commit)
-import { launch, clickText, clickBreadcrumb, breadcrumbText, fileListNames, ss, quit } from
+import { launch, clickText, clickBreadcrumb, breadcrumbText, treeFileNames, ss, quit } from
   './.claude/skills/run-bella/driver.mjs'
 
 await launch()
-await new Promise((r) => setTimeout(r, 1000)) // let startup navigation settle
+await new Promise((r) => setTimeout(r, 1000)) // let startup init settle
 console.log(await breadcrumbText())
 console.log(await clickBreadcrumb(1))
-console.log(await breadcrumbText(), await fileListNames())
+console.log(await breadcrumbText(), await treeFileNames())
 await ss('after-click')
 await quit()
 ```
@@ -48,12 +48,13 @@ node scratch-check.mjs
 
 Screenshots land in `.playwright-shots/` (override: `SCREENSHOT_DIR`).
 
-Delete the throwaway script when done; don't commit it. **Every
-`navigate()` call in the running app persists to the user's real
-`bella-config.json`** (`lastOpenedFolder`) - if your scenario navigates
-around, check that file afterward (`%APPDATA%\bella\bella-config.json`)
-and restore it if you've left the user's app pointed somewhere they
-weren't.
+Delete the throwaway script when done; don't commit it. **Selecting a file
+in the running app persists to the user's real `bella-config.json`**
+(`lastOpenedFolder`, set to that file's containing folder - there's no
+separate "navigate to a folder" action anymore, see ADR 0004) - if your
+scenario selects files around, check that file afterward
+(`%APPDATA%\bella\bella-config.json`) and restore it if you've left the
+user's app pointed somewhere they weren't.
 
 ### Exports (agent path) / REPL commands (human path)
 
@@ -68,7 +69,7 @@ script, or type `launch` at the `driver>` prompt.
 | `clickText(text)` | `click-text <text>` | click button/link/span whose text matches or contains it |
 | `clickBreadcrumb(i)` | `click-breadcrumb <index>` | click the Nth toolbar breadcrumb segment (0-indexed) |
 | `breadcrumbText()` | - | array of current breadcrumb segment labels |
-| `fileListNames()` | - | array of file names currently shown in the file list pane |
+| `treeFileNames()` | - | array of file names currently visible in the Locations tree (i.e. under an expanded folder) |
 | `evalPage(expr)` | `eval <js>` | evaluate expression in the page, return the value |
 | `text(sel?)` | `text [css-sel]` | `innerText` of an element (or `body`) |
 | `windows()` | `windows` | list all windows + webContents (for finding the real UI) |
@@ -78,10 +79,14 @@ REPL-only (keyboard input, no return value needed): `type <text>`,
 `press <key>`, `wait <css-sel>` (10s timeout). Use `page.keyboard` /
 `page.waitForSelector` directly from an agent script instead.
 
-Useful selectors in this app: `.sidebar__tree-label` (Locations tree node
-labels - click navigates), `.toolbar__breadcrumb-link` /
-`.toolbar__breadcrumb-current` (breadcrumb segments), `.file-list__row`
-(file rows), `.file-list__name-text` (file name text within a row).
+Useful selectors in this app (see ADR 0004 - files render inline in the
+Locations tree, there's no separate file list panel anymore):
+`.sidebar__tree-item` (a folder row - click toggles expand and highlights
+it), `.sidebar__tree-label` (a folder row's name text),
+`.sidebar__tree-file` (a file row - click selects it and loads the
+preview), `.sidebar__tree-file-name` (a file row's name text),
+`.toolbar__breadcrumb-link` / `.toolbar__breadcrumb-current` (breadcrumb
+segments - click reveals that ancestor in the tree, doesn't navigate).
 
 ## Run (human path)
 

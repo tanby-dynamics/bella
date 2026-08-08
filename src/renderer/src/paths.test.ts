@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { breadcrumbSegments, fileNameFromPath, isAncestorPath } from './paths'
+import { breadcrumbSegments, fileNameFromPath, isAncestorPath, parentFolderPath } from './paths'
 
 describe('breadcrumbSegments', () => {
   it('splits a unix-style path into segments with cumulative paths', () => {
@@ -40,5 +40,21 @@ describe('isAncestorPath', () => {
 describe('fileNameFromPath', () => {
   it('returns the last segment of a Windows path', () => {
     expect(fileNameFromPath('C:\\development\\bella')).toBe('bella')
+  })
+})
+
+describe('parentFolderPath', () => {
+  it('returns the containing folder of a nested file', () => {
+    expect(parentFolderPath('C:\\Projects\\Robot Arm\\base_plate.stl')).toBe(
+      'C:\\Projects\\Robot Arm'
+    )
+  })
+
+  it('returns the drive root for a file directly inside it', () => {
+    expect(parentFolderPath('C:\\notes.txt')).toBe('C:\\')
+  })
+
+  it('returns the containing folder of a unix-style path', () => {
+    expect(parentFolderPath('/Projects/Robot Arm/base_plate.stl')).toBe('/Projects/Robot Arm')
   })
 })

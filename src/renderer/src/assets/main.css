@@ -82,12 +82,29 @@
 /* Sidebar */
 
 .sidebar {
-  width: 220px;
+  /* width is set inline from the persisted/dragged value - see Sidebar.tsx */
+  position: relative;
   flex-shrink: 0;
   background: var(--bg-mute);
   border-right: 1px solid var(--border-soft);
   padding: 16px 8px;
   overflow: auto;
+}
+
+.sidebar__resizer {
+  position: absolute;
+  top: 0;
+  right: -4px;
+  width: 8px;
+  height: 100%;
+  cursor: col-resize;
+  z-index: 1;
+}
+
+.sidebar__resizer:hover,
+.sidebar__resizer:active {
+  background: var(--accent);
+  opacity: 0.4;
 }
 
 .sidebar__section-header {
@@ -186,20 +203,22 @@
   gap: 4px;
 }
 
-.sidebar__chevron {
+/* .sidebar__tree-item prefix on both rules below beats the generic
+   ".sidebar__item span { flex: 1; ... }" rule above, which would otherwise
+   stretch the chevron into filling the row - it's a span, not a button,
+   now that the whole row is one click target instead of two (see ADR
+   0004), so it's newly in scope for that generic selector. */
+.sidebar__tree-item .sidebar__chevron {
   flex: none;
   display: flex;
   align-items: center;
   justify-content: center;
   width: 22px;
   height: 22px;
-  background: none;
-  border: none;
   color: var(--text-faint);
-  cursor: pointer;
 }
 
-.sidebar__chevron:hover {
+.sidebar__tree-item:hover .sidebar__chevron {
   color: var(--text);
 }
 
@@ -222,153 +241,28 @@
   color: var(--text-faint);
 }
 
-/* File list */
+/* Tree file rows - files rendered inline in the Locations tree alongside
+   folders, replacing the old separate file list panel. See ADR 0004. */
 
-.file-list {
-  width: 460px;
-  flex-shrink: 0;
-  border-right: 1px solid var(--border-soft);
-  background: var(--bg-soft);
-  display: flex;
-  flex-direction: column;
-  min-height: 0;
-}
-
-.file-list__header {
-  padding: 12px 16px 8px;
-  font-size: 12px;
-  color: var(--text-faint);
-  flex-shrink: 0;
-}
-
-.file-list__scroll {
-  flex: 1;
-  min-height: 0;
-  overflow: auto;
-}
-
-.file-list__row {
-  display: grid;
-  /* grid-template-columns is set inline per-row from persisted columnWidths -
-     see FileList.tsx. */
-  align-items: center;
+.sidebar__tree-file {
   gap: 8px;
-  padding: 0 16px;
 }
 
-.file-list__row--head {
-  position: sticky;
-  top: 0;
-  z-index: 2;
-  height: 30px;
-  flex-shrink: 0;
-  border-top: 1px solid var(--border-soft);
-  border-bottom: 1px solid var(--border-soft);
-  background: var(--bg-mute);
+/* Specificity needs to beat the generic ".sidebar__item span { flex: 1; ... }"
+   rule above, which would otherwise stretch this into filling the row. */
+.sidebar__tree-file .sidebar__chevron-spacer {
+  flex: none;
+  width: 22px;
+  height: 22px;
 }
 
-.file-list__row--head .file-list__col {
-  position: relative;
-  height: 100%;
-  display: flex;
-  align-items: center;
-}
-
-.file-list__sort-btn {
+.sidebar__tree-file-name {
   flex: 1;
   min-width: 0;
-  height: 100%;
-  background: none;
-  border: none;
-  padding: 0;
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  font-size: 11px;
-  font-weight: 700;
-  letter-spacing: 0.4px;
-  color: var(--text-faint);
-  cursor: pointer;
-  text-align: left;
-}
-
-.file-list__sort-btn.is-active {
-  color: var(--text);
-}
-
-.file-list__col--size .file-list__sort-btn {
-  justify-content: flex-end;
-}
-
-.file-list__col-resizer {
-  position: absolute;
-  top: 0;
-  right: -8px;
-  width: 8px;
-  height: 100%;
-  cursor: col-resize;
-  z-index: 1;
-}
-
-.file-list__col-resizer:hover,
-.file-list__col-resizer:active {
-  background: var(--accent);
-  opacity: 0.4;
-}
-
-.file-list__row:not(.file-list__row--head) {
-  height: 34px;
-  cursor: pointer;
-  color: var(--text-muted);
-  border-bottom: 1px solid transparent;
-}
-
-.file-list__row:not(.file-list__row--head):hover {
-  background: var(--hover);
-}
-
-.file-list__row.is-selected {
-  background: var(--hover);
-  color: var(--text);
-}
-
-.file-list__col--name {
-  min-width: 0;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  color: var(--text);
-}
-
-.file-list__name-text {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
   font-size: 12.5px;
-}
-
-.file-list__col--modified,
-.file-list__col--type {
-  font-size: 11.5px;
-  text-align: left;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.file-list__col--size {
-  font-size: 11.5px;
-  text-align: right;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.file-list__empty {
-  padding: 40px 16px;
-  text-align: center;
-  font-size: 13px;
-  color: var(--text-faint);
 }
 
 /* Preview panel */

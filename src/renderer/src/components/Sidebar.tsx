@@ -1,18 +1,32 @@
-import { useState } from 'react'
-import type { Favorite, Location } from '../types'
-import { ChevronIcon, LocationTreeNode, type RevealRequest } from './LocationTree'
+import { useRef, useState } from 'react'
+import type { Favorite, FileEntry, Location } from '../types'
+import { ChevronIcon, LocationTreeNode, type Highlighted, type RevealRequest } from './LocationTree'
+
+const MIN_SIDEBAR_WIDTH = 180
+const MAX_SIDEBAR_WIDTH = 560
 
 interface SidebarProps {
   favorites: Favorite[]
   locations: Location[]
-  currentFolder: string | null
+  /** The single row highlighted across the whole tree (file or folder) -
+   * see Highlighted. Passed through as one value rather than split into
+   * path/kind props, since both are needed together for the "add to
+   * Favorites" affordance below (only makes sense for a folder). */
+  highlighted: Highlighted | null
   /** The folder Bella opened at startup - see LocationTreeNode. */
   initialFolder: string | null
-  /** Set on a breadcrumb click - see LocationTreeNode. */
+  /** Set on a breadcrumb click or a Favorite click - see LocationTreeNode. */
   revealRequest: RevealRequest | null
-  onNavigate: (path: string) => void
-  onAddCurrentFolderAsFavorite: () => void
+  onSelectFavorite: (path: string) => void
+  onSelectFolder: (path: string) => void
+  onSelectFile: (entry: FileEntry) => void
+  onAddHighlightedFolderAsFavorite: () => void
   onRemoveFavorite: (path: string) => void
+  /** Persisted panel width in px, and the setter to commit a resize once
+   * the drag ends - see ADR 0004 (the sole survivor of the old
+   * resizable-columns persistence, now that files live in the tree). */
+  width: number
+  onWidthChange: (width: number) => void
 }
 
 function StarIcon(): React.JSX.Element {
@@ -30,18 +44,61 @@ function StarIcon(): React.JSX.Element {
 export function Sidebar({
   favorites,
   locations,
-  currentFolder,
+  highlighted,
   initialFolder,
   revealRequest,
-  onNavigate,
-  onAddCurrentFolderAsFavorite,
-  onRemoveFavorite
+  onSelectFavorite,
+  onSelectFolder,
+  onSelectFile,
+  onAddHighlightedFolderAsFavorite,
+  onRemoveFavorite,
+  width,
+  onWidthChange
 }: SidebarProps): React.JSX.Element {
   const [favoritesExpanded, setFavoritesExpanded] = useState(true)
-  const isCurrentFolderFavorite = favorites.some((f) => f.path === currentFolder)
+  // Only set while a drag is in progress - overrides the persisted width
+  // prop for live visual feedback without writing to the store on every
+  // pixel of mouse movement, same pattern as FileList's old column resize.
+  const [dragWidth, setDragWidth] = useState<number | null>(null)
+  const dragRef = useRef<{ startX: number; startWidth: number } | null>(null)
+  const displayWidth = dragWidth ?? width
+  // LocationTreeNode only ever needs the bare path for its own highlight
+  // check - kind only matters here, for the "add to Favorites" affordance.
+  const highlightedPath = highlighted?.path ?? null
+  const canAddHighlightedFolder =
+    highlighted?.kind === 'folder' && !favorites.some((f) => f.path === highlightedPath)
+
+  function startResize(event: React.MouseEvent): void {
+    event.preventDefault()
+    dragRef.current = { startX: event.clientX, startWidth: width }
+    setDragWidth(width)
+
+    function onMouseMove(moveEvent: MouseEvent): void {
+      const drag = dragRef.current
+      if (!drag) return
+      const next = Math.min(
+        MAX_SIDEBAR_WIDTH,
+        Math.max(MIN_SIDEBAR_WIDTH, drag.startWidth + (moveEvent.clientX - drag.startX))
+      )
+      setDragWidth(next)
+    }
+
+    function onMouseUp(): void {
+      document.removeEventListener('mousemove', onMouseMove)
+      document.removeEventListener('mouseup', onMouseUp)
+      dragRef.current = null
+      setDragWidth((current) => {
+        if (current !== null) onWidthChange(current)
+        return null
+      })
+    }
+
+    document.addEventListener('mousemove', onMouseMove)
+    document.addEventListener('mouseup', onMouseUp)
+  }
 
   return (
-    <div className="sidebar">
+    <div className="sidebar" style={{ width: displayWidth }}>
       <div className="sidebar__section-header">
         <button
           type="button"
@@ -52,12 +109,12 @@ export function Sidebar({
           <ChevronIcon expanded={favoritesExpanded} />
           <span>FAVORITES</span>
         </button>
-        {currentFolder && !isCurrentFolderFavorite && (
+        {canAddHighlightedFolder && (
           <button
             type="button"
             className="sidebar__add-favorite"
-            title="Add current folder to Favorites"
-            onClick={onAddCurrentFolderAsFavorite}
+            title="Add to Favorites"
+            onClick={onAddHighlightedFolderAsFavorite}
           >
             +
           </button>
@@ -67,8 +124,8 @@ export function Sidebar({
         favorites.map((favorite) => (
           <div
             key={favorite.path}
-            className={`sidebar__item${favorite.path === currentFolder ? ' is-active' : ''}`}
-            onClick={() => onNavigate(favorite.path)}
+            className={`sidebar__item${favorite.path === highlightedPath ? ' is-active' : ''}`}
+            onClick={() => onSelectFavorite(favorite.path)}
           >
             <StarIcon />
             <span>{favorite.name}</span>
@@ -94,12 +151,15 @@ export function Sidebar({
           key={location.path}
           item={location}
           depth={0}
-          currentFolder={currentFolder}
-          onNavigate={onNavigate}
+          highlightedPath={highlightedPath}
+          onSelectFolder={onSelectFolder}
+          onSelectFile={onSelectFile}
           autoExpandPath={initialFolder}
           revealRequest={revealRequest}
         />
       ))}
+
+      <div className="sidebar__resizer" onMouseDown={startResize} />
     </div>
   )
 }

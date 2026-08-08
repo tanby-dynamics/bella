@@ -114,10 +114,14 @@ export async function breadcrumbText() {
   )
 }
 
-export async function fileListNames() {
+// Bella-specific: file rows now render inline in the Locations tree
+// (ADR 0004 folded the old separate file list panel into it) - this
+// returns the names of file rows currently visible (i.e. under an
+// expanded folder), not the whole tree.
+export async function treeFileNames() {
   if (!page) throw new Error('launch first')
   return page.evaluate(() =>
-    [...document.querySelectorAll('.file-list__row:not(.file-list__row--head) .file-list__name-text')].map((r) =>
+    [...document.querySelectorAll('.sidebar__tree-file .sidebar__tree-file-name')].map((r) =>
       r.textContent.trim()
     )
   )
