@@ -1,0 +1,88 @@
+export interface Favorite {
+  name: string
+  path: string
+}
+
+export type Theme = 'light' | 'dark' | 'system'
+export type RenderMode = 'shaded' | 'wireframe' | 'xray'
+
+export interface Settings {
+  theme: Theme
+  defaultRenderMode: RenderMode
+}
+
+export interface StoreData {
+  favorites: Favorite[]
+  lastOpenedFolder: string | null
+  settings: Settings
+}
+
+export const DEFAULT_STORE_DATA: StoreData = {
+  favorites: [],
+  lastOpenedFolder: null,
+  settings: { theme: 'system', defaultRenderMode: 'shaded' }
+}
+
+/** Backing storage for the store's data - swappable independently of the
+ * store's own get/set interface. The real adapter persists to a local
+ * app-config file; tests use an in-memory fake. */
+export interface StoreBackend {
+  read(): Promise<StoreData | undefined>
+  write(data: StoreData): Promise<void>
+}
+
+export interface Store {
+  getFavorites(): Promise<Favorite[]>
+  addFavorite(favorite: Favorite): Promise<void>
+  removeFavorite(path: string): Promise<void>
+  getLastOpenedFolder(): Promise<string | null>
+  setLastOpenedFolder(path: string): Promise<void>
+  getSettings(): Promise<Settings>
+  setSettings(patch: Partial<Settings>): Promise<void>
+}
+
+export function createStore(backend: StoreBackend): Store {
+  async function readData(): Promise<StoreData> {
+    return (await backend.read()) ?? DEFAULT_STORE_DATA
+  }
+
+  return {
+    async getFavorites() {
+      const data = await readData()
+      return data.favorites
+    },
+
+    async addFavorite(favorite) {
+      const data = await readData()
+      await backend.write({ ...data, favorites: [...data.favorites, favorite] })
+    },
+
+    async removeFavorite(path) {
+      const data = await readData()
+      await backend.write({
+        ...data,
+        favorites: data.favorites.filter((f) => f.path !== path)
+      })
+    },
+
+    async getLastOpenedFolder() {
+      const data = await readData()
+      return data.lastOpenedFolder
+    },
+
+    async setLastOpenedFolder(path) {
+      const data = await readData()
+      await backend.write({ ...data, lastOpenedFolder: path })
+    },
+
+    async getSettings() {
+      const data = await readData()
+      return data.settings
+    },
+
+    async setSettings(patch) {
+      const data = await readData()
+      await backend.write({ ...data, settings: { ...data.settings, ...patch } })
+    }
+  }
+}
