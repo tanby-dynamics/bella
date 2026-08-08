@@ -61,7 +61,10 @@ function FolderIcon(): React.JSX.Element {
  * re-expanding doesn't re-fetch. The chevron (expand/collapse) and the
  * label (navigate) are separate click targets, per the confirmed seam -
  * but clicking the label also expands the node (if not already), so
- * navigating into a folder always reveals its subfolders too. */
+ * navigating into a folder always reveals its subfolders too. Clicking the
+ * label of the folder that's already selected has nothing left to
+ * navigate to, so it toggles the expand state instead, same as the
+ * chevron. */
 export function LocationTreeNode({
   item,
   depth,
@@ -95,13 +98,28 @@ export function LocationTreeNode({
     setExpanded(true)
   }
 
-  async function toggleExpand(event: React.MouseEvent): Promise<void> {
-    event.stopPropagation()
+  async function toggleExpanded(): Promise<void> {
     if (expanded) {
       setExpanded(false)
     } else {
       await expand()
     }
+  }
+
+  // Clicking the label of a folder that isn't the current selection
+  // navigates into it and expands it (so its subfolders become visible).
+  // Clicking the label of the folder that's *already* the current
+  // selection instead toggles its expand state, the same as the chevron -
+  // there's nothing further to navigate to, so the click is free to mean
+  // "show/hide children" instead.
+  async function handleLabelClick(): Promise<void> {
+    if (item.path === currentFolder) {
+      await toggleExpanded()
+      return
+    }
+
+    onNavigate(item.path)
+    if (!expanded) await expand()
   }
 
   useEffect(() => {
@@ -127,19 +145,16 @@ export function LocationTreeNode({
         <button
           type="button"
           className="sidebar__chevron"
-          onClick={toggleExpand}
+          onClick={(event) => {
+            event.stopPropagation()
+            void toggleExpanded()
+          }}
           aria-label={expanded ? `Collapse ${item.name}` : `Expand ${item.name}`}
           aria-expanded={expanded}
         >
           <ChevronIcon expanded={expanded} />
         </button>
-        <span
-          className="sidebar__tree-label"
-          onClick={() => {
-            onNavigate(item.path)
-            if (!expanded) void expand()
-          }}
-        >
+        <span className="sidebar__tree-label" onClick={() => void handleLabelClick()}>
           {depth === 0 ? <DriveIcon /> : <FolderIcon />}
           <span>{item.name}</span>
         </span>
