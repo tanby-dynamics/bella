@@ -9,7 +9,7 @@ import type {
   UpdateDownloadStatus
 } from './types'
 import type { PreviewState } from './preview'
-import { fileNameFromPath, parentFolderPath } from './paths'
+import { parentFolderPath } from './paths'
 import { Sidebar } from './components/Sidebar'
 import type { Highlighted, RevealRequest } from './components/LocationTree'
 import { PreviewPanel } from './components/PreviewPanel'
@@ -179,17 +179,20 @@ function App(): React.JSX.Element {
     await window.api.openExternal(selectedEntry.path)
   }
 
-  async function addHighlightedFolderAsFavorite(): Promise<void> {
-    if (highlighted?.kind !== 'folder') return
-    await window.api.addFavorite({
-      name: fileNameFromPath(highlighted.path),
-      path: highlighted.path
-    })
+  async function removeFavorite(path: string): Promise<void> {
+    await window.api.removeFavorite(path)
     setFavorites(await window.api.listFavorites())
   }
 
-  async function removeFavorite(path: string): Promise<void> {
-    await window.api.removeFavorite(path)
+  // "Make favorite"/"Unfavorite" from a Locations-tree folder's right-click
+  // menu - see LocationTreeNode. Which one it means is decided here, from
+  // current favorites state, rather than by the tree node itself.
+  async function toggleFavorite(item: { name: string; path: string }): Promise<void> {
+    if (favorites.some((f) => f.path === item.path)) {
+      await window.api.removeFavorite(item.path)
+    } else {
+      await window.api.addFavorite(item)
+    }
     setFavorites(await window.api.listFavorites())
   }
 
@@ -267,8 +270,8 @@ function App(): React.JSX.Element {
           onSelectFavorite={selectFolderAndReveal}
           onSelectFolder={selectFolder}
           onSelectFile={selectFile}
-          onAddHighlightedFolderAsFavorite={addHighlightedFolderAsFavorite}
           onRemoveFavorite={removeFavorite}
+          onToggleFavorite={toggleFavorite}
           width={sidebarWidth}
           onWidthChange={changeSidebarWidth}
         />

@@ -60,54 +60,63 @@
 - [x] Hide hidden directories and files, dotfiles (files and directories), and non-renderable file types
 	- [x] implement
 	- [x] manual tests 
-	- [ ] release note
-	- [ ] commit
-- [ ] Add a context menu to directory entries in the sidebar. Single entry - "Make favorite". If the directory is already a favorite the entry should be "Unfavorite".
+	- [x] release note
+	- [x] commit
+- [ ] Reimplement adding favs
+	- [x] prompt: Add a right-click context menu to directory entries in the sidebar. Single entry - "Make favorite". If the directory is already a favorite the entry should be "Unfavorite". Remove the "+" add favorite button that's next to the "FAVORITES" label. Add a "-" remove favorite button next to each favorite entry.
+	- [x] implement
+	- [x] manual tests
+	- [x] release note
+	- [x] commit
+- [ ] Remove default render mode configuration setting and remember the last selected render mode in the preview
+	- [ ] Prompt: Remove the "Default render mode" configuration setting and remember the last selected render mode in the preview
 	- [ ] implement
 	- [ ] manual tests
 	- [ ] release note
 	- [ ] commit
-- [ ] Remove the "Default render mode" and just remember the last selected render mode in the preview
-	- [ ] implement
-	- [ ] manual tests
-	- [ ] release note
-	- [ ] commit
-- [ ] Remove animation in the preview - changing the view should take effect immediately
+- [ ] Remove floaty animation in the preview
+	- [ ] Prompt: Remove floaty animation in the preview - changing the preview with the mouse should take effect immediately
 	- [ ] implement
 	- [ ] manual tests 
 	- [ ] release note
 	- [ ] commit
 - [ ] Release v0.2.0
 - [ ] Test auto-update
-- [ ] Configurable accent colors - defaults of `#f5a623 #4fd1c5 #ff8a9d #9aa3ff` or assign your own (hex code and color picker)
+- [ ] Configurable accent colors
+	- [ ] Prompt: Configurable accent colors - defaults of `#f5a623 #4fd1c5 #ff8a9d #9aa3ff` or assign your own (hex code and color picker)
 	- [ ] implement
 	- [ ] manual tests 
 	- [ ] release note
 	- [ ] commit
-- [ ] Configurable render colour - defaults of `#f5a623 #4fd1c5 #ff8a9d #9aa3ff` or assign your own (hex code and color picker). Note that this shouldn't override colors specified in the previewed file - if the file is in a format that has colors the preview should use those colors
+- [ ] Configurable render colour
+	- [ ] Prompt: Configurable render colour - defaults of `#f5a623 #4fd1c5 #ff8a9d #9aa3ff` or assign your own (hex code and color picker). Note that this shouldn't override colors specified in the previewed file - if the file is in a format that has colors the preview should use those colors
 	- [ ] implement
 	- [ ] manual tests 
 	- [ ] release note
 	- [ ] commit
 - [ ] Implement OBJ and MTL formats
+	- [ ] Prompt: Implement OBJ and MTL formats
 	- [ ] spec
 	- [ ] implement
 	- [ ] test 
 	- [ ] release note
 	- [ ] merge
 - [ ] Implement 3MF format
+	- [ ] Prompt: Implement 3MF format
 	- [ ] spec
 	- [ ] implement
 	- [ ] test 
 	- [ ] release note
 	- [ ] merge
-- [ ] Implement STEP format - https://github.com/kovacsv/occt-import-js
+- [ ] Implement STEP format
+	- [ ] Prompt: Implement STEP format - https://github.com/kovacsv/occt-import-js
 	- [ ] spec
 	- [ ] implement
 	- [ ] test 
 	- [ ] release note
 	- [ ] merge
-- [ ] Implement FreeCAD's `.FCStd` format
+- [ ] Implement FreeCAD's format
+	- [ ] Prompt: Implement FreeCAD's `.FCStd` format
 	- [ ] spec
 	- [ ] implement
 	- [ ] test 

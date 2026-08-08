@@ -20,8 +20,12 @@ interface SidebarProps {
   onSelectFavorite: (path: string) => void
   onSelectFolder: (path: string) => void
   onSelectFile: (entry: FileEntry) => void
-  onAddHighlightedFolderAsFavorite: () => void
   onRemoveFavorite: (path: string) => void
+  /** Fired from a Locations-tree folder's right-click menu ("Make
+   * favorite"/"Unfavorite") - see LocationTreeNode. Threaded down to every
+   * tree node rather than computed here, since only the node handling the
+   * click knows which folder it's for. */
+  onToggleFavorite: (item: { name: string; path: string }) => void
   /** Persisted panel width in px, and the setter to commit a resize once
    * the drag ends - see ADR 0004 (the sole survivor of the old
    * resizable-columns persistence, now that files live in the tree). */
@@ -50,8 +54,8 @@ export function Sidebar({
   onSelectFavorite,
   onSelectFolder,
   onSelectFile,
-  onAddHighlightedFolderAsFavorite,
   onRemoveFavorite,
+  onToggleFavorite,
   width,
   onWidthChange
 }: SidebarProps): React.JSX.Element {
@@ -62,10 +66,11 @@ export function Sidebar({
   const dragRef = useRef<{ startX: number; startWidth: number } | null>(null)
   const displayWidth = dragWidth ?? width
   // LocationTreeNode only ever needs the bare path for its own highlight
-  // check - kind only matters here, for the "add to Favorites" affordance.
+  // check.
   const highlightedPath = highlighted?.path ?? null
-  const canAddHighlightedFolder =
-    highlighted?.kind === 'folder' && !favorites.some((f) => f.path === highlightedPath)
+  // Membership-only view of favorites, for each tree node's own right-click
+  // menu label - see LocationTreeNode.
+  const favoritePaths = new Set(favorites.map((f) => f.path))
 
   function startResize(event: React.MouseEvent): void {
     event.preventDefault()
@@ -105,17 +110,7 @@ export function Sidebar({
           position. */}
       <div className="sidebar__scroll">
         <div className="sidebar__section-header">
-            <span>FAVORITES</span>
-          {canAddHighlightedFolder && (
-            <button
-              type="button"
-              className="sidebar__add-favorite"
-              title="Add to Favorites"
-              onClick={onAddHighlightedFolderAsFavorite}
-            >
-              +
-            </button>
-          )}
+          <span>FAVORITES</span>
         </div>
         {favorites.map((favorite) => (
           <div
@@ -134,7 +129,7 @@ export function Sidebar({
                 onRemoveFavorite(favorite.path)
               }}
             >
-              ×
+              ✕
             </button>
           </div>
         ))}
@@ -152,6 +147,8 @@ export function Sidebar({
             onSelectFile={onSelectFile}
             autoExpandPath={initialFolder}
             revealRequest={revealRequest}
+            favoritePaths={favoritePaths}
+            onToggleFavorite={onToggleFavorite}
           />
         ))}
       </div>

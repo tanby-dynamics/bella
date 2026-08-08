@@ -87,19 +87,6 @@
   cursor: pointer;
 }
 
-.sidebar__add-favorite {
-  background: none;
-  border: none;
-  color: var(--text-faint);
-  cursor: pointer;
-  font-size: 13px;
-  line-height: 1;
-}
-
-.sidebar__add-favorite:hover {
-  color: var(--text);
-}
-
 .sidebar__item {
   display: flex;
   align-items: center;
@@ -132,18 +119,15 @@
   flex: none;
   background: none;
   border: none;
-  color: var(--text-faint);
+  color: var(--text-muted);
   cursor: pointer;
   font-size: 14px;
-  visibility: hidden;
-}
-
-.sidebar__item:hover .sidebar__remove {
-  visibility: visible;
+  font-weight: 700;
+  line-height: 1;
 }
 
 .sidebar__remove:hover {
-  color: var(--error);
+  color: var(--accent);
 }
 
 /* Locations tree */
@@ -213,6 +197,40 @@
   text-overflow: ellipsis;
   white-space: nowrap;
   font-size: 12.5px;
+}
+
+/* Context menu - a right-click folder menu in the Locations tree, see
+   ContextMenu.tsx. Not scoped under .sidebar since it's positioned fixed
+   at the triggering click's viewport coordinates, outside the sidebar's
+   own clipped/scrolled box. */
+
+.context-menu {
+  position: fixed;
+  z-index: 20;
+  min-width: 150px;
+  background: var(--bg-panel);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 4px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
+}
+
+.context-menu__item {
+  display: block;
+  width: 100%;
+  text-align: left;
+  background: none;
+  border: none;
+  border-radius: 5px;
+  padding: 6px 10px;
+  font: inherit;
+  font-size: 13px;
+  color: var(--text);
+  cursor: pointer;
+}
+
+.context-menu__item:hover {
+  background: var(--hover);
 }
 
 /* Preview panel */

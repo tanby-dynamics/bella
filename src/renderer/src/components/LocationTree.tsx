@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import type { FileEntry, FolderContents, Subfolder } from '../types'
 import { isAncestorPath } from '../paths'
 import { FORMAT_BADGES } from '../formatBadges'
+import { ContextMenu } from './ContextMenu'
 
 interface TreeItem {
   name: string
@@ -52,6 +53,15 @@ interface LocationTreeNodeProps {
   autoExpandPath: string | null
   /** Set on startup, and by a Favorite click - see RevealRequest. */
   revealRequest: RevealRequest | null
+  /** Paths currently pinned as Favorites - just enough for a node's
+   * right-click menu to label its single entry "Make favorite" or
+   * "Unfavorite". A Set (rather than threading the full Favorite[]) since
+   * membership is all any node needs. */
+  favoritePaths: Set<string>
+  /** Fired from a folder row's context menu - toggles that folder's
+   * Favorite state. The node itself doesn't know whether that means add or
+   * remove; the caller decides by checking favoritePaths. */
+  onToggleFavorite: (item: TreeItem) => void
 }
 
 export function ChevronIcon({ expanded }: { expanded: boolean }): React.JSX.Element {
@@ -139,7 +149,9 @@ export function LocationTreeNode({
   onSelectFolder,
   onSelectFile,
   autoExpandPath,
-  revealRequest
+  revealRequest,
+  favoritePaths,
+  onToggleFavorite
 }: LocationTreeNodeProps): React.JSX.Element {
   // Computed once per node (autoExpandPath/item.path are both stable for a
   // given node instance) - drives the *initial* state directly rather than
@@ -152,6 +164,17 @@ export function LocationTreeNode({
   const [loading, setLoading] = useState(shouldAutoExpand)
   const fetchStartedRef = useRef(false)
   const itemRef = useRef<HTMLDivElement>(null)
+  // Right-click position for this node's own "Make favorite"/"Unfavorite"
+  // menu - null when closed. Local to the node rather than lifted, same as
+  // expanded/children: only ever one node's menu is open at a time, and
+  // nothing outside this node needs to know about it.
+  const [contextMenuPos, setContextMenuPos] = useState<{ x: number; y: number } | null>(null)
+  const isFavorite = favoritePaths.has(item.path)
+
+  function handleContextMenu(event: React.MouseEvent): void {
+    event.preventDefault()
+    setContextMenuPos({ x: event.clientX, y: event.clientY })
+  }
 
   async function loadChildren(): Promise<FolderContents> {
     const contents = await window.api.listFolderContents(item.path)
@@ -216,6 +239,7 @@ export function LocationTreeNode({
         className={`sidebar__item sidebar__tree-item${item.path === highlightedPath ? ' is-active' : ''}`}
         style={{ paddingLeft: 10 + depth * 16 }}
         onClick={() => void handleRowClick()}
+        onContextMenu={handleContextMenu}
         role="button"
         tabIndex={0}
         aria-expanded={expanded}
@@ -226,6 +250,19 @@ export function LocationTreeNode({
         </span>
         <span className="sidebar__tree-label">{item.name}</span>
       </div>
+      {contextMenuPos && (
+        <ContextMenu
+          x={contextMenuPos.x}
+          y={contextMenuPos.y}
+          onClose={() => setContextMenuPos(null)}
+          items={[
+            {
+              label: isFavorite ? 'Unfavorite' : 'Make favorite',
+              onSelect: () => onToggleFavorite(item)
+            }
+          ]}
+        />
+      )}
       {expanded && (
         <div className="sidebar__tree-children">
           {loading && <div className="sidebar__tree-loading">Loading…</div>}
@@ -239,6 +276,8 @@ export function LocationTreeNode({
               onSelectFile={onSelectFile}
               autoExpandPath={autoExpandPath}
               revealRequest={revealRequest}
+              favoritePaths={favoritePaths}
+              onToggleFavorite={onToggleFavorite}
             />
           ))}
           {children?.files.map((file) => (

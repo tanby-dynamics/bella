@@ -13,6 +13,7 @@ file's top entry doesn't match the pushed tag. See ADR 0002.
 - Remove the header toolbar
 - Hide hidden and dotfiles and directories
 - Hide all non-renderable files
+- Move favorite flagging into context menu
 
 ## v0.1.2 - 2026-08-08
 
