@@ -18,10 +18,19 @@ interface TreeItem {
  * that want the revealed folder highlighted too (a Favorite click, not
  * the one-off startup reveal) do so via a separate, App-owned setState
  * alongside dispatching the reveal - see App.tsx's selectFolderAndReveal.
- * See ADR 0004. */
+ * See ADR 0004.
+ *
+ * `align` picks the revealed node's scroll alignment - 'start' scrolls it
+ * to the top of the sidebar (a Favorite click: the user's attention is on
+ * the newly revealed folder, so it should land somewhere predictable
+ * rather than wherever "nearest" happens to leave it), 'nearest' (the
+ * default) makes the minimal scroll needed to bring it into view (the
+ * startup reveal, where jumping the tree to the top of a folder the user
+ * didn't just ask to see would be surprising). */
 export interface RevealRequest {
   path: string
   nonce: number
+  align?: ScrollLogicalPosition
 }
 
 /** The single row highlighted across the whole Locations tree - a file or a
@@ -231,7 +240,7 @@ export function LocationTreeNode({
     // of this effect.
     if (!expanded) queueMicrotask(() => void expand())
     if (item.path === revealRequest.path) {
-      itemRef.current?.scrollIntoView({ block: 'nearest' })
+      itemRef.current?.scrollIntoView({ block: revealRequest.align ?? 'nearest' })
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [revealRequest])

@@ -76,8 +76,9 @@ function App(): React.JSX.Element {
   // Expands + scrolls the tree to `path`, without touching what's
   // highlighted - used for the one-off startup reveal (see init below),
   // where nothing's been clicked yet so nothing should be highlighted.
-  function revealInTree(path: string): void {
-    setRevealRequest((current) => ({ path, nonce: (current?.nonce ?? 0) + 1 }))
+  // `align` defaults to 'nearest' - see RevealRequest.
+  function revealInTree(path: string, align?: RevealRequest['align']): void {
+    setRevealRequest((current) => ({ path, nonce: (current?.nonce ?? 0) + 1, align }))
   }
 
   useEffect(() => {
@@ -177,12 +178,14 @@ function App(): React.JSX.Element {
 
   // A Favorite click - means "go to this folder": highlight it, as if its
   // own row had been clicked directly in the tree, and reveal (expand +
-  // scroll to) it, even if the tree was never expanded down to it. Never
+  // scroll to) it, even if the tree was never expanded down to it. Scrolls
+  // it to the top of the sidebar (align: 'start') rather than the minimal
+  // "nearest" scroll, since the user just asked to jump there. Never
   // touches the preview - selecting a folder this way is exactly like
   // selecting one by clicking its row.
   function selectFolderAndReveal(path: string): void {
     setHighlighted({ path, kind: 'folder' })
-    revealInTree(path)
+    revealInTree(path, 'start')
   }
 
   async function openSelected(): Promise<void> {

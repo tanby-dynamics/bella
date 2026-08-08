@@ -79,6 +79,19 @@
 	- [ ] merge
 - [ ] Preview .md and .txt files
 	- [ ] Prompt: xxx
+	- [ ] implement
+	- [ ] test
+	- [ ] release note
+	- [ ] merge
+- [ ] Support collapsing "FAVORITES" and "LOCATIONS" sections
+	- [ ] Prompt: xxx
+	- [ ] spec
+	- [ ] implement
+	- [ ] test
+	- [ ] release note
+	- [ ] merge
+- [ ] Scroll  "FAVORITES" and "LOCATIONS" sections independently
+	- [ ] Prompt: xxx
 	- [ ] spec
 	- [ ] implement
 	- [ ] test
