@@ -492,6 +492,71 @@
   color: var(--text);
 }
 
+.accent-color-picker {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.accent-color-swatches {
+  display: flex;
+  gap: 6px;
+}
+
+.accent-color-swatch {
+  width: 22px;
+  height: 22px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  border: 2px solid transparent;
+  padding: 0;
+  cursor: pointer;
+}
+
+.accent-color-swatch.is-selected {
+  border-color: var(--text);
+}
+
+.accent-color-custom {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+}
+
+.accent-color-custom input[type='color'] {
+  flex-shrink: 0;
+  width: 28px;
+  height: 28px;
+  padding: 2px;
+  background: var(--bg-raised);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.accent-color-custom input[type='color']::-webkit-color-swatch-wrapper {
+  padding: 0;
+}
+
+.accent-color-custom input[type='color']::-webkit-color-swatch {
+  border: none;
+  border-radius: 3px;
+}
+
+.accent-color-hex {
+  flex: 1;
+  min-width: 0;
+  background: var(--bg-raised);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 8px 10px;
+  color: var(--text);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12.5px;
+}
+
 .settings-panel__danger-zone {
   padding-top: 16px;
   border-top: 1px solid var(--border-soft);

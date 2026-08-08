@@ -6,6 +6,10 @@ gets tagged for a release - the release workflow fails the build if this
 file's top entry doesn't match the pushed tag. See ADR 0002.
 -->
 
+## v0.3.0 - 2026-08-09
+
+- Configurable accent colors
+
 ## v0.2.0 - 2026-08-08
 
 - Consolidate directory and file views into the location pane

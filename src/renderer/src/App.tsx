@@ -34,6 +34,13 @@ function applyTheme(theme: Settings['theme']): void {
   document.documentElement.dataset.theme = resolved
 }
 
+// Overrides base.css's --accent default with the persisted/chosen Setting.
+// The single accent used app-wide - not the (separate, future) 3D-viewer
+// render color. See CONTEXT.md.
+function applyAccentColor(color: string): void {
+  document.documentElement.style.setProperty('--accent', color)
+}
+
 function App(): React.JSX.Element {
   // The folder Bella opened at startup - captured once and never updated
   // again, so the Locations tree only auto-expands to it on initial mount.
@@ -91,6 +98,7 @@ function App(): React.JSX.Element {
       setSettings(loadedSettings)
       setRenderMode(lastRenderMode)
       applyTheme(loadedSettings.theme)
+      applyAccentColor(loadedSettings.accentColor)
       setFavorites(loadedFavorites)
       setLocations(loadedLocations)
       setAppVersion(version)
@@ -201,6 +209,7 @@ function App(): React.JSX.Element {
     const updated = await window.api.setSettings(patch)
     setSettings(updated)
     if (patch.theme) applyTheme(updated.theme)
+    if (patch.accentColor) applyAccentColor(updated.accentColor)
   }
 
   // Persists the newly picked Render mode as well as reflecting it in
@@ -216,6 +225,7 @@ function App(): React.JSX.Element {
     setSettings(defaults.settings)
     setRenderMode(defaults.lastRenderMode)
     applyTheme(defaults.settings.theme)
+    applyAccentColor(defaults.settings.accentColor)
     setFavorites(defaults.favorites)
   }
 

@@ -1,5 +1,87 @@
 # Scratchpad
 
+## 20260809
+
+- [ ] Fix auto update
+- [ ] Configurable accent colors
+	- [x] Prompt: I want to be able to configure the accent color - the color that is used across the application for accents - preset defaults of `#f5a623 #4fd1c5 #ff8a9d #9aa3ff` or assign your own (hex code and color picker). NOte that this is _not_ a per-file type accent - there is only one accent color used across the application.
+	- [x] implement
+	- [x] manual tests 
+	- [x] release note
+	- [ ] commit
+- [ ] Pre-release script
+	- [ ] prompt: Add a pre-release script to `package.json` like `npm run prerelease` that runs all tests and performs linting
+- [ ] Configurable render colour
+	- [ ] Prompt: Configurable preview render colour - defaults of `#f5a623 #4fd1c5 #ff8a9d #9aa3ff` or assign your own (hex code and color picker). Note that this shouldn't override colors specified in the previewed file - if the file is in a format that supports defining colors the preview should use those colors.
+	- [ ] implement
+	- [ ] manual tests 
+	- [ ] release note
+	- [ ] commit
+- [ ] Implement OBJ and MTL formats
+	- [ ] Prompt: Implement OBJ and MTL formats
+	- [ ] spec
+	- [ ] implement
+	- [ ] test 
+	- [ ] release note
+	- [ ] merge
+- [ ] Implement 3MF format
+	- [ ] Prompt: Implement 3MF format
+	- [ ] spec
+	- [ ] implement
+	- [ ] test 
+	- [ ] release note
+	- [ ] merge
+- [ ] Implement STEP format
+	- [ ] Prompt: Implement STEP format - https://github.com/kovacsv/occt-import-js
+	- [ ] spec
+	- [ ] implement
+	- [ ] test 
+	- [ ] release note
+	- [ ] merge
+- [ ] Implement FreeCAD's format
+	- [ ] Prompt: Implement FreeCAD's `.FCStd` format
+	- [ ] spec
+	- [ ] implement
+	- [ ] test 
+	- [ ] release note
+	- [ ] merge
+- [ ] Release v0.3.0
+- [ ] Marketing site - bella.tanbydynamics.co
+- [ ] Code signing for macOS
+	- [ ] What do I have to do  to set up code signing for macOS?
+- [ ] Code signing for Windows
+	- [ ] What do I have to do  to set up code signing for Windows?
+- [ ] Tabbed preview
+	- [ ] Prompt: I want to be able to open multiple previews via tabs. This should work similarly to VS Code's tabbing - single clicking a file opens the preview in a transient tab with the file name italicised, double clicking the file or double clicking the tab changes the tab to persistent (non-italicised). Opening a file's preview with a transient tab present closes the transient tab and replaces it with the new preview tab. Click the x or middle click the tab to close it.  Tabs should be re-orderable by dragging and dropping. No support for splitting at the moment - only a single preview will actually be visible at a time.
+	- [ ] spec
+	- [ ] implement
+	- [ ] test 
+	- [ ] release note
+	- [ ] merge
+- [ ] Drag and drop reordering of favorites
+	- [ ] Prompt: xxx
+	- [ ] spec
+	- [ ] implement
+	- [ ] test 
+	- [ ] release note
+	- [ ] merge
+- [ ] Preview PNG, GIF, and JPEG files
+	- [ ] Prompt: xxx
+	- [ ] spec
+	- [ ] implement
+	- [ ] test 
+	- [ ] release note
+	- [ ] merge
+- [ ] Preview .md and .txt files
+	- [ ] Prompt: xxx
+	- [ ] spec
+	- [ ] implement
+	- [ ] test 
+	- [ ] release note
+	- [ ] merge
+- [ ] Release v0.4.0
+- [ ] 
+
 ## 20260808
 
 - [x] v1 MVP
@@ -80,70 +162,8 @@
 	- [x] manual tests 
 	- [x] release note
 	- [x] commit
-- [ ] Release v0.2.0
-- [ ] Test auto-update
-- [ ] Configurable accent colors
-	- [ ] Prompt: Configurable accent colors - defaults of `#f5a623 #4fd1c5 #ff8a9d #9aa3ff` or assign your own (hex code and color picker)
-	- [ ] implement
-	- [ ] manual tests 
-	- [ ] release note
-	- [ ] commit
-- [ ] Configurable render colour
-	- [ ] Prompt: Configurable render colour - defaults of `#f5a623 #4fd1c5 #ff8a9d #9aa3ff` or assign your own (hex code and color picker). Note that this shouldn't override colors specified in the previewed file - if the file is in a format that has colors the preview should use those colors
-	- [ ] implement
-	- [ ] manual tests 
-	- [ ] release note
-	- [ ] commit
-- [ ] Implement OBJ and MTL formats
-	- [ ] Prompt: Implement OBJ and MTL formats
-	- [ ] spec
-	- [ ] implement
-	- [ ] test 
-	- [ ] release note
-	- [ ] merge
-- [ ] Implement 3MF format
-	- [ ] Prompt: Implement 3MF format
-	- [ ] spec
-	- [ ] implement
-	- [ ] test 
-	- [ ] release note
-	- [ ] merge
-- [ ] Implement STEP format
-	- [ ] Prompt: Implement STEP format - https://github.com/kovacsv/occt-import-js
-	- [ ] spec
-	- [ ] implement
-	- [ ] test 
-	- [ ] release note
-	- [ ] merge
-- [ ] Implement FreeCAD's format
-	- [ ] Prompt: Implement FreeCAD's `.FCStd` format
-	- [ ] spec
-	- [ ] implement
-	- [ ] test 
-	- [ ] release note
-	- [ ] merge
-- [ ] Release v0.3.0
-- [ ] Marketing site - bella.tanbydynamics.co
-- [ ] Code signing for macOS
-	- [ ] What do I have to do  to set up code signing for macOS?
-- [ ] Code signing for Windows
-	- [ ] What do I have to do  to set up code signing for Windows?
-- [ ] Tabbed preview
-	- [ ] Prompt: I want to be able to open multiple previews via tabs. This should work similarly to VS Code's tabbing - single clicking a file opens the preview in a transient tab with the file name italicised, double clicking the file or double clicking the tab changes the tab to persistent (non-italicised). Opening a file's preview with a transient tab present closes the transient tab and replaces it with the new preview tab. Click the x or middle click the tab to close it.  Tabs should be re-orderable by dragging and dropping. No support for splitting at the moment - only a single preview will actually be visible at a time.
-	- [ ] spec
-	- [ ] implement
-	- [ ] test 
-	- [ ] release note
-	- [ ] merge
-- [ ] Drag and drop reordering of favorites
-	- [ ] Prompt: xxx
-	- [ ] spec
-	- [ ] implement
-	- [ ] test 
-	- [ ] release note
-	- [ ] merge
-- [ ] Release v0.4.0
-- [ ] 
+- [x] Release v0.2.0
+- [x] Test auto-update
 
 
 
