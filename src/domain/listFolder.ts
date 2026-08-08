@@ -27,13 +27,23 @@ export async function listFolder(
 
   for (const rawEntry of rawEntries) {
     const path = joinPath(folderPath, rawEntry.name)
-    const { size, modifiedAt } = await reader.stat(path)
+
+    let stat: { size: number; modifiedAt: Date }
+    try {
+      stat = await reader.stat(path)
+    } catch {
+      // Real folders - especially drive roots - can contain files an
+      // ordinary user process isn't permitted to read metadata for
+      // (system/locked files). Omit rather than fail the whole listing.
+      continue
+    }
+
     entries.push({
       name: rawEntry.name,
       path,
       isDirectory: rawEntry.isDirectory,
-      size,
-      modifiedAt,
+      size: stat.size,
+      modifiedAt: stat.modifiedAt,
       classification: rawEntry.isDirectory ? { kind: 'other' } : classifyFormat(rawEntry.name)
     })
   }

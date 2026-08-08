@@ -86,6 +86,28 @@ describe('listFolder', () => {
     ])
   })
 
+  it('omits an entry whose metadata cannot be read, instead of failing the whole listing', async () => {
+    // Real folders - especially drive roots - can contain files an
+    // ordinary user process isn't permitted to stat (system/locked files),
+    // e.g. Windows' C:\DumpStack.log.tmp raising EPERM.
+    const reader = fakeReader({
+      readEntries: async () => [
+        { name: 'base_plate.stl', isDirectory: false },
+        { name: 'DumpStack.log.tmp', isDirectory: false }
+      ],
+      stat: async (entryPath) => {
+        if (entryPath.endsWith('DumpStack.log.tmp')) {
+          throw Object.assign(new Error('EPERM: operation not permitted'), { code: 'EPERM' })
+        }
+        return { size: 1200, modifiedAt: new Date('2026-08-01T00:00:00Z') }
+      }
+    })
+
+    const entries = await listFolder('/Projects/Robot Arm', reader)
+
+    expect(entries.map((e) => e.name)).toEqual(['base_plate.stl'])
+  })
+
   it('sorts entries by name', async () => {
     const reader = fakeReader({
       readEntries: async () => [
