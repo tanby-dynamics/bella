@@ -1,5 +1,5 @@
-export type RenderableFormatId = 'stl' | 'obj' | '3mf'
-export type ListedFormatId = 'step' | 'fcstd' | 'scad' | 'mtl'
+export type RenderableFormatId = 'stl' | 'obj' | '3mf' | 'step'
+export type ListedFormatId = 'fcstd' | 'scad' | 'mtl'
 
 export type FormatClassification =
   | { kind: 'renderable'; format: RenderableFormatId }
@@ -9,7 +9,9 @@ export type FormatClassification =
 const RENDERABLE_EXTENSIONS: Record<string, RenderableFormatId> = {
   stl: 'stl',
   obj: 'obj',
-  '3mf': '3mf'
+  '3mf': '3mf',
+  step: 'step',
+  stp: 'step'
 }
 
 // MTL is a material sidecar for OBJ, not a mesh format of its own - it never
@@ -20,7 +22,6 @@ const RENDERABLE_EXTENSIONS: Record<string, RenderableFormatId> = {
 // no-preview entries" decision) - classifying it here rather than leaving it
 // `other` just keeps it correctly labeled if that filtering ever changes.
 const LISTED_EXTENSIONS: Record<string, ListedFormatId> = {
-  step: 'step',
   fcstd: 'fcstd',
   scad: 'scad',
   mtl: 'mtl'
@@ -32,7 +33,6 @@ function extensionOf(fileName: string): string {
 }
 
 const LISTED_TYPE_LABELS: Record<ListedFormatId, string> = {
-  step: 'STEP File',
   fcstd: 'FreeCAD File',
   scad: 'OpenSCAD File',
   mtl: 'MTL Material File'
@@ -41,7 +41,8 @@ const LISTED_TYPE_LABELS: Record<ListedFormatId, string> = {
 const RENDERABLE_TYPE_LABELS: Record<RenderableFormatId, string> = {
   stl: 'STL File',
   obj: 'OBJ File',
-  '3mf': '3MF File'
+  '3mf': '3MF File',
+  step: 'STEP File'
 }
 
 export function typeLabel(classification: FormatClassification): string {

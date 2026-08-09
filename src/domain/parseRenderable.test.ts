@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest'
 import { parseRenderable } from './parseRenderable'
 
 describe('parseRenderable', () => {
-  it('dispatches stl to the STL parser', () => {
+  it('dispatches stl to the STL parser', async () => {
     const text = [
       'solid cube',
       '  facet normal 0 0 0',
@@ -17,7 +17,7 @@ describe('parseRenderable', () => {
       ''
     ].join('\n')
 
-    const result = parseRenderable('stl', Buffer.from(text, 'utf8'))
+    const result = await parseRenderable('stl', Buffer.from(text, 'utf8'))
 
     expect(result).toEqual({
       ok: true,
@@ -27,11 +27,11 @@ describe('parseRenderable', () => {
     })
   })
 
-  it('dispatches obj to the OBJ parser, passing through resolved MTL sources', () => {
+  it('dispatches obj to the OBJ parser, passing through resolved MTL sources', async () => {
     const mtl = ['newmtl red', 'Kd 1 0 0', ''].join('\n')
     const obj = ['v 0 0 0', 'v 1 0 0', 'v 0 1 0', 'usemtl red', 'f 1 2 3', ''].join('\n')
 
-    const result = parseRenderable('obj', Buffer.from(obj, 'utf8'), {
+    const result = await parseRenderable('obj', Buffer.from(obj, 'utf8'), {
       materialSources: new Map([['scene.mtl', mtl]])
     })
 
@@ -44,7 +44,7 @@ describe('parseRenderable', () => {
     })
   })
 
-  it('dispatches 3mf to the 3MF parser', () => {
+  it('dispatches 3mf to the 3MF parser', async () => {
     const modelXml = `<?xml version="1.0" encoding="UTF-8"?>
 <model unit="millimeter" xmlns="http://schemas.microsoft.com/3dmanufacturing/core/2015/02">
   <resources>
@@ -67,7 +67,7 @@ describe('parseRenderable', () => {
 </model>`
     const bytes = Buffer.from(zipSync({ '3D/3dmodel.model': strToU8(modelXml) }))
 
-    const result = parseRenderable('3mf', bytes)
+    const result = await parseRenderable('3mf', bytes)
 
     expect(result).toEqual({
       ok: true,
@@ -76,4 +76,17 @@ describe('parseRenderable', () => {
       vertices: [0, 0, 0, 1, 0, 0, 0, 1, 0]
     })
   })
+
+  // A full valid STEP fixture is exercised in stepParser.test.ts - this
+  // just proves the dispatch reaches parseStep, via its distinct error
+  // message, rather than duplicating that fixture here.
+  it('dispatches step to the STEP parser', async () => {
+    const result = await parseRenderable('step', Buffer.from('not a step file', 'utf8'))
+
+    expect(result).toEqual({
+      ok: false,
+      error: 'parse-error',
+      message: 'STEP file could not be read (occt-import-js reported failure).'
+    })
+  }, 20000)
 })

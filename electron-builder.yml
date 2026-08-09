@@ -9,6 +9,10 @@ files:
   - '!{.eslintcache,eslint.config.mjs,.prettierignore,.prettierrc.yaml,dev-app-update.yml,CHANGELOG.md,README.md}'
   - '!{.env,.env.*,.npmrc,pnpm-lock.yaml}'
   - '!{tsconfig.json,tsconfig.node.json,tsconfig.web.json}'
+  # occt-import-js (STEP preview) ships its own test fixtures/examples/build
+  # tooling in the published package - only dist/ (the WASM binary + its JS
+  # glue) is ever loaded at runtime, see stepParser.ts.
+  - '!node_modules/occt-import-js/{test,examples,tools,CMakeLists.txt,start_server.bat}{,/**}'
 asarUnpack:
   - resources/**
 win:

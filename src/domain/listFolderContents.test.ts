@@ -79,14 +79,15 @@ describe('listFolderContents', () => {
   })
 
   it('omits any file without a 3D preview - Listed formats and unrecognized files alike - before even statting it', async () => {
-    // Only a Renderable format (STL in v1) has a preview - Listed formats
-    // (STEP/FCStd/SCAD) are recognized but show "preview not available" if
-    // ever selected, and unrecognized files show nothing at all, so neither
-    // belongs in a tree whose whole point is browsing to a previewable file.
+    // Only a Renderable format (STL/OBJ/3MF/STEP) has a preview - Listed
+    // formats (FCStd/SCAD) are recognized but show "preview not available"
+    // if ever selected, and unrecognized files show nothing at all, so
+    // neither belongs in a tree whose whole point is browsing to a
+    // previewable file.
     const reader = fakeReader({
       readEntries: async () => [
         { name: 'base_plate.stl', isDirectory: false, isHidden: false },
-        { name: 'gripper_v3.step', isDirectory: false, isHidden: false },
+        { name: 'forearm_link.FCStd', isDirectory: false, isHidden: false },
         { name: 'notes.txt', isDirectory: false, isHidden: false }
       ],
       stat: async (entryPath) => {

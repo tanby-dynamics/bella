@@ -18,8 +18,12 @@ describe('classifyFormat', () => {
     expect(classifyFormat('base_plate.3mf')).toEqual({ kind: 'renderable', format: '3mf' })
   })
 
-  it('classifies .step as a listed (recognized but unsupported) format', () => {
-    expect(classifyFormat('gripper_v3.step')).toEqual({ kind: 'listed', format: 'step' })
+  it('classifies .step as a renderable format', () => {
+    expect(classifyFormat('gripper_v3.step')).toEqual({ kind: 'renderable', format: 'step' })
+  })
+
+  it('classifies .stp as a renderable format', () => {
+    expect(classifyFormat('gripper_v3.stp')).toEqual({ kind: 'renderable', format: 'step' })
   })
 
   it('classifies .FCStd as a listed format, case-insensitively', () => {
@@ -56,8 +60,8 @@ describe('typeLabel', () => {
     expect(typeLabel({ kind: 'listed', format: 'mtl' })).toBe('MTL Material File')
   })
 
-  it('describes a listed STEP as "STEP File"', () => {
-    expect(typeLabel({ kind: 'listed', format: 'step' })).toBe('STEP File')
+  it('describes a renderable STEP as "STEP File"', () => {
+    expect(typeLabel({ kind: 'renderable', format: 'step' })).toBe('STEP File')
   })
 
   it('describes a listed FCStd as "FreeCAD File"', () => {

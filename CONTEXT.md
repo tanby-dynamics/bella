@@ -6,12 +6,12 @@ filesystem and previewing CAD files in a 3D viewer.
 ## Terms
 
 **Renderable format** — a CAD file format Bella can parse into a mesh and
-display in the 3D viewer. STL, OBJ, 3MF. The set of renderable formats is
-expected to grow over time.
+display in the 3D viewer. STL, OBJ, 3MF, STEP (`.step`/`.stp`). The set of
+renderable formats is expected to grow over time.
 
 **Listed format** — a recognized CAD file format with no 3D preview yet;
 would show a badge/icon and a "preview not available" state instead of a
-render, if selected. STEP, FCStd, SCAD, MTL. Classified by the same
+render, if selected. FCStd, SCAD, MTL. Classified by the same
 `classifyFormat` a Renderable format is, but as of the "no-preview formats
 stay out of the tree" decision below, a Listed-format file never actually
 reaches the tree to be selected - the classification exists for the
@@ -160,15 +160,15 @@ Version only — a later Release still prompts.
   via PowerShell in `fsDirectoryReader` - no such attribute exists on
   macOS/Linux). A file without a 3D preview is filtered too, before its
   metadata is even read: that's both an unrecognized file
-  (FormatClassification `other`) and a Listed-format file (`step`/`fcstd`/
-  `scad`/`mtl` - recognized, but no preview implemented) - only a Renderable
-  format (STL, OBJ, 3MF) makes it into the tree. This is a
+  (FormatClassification `other`) and a Listed-format file (`fcstd`/`scad`/
+  `mtl` - recognized, but no preview implemented) - only a Renderable
+  format (STL, OBJ, 3MF, STEP) makes it into the tree. This is a
   `listFolderContents` filter, not a user-facing toggle - there's no way to
   reveal these entries in v1, and no way to select a Listed-format file at
   all right now (its "preview not available" state in the preview/metadata
   panels is currently unreachable through the tree, kept for when a Listed
   format gains a preview and becomes Renderable).
-- **Renderable format set**: STL, OBJ, 3MF. Other plain-mesh formats
+- **Renderable format set**: STL, OBJ, 3MF, STEP. Other plain-mesh formats
   (PLY, ...) can be added later given the format handling is designed to be
   extensible; nothing else is in scope until needed.
 - **OBJ's MTL sidecar is resolved directly from disk, not through the
@@ -205,16 +205,33 @@ Version only — a later Release still prompts.
   which point it's the same "no renderable geometry" parse error as an empty
   build), the Materials and Properties Extension's colorgroups/textures, and
   multiple models per package (only the root model part is read).
+- **STEP preview is tessellated by occt-import-js** (an Emscripten/WASM
+  build of OpenCascade, `src/domain/stepParser.ts`), not a parser Bella
+  hand-rolls the way it does for STL/OBJ/3MF's text/XML formats - a STEP
+  file's b-rep (curved surfaces, trimmed faces, boolean-combined solids) is
+  far beyond a bespoke parser's reach. `.stp` classifies the same as
+  `.step` (see `formats.ts`). Every named sub-shape/part the file resolves
+  to becomes one occt-import-js "mesh"; Bella combines all of them into one
+  flat preview, same "whole file is the preview" rule 3MF's build platform
+  uses - there's no assembly-tree UI to browse sub-shapes individually.
+  Only each mesh's own whole-shape color is read, not occt-import-js's
+  per-`brep_faces` colors (a single STEP shape can carry a different color
+  per face) - same "known gap" treatment as OBJ's textures and 3MF's
+  `<components>`. Tessellation quality (deflection) is left at
+  occt-import-js's defaults - no Settings surface for it in v1. The
+  WASM module is loaded once per process and reused (see `loadOcct` in
+  stepParser.ts) rather than re-instantiated per file, since it's an
+  expensive, stateless singleton.
 - **Empty preview state**: when no file is selected (empty folder, or
   before any selection), the preview panel shows an explicit empty state
   ("No file selected" / "This folder is empty") and the metadata panel
   fields are blank — no placeholder cube.
 - **Load-failure state is distinct from "preview not available."**
-  A Listed format (STEP/FCStd/SCAD) shows "preview not available" because
+  A Listed format (FCStd/SCAD) shows "preview not available" because
   Bella doesn't support the format at all — an expected, known gap. A
-  Renderable-format file (STL) that fails to parse shows a different error
-  state ("Couldn't load — file may be corrupted") because Bella _does_
-  claim to support it and something went wrong.
+  Renderable-format file (STL, OBJ, 3MF, STEP) that fails to parse shows a
+  different error state ("Couldn't load — file may be corrupted") because
+  Bella _does_ claim to support it and something went wrong.
 
 - **Read-only for v1.** Bella does not move, rename, or delete files yet.
   Simple file management is a planned future capability — the read-only

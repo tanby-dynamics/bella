@@ -32,10 +32,22 @@
 	- [x] test
 	- [x] release note
 	- [x] commit
-- [ ] Add preview for STEP format
-	- [ ] Prompt: Implement preview for STEP format using https://github.com/kovacsv/occt-import-js
+- [x] Add preview for STEP format
+	- [x] Prompt: Implement preview for STEP format using https://github.com/kovacsv/occt-import-js
+	- [x] implement
+	- [x] test
+	- [x] release note
+	- [ ] commit
+- [ ] Load files on background thread
+	- [ ] Prompt: Loading a file should be on a background thread, so the user can select a different file while the current file is loading
 	- [ ] implement
-	- [ ] test 
+	- [ ] test
+	- [ ] release note
+	- [ ] commit
+- [ ] Don't trigger a reload when clicking an already selected file
+	- [ ] Prompt: Clicking already selected file shouldn't trigger a reload
+	- [ ] implement
+	- [ ] test
 	- [ ] release note
 	- [ ] commit
 - [ ] Add preview for FreeCAD's format
@@ -50,6 +62,8 @@
 	- [ ] test
 	- [ ] release note
 	- [ ] commit
+- [ ] Add "Open in Explorer" to preview header
+- [ ] Move to "Project" management
 - [ ] Release v0.3.0
 - [ ] Marketing site - bella.tanbydynamics.co
 - [ ] Code signing for macOS

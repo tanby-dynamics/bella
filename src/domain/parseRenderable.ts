@@ -2,6 +2,7 @@ import type { RenderableFormatId } from './formats'
 import { parseStl, type StlParseResult } from './stlParser'
 import { parseObj } from './objParser'
 import { parseThreeMf } from './threeMfParser'
+import { parseStep } from './stepParser'
 
 export interface ParseRenderableExtra {
   /** OBJ only: raw MTL source text for every `mtllib` filename the caller
@@ -13,12 +14,14 @@ export interface ParseRenderableExtra {
 
 /** Result shape is shared by every renderable-format parser (see
  * StlParseSuccess); this dispatcher is the extension point new formats
- * register into. */
-export function parseRenderable(
+ * register into. Async because STEP's parser (occt-import-js, a WASM
+ * module) has no synchronous API - every format is dispatched through the
+ * same async signature rather than special-casing STEP's callers. */
+export async function parseRenderable(
   format: RenderableFormatId,
   bytes: Buffer | Uint8Array,
   extra: ParseRenderableExtra = {}
-): StlParseResult {
+): Promise<StlParseResult> {
   switch (format) {
     case 'stl':
       return parseStl(bytes)
@@ -26,5 +29,7 @@ export function parseRenderable(
       return parseObj(bytes, extra.materialSources)
     case '3mf':
       return parseThreeMf(bytes)
+    case 'step':
+      return parseStep(bytes)
   }
 }
