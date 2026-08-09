@@ -232,6 +232,29 @@ Version only — a later Release still prompts.
   Renderable-format file (STL, OBJ, 3MF, STEP) that fails to parse shows a
   different error state ("Couldn't load — file may be corrupted") because
   Bella _does_ claim to support it and something went wrong.
+- **A Renderable file's parse runs on a worker_thread, not inline on the
+  main process, and a new selection preempts whatever's still parsing.**
+  STEP tessellation and large OBJ/3MF/STL parses are CPU-bound and
+  synchronous once started; run inline, one parse would block the main
+  process's single event loop - which every other ipcMain handler
+  (`listFolderContents`, favorites, ...) also runs on - for the whole
+  parse, freezing browsing until it finished. One worker is created lazily
+  and kept alive for the process's lifetime (see
+  `parseWorkerClient.ts`/`parseWorker.ts` in `src/main`), mirroring
+  `loadOcct`'s "expensive to instantiate, load once" choice above -
+  *unless* a new selection arrives before the current parse finishes, in
+  which case the worker is killed and respawned immediately so the new
+  file starts loading right away rather than queuing behind the old one
+  (there's no way to interrupt a synchronous WASM call except killing the
+  thread it's running on). Reading the file (and an OBJ's MTL sidecars)
+  stays on the main process - that's already non-blocking async I/O, not
+  the CPU-bound part. Every `selectFile` call gets a monotonic sequence
+  number (`requestSeqRef` in `App.tsx`, threaded through as `requestId` to
+  `parseWorkerClient.ts`) that both sides use to recognize a stale/
+  out-of-order request and discard or preempt it - needed because the
+  renderer's own awaits (e.g. `setLastOpenedFolder`'s round trip before
+  the parse call) don't guarantee requests reach the main process in
+  selection order.
 
 - **Read-only for v1.** Bella does not move, rename, or delete files yet.
   Simple file management is a planned future capability — the read-only

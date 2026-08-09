@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import {
   COLOR_PRESETS,
   type Favorite,
@@ -69,6 +69,17 @@ function App(): React.JSX.Element {
   const [downloadStatus, setDownloadStatus] = useState<UpdateDownloadStatus | null>(null)
   const [checkingForUpdates, setCheckingForUpdates] = useState(false)
   const [updateCheckMessage, setUpdateCheckMessage] = useState<string | null>(null)
+  // A monotonic counter, incremented at the start of every selectFile call -
+  // the source of truth for "which selection is current" that both this
+  // component and the main process (see requestId in parseWorkerClient.ts)
+  // check against. Parsing runs on a worker_thread on the main side rather
+  // than blocking it, so clicking a second file before the first finishes
+  // loading is exactly the point - both requests are genuinely in flight
+  // together (the main process actively preempts the earlier one - see
+  // parseWorkerClient.ts), and whichever settles last should never win just
+  // because it was slower or arrived out of order. A ref rather than state
+  // since this is read inside an async callback, never rendered.
+  const requestSeqRef = useRef(0)
 
   const sidebarWidth = settings?.sidebarWidth ?? DEFAULT_SIDEBAR_WIDTH
   const renderColor = settings?.renderColor ?? COLOR_PRESETS[0]
@@ -156,9 +167,16 @@ function App(): React.JSX.Element {
   // folder" for next startup's auto-expand, since there's no other
   // "current folder" signal left to persist.
   async function selectFile(entry: FileEntry): Promise<void> {
+    const seq = ++requestSeqRef.current
     setHighlighted({ path: entry.path, kind: 'file' })
     setSelectedEntry(entry)
     await window.api.setLastOpenedFolder(parentFolderPath(entry.path))
+    // Another selectFile may have started (and possibly already finished)
+    // during that await - see requestSeqRef. If so, this call is stale:
+    // applying anything below now would flash the wrong file's preview in
+    // over whatever the newer selection already showed, or is still
+    // loading.
+    if (seq !== requestSeqRef.current) return
 
     if (entry.classification.kind !== 'renderable') {
       setPreview({ status: 'not-available' })
@@ -166,7 +184,8 @@ function App(): React.JSX.Element {
     }
 
     setPreview({ status: 'loading' })
-    const result = await window.api.parseRenderableFile(entry.path)
+    const result = await window.api.parseRenderableFile(entry.path, seq)
+    if (seq !== requestSeqRef.current) return
     if (result.ok) {
       setPreview({ status: 'ready', data: result })
     } else if (result.error === 'parse-error') {

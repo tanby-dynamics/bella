@@ -37,12 +37,12 @@
 	- [x] implement
 	- [x] test
 	- [x] release note
-	- [ ] commit
+	- [x] commit
 - [ ] Load files on background thread
-	- [ ] Prompt: Loading a file should be on a background thread, so the user can select a different file while the current file is loading
-	- [ ] implement
-	- [ ] test
-	- [ ] release note
+	- [x] Prompt: Loading a file should be on a background thread, so the user can select a different file while the current file is loading
+	- [x] implement
+	- [x] test
+	- [x] release note
 	- [ ] commit
 - [ ] Don't trigger a reload when clicking an already selected file
 	- [ ] Prompt: Clicking already selected file shouldn't trigger a reload
@@ -63,13 +63,24 @@
 	- [ ] release note
 	- [ ] commit
 - [ ] Add "Open in Explorer" to preview header
-- [ ] Move to "Project" management
+	- [ ] Prompt: Add "Open in Explorer" to preview header
+	- [ ] implement
+	- [ ] test
+	- [ ] release note
+	- [ ] commit
+- [ ] Move to "Project" management model
+	- [x] Grilling prompt: Move from a "show the entire file system" model to a "Project" management model. Replace "FAVORITES" with "PROJECTS", and add a way to select a directory (using the system dialog) as a new project. Selecting a project should show the contents of the project directory within the location tree, with the root of the tree being the project directory. The currently selected project should be remembered between restarts, as should the selected file and state of the location tree, including the scroll position.
+	- [ ] Spec
+	- [ ] implement
+	- [ ] manual  test
+	- [ ] release note
+	- [ ] merge
 - [ ] Release v0.3.0
 - [ ] Marketing site - bella.tanbydynamics.co
 - [ ] Code signing for macOS
 	- [ ] What do I have to do to set up code signing for macOS?
 - [ ] Code signing for Windows
-	- [ ] What do I have to do to set up code signing for Windows?
+	- [ ] What do I have to do to set up code signing for Windows? don't do anything yet, I'm just querying what the actual, manual process looks like.
 - [ ] Tabbed preview
 	- [ ] Prompt: I want to be able to open multiple previews via tabs. This should work similarly to VS Code's tabbing - single clicking a file opens the preview in a transient tab with the file name italicised, double clicking the file or double clicking the tab changes the tab to persistent (non-italicised). Opening a file's preview with a transient tab present closes the transient tab and replaces it with the new preview tab. Click the x or middle click the tab to close it. Tabs should be re-orderable by dragging and dropping. No support for splitting at the moment - only a single preview will actually be visible at a time.
 	- [ ] spec
@@ -112,7 +123,28 @@
 	- [ ] release note
 	- [ ] merge
 - [ ] Release v0.4.0
-- [ ]
+- [ ] 
+
+1. agreed. Projects should work very similarly to the current Favorites list.
+2. agreed
+3. There's already a X button for each favorite. Keep the same functionality, but add a context menu to project entries with "Remove Project"
+4. agreed
+5. agreed, per-project
+6. No, custom project naming makes sense. When a project is created the project name in the list should be editable. Add a context menu item "Rename Project..." which makes the project name editable. Default to the base directory name selected. Also, projects should be re-orderable - new projects always get added to the bottom, but they can be dragged to change their order.---
+7. It goes to the bottom, and all projects can be dragged to change their order
+8. drop the old favorites data - start from scratch
+9. agreed, inline editing
+10. drag and drop
+11. both
+12. agreed
+13. agreed, agreed
+14. agreed
+15. agreed
+16. agreed, but whenever opening a path it should eagerly load the subdirectories in that path in the background to make the app feel more responsive.---
+17. 
+
+
+
 
 ## 20260808
 

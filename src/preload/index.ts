@@ -14,8 +14,12 @@ const api = {
   getHomeDirectory: (): Promise<string> => ipcRenderer.invoke(IPC.homeDirectory),
   listFolderContents: (path: string): Promise<FolderContents> =>
     ipcRenderer.invoke(IPC.listFolderContents, path),
-  parseRenderableFile: (path: string): Promise<ParseRenderableFileResult> =>
-    ipcRenderer.invoke(IPC.parseRenderableFile, path),
+  // requestId: App.tsx's own monotonic selection counter - lets the main
+  // process (see parseWorkerClient.ts) recognize a request as superseded
+  // and preempt whatever's still running for an earlier selection. See
+  // requestSeqRef in App.tsx's selectFile.
+  parseRenderableFile: (path: string, requestId: number): Promise<ParseRenderableFileResult> =>
+    ipcRenderer.invoke(IPC.parseRenderableFile, path, requestId),
   openExternal: (path: string): Promise<string> => ipcRenderer.invoke(IPC.openExternal, path),
   listLocations: (): Promise<Location[]> => ipcRenderer.invoke(IPC.listLocations),
   listFavorites: (): Promise<Favorite[]> => ipcRenderer.invoke(IPC.listFavorites),

@@ -5,7 +5,6 @@ import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import icon from '../../resources/icon.png?asset'
 import {
   listFolderContents,
-  parseRenderable,
   extractMtlLibNames,
   enumerateLocations,
   createStore,
@@ -17,6 +16,7 @@ import { osDriveLister } from './adapters/osDriveLister'
 import { fileStoreBackend } from './adapters/fileStoreBackend'
 import { IPC, type ParseRenderableFileResult, type UpdateCheckResult } from '../shared/ipc'
 import { readFile } from 'node:fs/promises'
+import { parseInBackground } from './parseWorkerClient'
 import * as updater from './updater'
 
 const store = createStore(fileStoreBackend)
@@ -55,7 +55,13 @@ function registerIpcHandlers(): void {
 
   ipcMain.handle(
     IPC.parseRenderableFile,
-    async (_event, path: string): Promise<ParseRenderableFileResult> => {
+    // `requestId` is App.tsx's own monotonic selection counter (see
+    // requestSeqRef in selectFile) - threaded through as-is so
+    // parseWorkerClient can tell which of several in-flight requests is
+    // actually the most recent selection, immune to this handler's own
+    // awaits (or setLastOpenedFolder's separate round trip beforehand)
+    // reordering when things land here relative to when they were fired.
+    async (_event, path: string, requestId: number): Promise<ParseRenderableFileResult> => {
       // classifyFormat is contracted to take a filename, not a full path
       // (see src/domain/formats.ts) - a folder segment containing a dot
       // (e.g. "archive.old") would otherwise be misread as an extension.
@@ -65,13 +71,17 @@ function registerIpcHandlers(): void {
       }
       const bytes = await readFile(path)
 
+      // The parse itself (not this read) is what's slow enough to matter -
+      // see parseWorkerClient.ts for why it runs on a worker_thread rather
+      // than inline here, and for how it preempts a still-running parse
+      // for a since-superseded selection.
       if (classification.format === 'obj') {
-        return parseRenderable('obj', bytes, {
+        return parseInBackground('obj', bytes, requestId, {
           materialSources: await resolveMtlSources(path, bytes)
         })
       }
 
-      return parseRenderable(classification.format, bytes)
+      return parseInBackground(classification.format, bytes, requestId)
     }
   )
 
