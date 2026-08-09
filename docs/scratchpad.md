@@ -43,13 +43,13 @@
 	- [x] implement
 	- [x] test
 	- [x] release note
-	- [ ] commit
+	- [x] commit
 - [ ] Don't trigger a reload when clicking an already selected file
-	- [ ] Prompt: Clicking already selected file shouldn't trigger a reload
-	- [ ] implement
-	- [ ] test
-	- [ ] release note
-	- [ ] commit
+	- [x] Prompt: Clicking already selected file shouldn't trigger a reload
+	- [x] implement
+	- [x] test
+	- [x] release note
+	- [x] commit
 - [ ] Add preview for FreeCAD's format
 	- [ ] Prompt: Implement preview for FreeCAD's `.FCStd` format
 	- [ ] implement
@@ -123,6 +123,13 @@
 	- [ ] release note
 	- [ ] merge
 - [ ] Release v0.4.0
+- [ ] Cache recent parsed models
+	- [ ] Prompt: Cache the last N parsed models (configurable, default to 10) so selecting a cached model is faster. Add a file system watcher so that if a cached model changed it is removed from the cache. If the model that is changed is currently displayed, reload the displayed model.
+	- [ ] spec
+	- [ ] implement
+	- [ ] test
+	- [ ] release note
+	- [ ] merge
 - [ ] 
 
 1. agreed. Projects should work very similarly to the current Favorites list.
@@ -141,7 +148,12 @@
 14. agreed
 15. agreed
 16. agreed, but whenever opening a path it should eagerly load the subdirectories in that path in the background to make the app feel more responsive.---
-17. 
+17. agreed
+18. agreed
+19. agreed
+20. agreed
+21. agreed---
+22. 
 
 
 

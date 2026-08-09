@@ -167,6 +167,14 @@ function App(): React.JSX.Element {
   // folder" for next startup's auto-expand, since there's no other
   // "current folder" signal left to persist.
   async function selectFile(entry: FileEntry): Promise<void> {
+    // Re-clicking the already-selected file is a no-op - it's already
+    // highlighted, already the last-opened folder, and already loaded (or
+    // loading); nothing about its state should change, so there's nothing
+    // to re-fetch or re-parse. Guards against a real cost too: a second
+    // parse of an expensive file (STEP) would preempt/kill the worker
+    // mid-render for no reason - see parseWorkerClient.ts.
+    if (entry.path === selectedEntry?.path) return
+
     const seq = ++requestSeqRef.current
     setHighlighted({ path: entry.path, kind: 'file' })
     setSelectedEntry(entry)
