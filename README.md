@@ -6,8 +6,9 @@ browsing the filesystem and previewing CAD files in a 3D viewer. v1 renders
 not yet rendered.
 
 See [CONTEXT.md](CONTEXT.md) for the project's domain glossary
-(Renderable/Listed format, Location, Favorite, Render mode, ...) — use that
-vocabulary in code, commits, and issues rather than drifting to synonyms.
+(Renderable/Listed format, Project, Active Project, Render mode, ...) — use
+that vocabulary in code, commits, and issues rather than drifting to
+synonyms.
 
 ## Tech stack
 
@@ -61,21 +62,22 @@ git push origin v1.2.3
 src/
   domain/      Pure Node/TypeScript domain layer - no Electron, React, or
                Three.js dependency. Format classification, folder listing,
-               STL parsing, drive enumeration, and the favorites/settings
-               store, each behind an injectable interface (DirectoryReader,
-               DriveLister, StoreBackend). This is the project's one test
-               seam - see src/domain/*.test.ts - and the layer every new
-               CAD format or filesystem behaviour should be added to first.
+               STL parsing, Project management, and the settings store,
+               each behind an injectable interface (DirectoryReader,
+               DirectoryPicker, StoreBackend). This is the project's one
+               test seam - see src/domain/*.test.ts - and the layer every
+               new CAD format or filesystem behaviour should be added to
+               first.
   main/        Electron main process. Wires real adapters (src/main/adapters/,
-               using node:fs, OS drive listing, a local JSON config file) to
-               the domain layer and exposes them to the renderer over IPC.
-               Owns all filesystem access - the renderer never touches fs
-               directly.
+               using node:fs, a native directory-picker dialog, a local JSON
+               config file) to the domain layer and exposes them to the
+               renderer over IPC. Owns all filesystem access - the renderer
+               never touches fs directly.
   preload/     contextBridge boundary exposing a typed `window.api` to the
                renderer.
-  renderer/    React UI: sidebar (Favorites/Locations), file grid, the
-               Three.js preview panel (render modes, orbit/zoom), metadata
-               panel, and settings.
+  renderer/    React UI: sidebar (Projects list + location tree), file grid,
+               the Three.js preview panel (render modes, orbit/zoom),
+               metadata panel, and settings.
   shared/      Types shared across the IPC boundary (channel names, result
                shapes).
 ```
@@ -85,7 +87,7 @@ src/
 Automated tests target the domain layer only, as plain Node tests with no
 Electron process and no rendering/WebGL context involved (`npm test`).
 They assert the domain layer's observable outputs (what `listFolder`,
-`parseRenderable`, `enumerateLocations`, and the store return or persist),
+`parseRenderable`, `addOrActivateProject`, and the store return or persist),
 not internal implementation details.
 
 Deliberately **not** covered by automated tests: Three.js rendering,

@@ -1,7 +1,10 @@
-export interface Favorite {
-  name: string
-  path: string
-}
+import {
+  DEFAULT_PROJECT_STATE,
+  reorderProjects,
+  relocateProject,
+  type Project,
+  type ProjectState
+} from './projects'
 
 export type Theme = 'light' | 'dark' | 'system'
 export type RenderMode = 'shaded' | 'wireframe' | 'xray'
@@ -39,23 +42,32 @@ export interface Settings {
 }
 
 export interface StoreData {
-  favorites: Favorite[]
-  lastOpenedFolder: string | null
+  projects: Project[]
+  /** The Active Project's path, if any - see CONTEXT.md. Not necessarily
+   * present in `projects` (e.g. briefly, mid-removal) - callers should
+   * treat a dangling reference the same as no Active Project. */
+  activeProjectPath: string | null
+  /** Each known Project's own remembered browsing state, keyed by its
+   * exact `path` - see ProjectState. Absent entries read as
+   * DEFAULT_PROJECT_STATE (a brand-new Project that hasn't been browsed
+   * yet). */
+  projectState: Record<string, ProjectState>
   settings: Settings
   /** The Skipped Version, if any - not a user-facing Setting, just
-   * app-remembered state (same treatment as lastOpenedFolder). See
+   * app-remembered state (same treatment as the Active Project). See
    * CONTEXT.md. */
   skippedUpdateVersion: string | null
   /** The most recently selected Render mode - not a user-facing Setting,
-   * just app-remembered state (same treatment as lastOpenedFolder /
-   * skippedUpdateVersion), so the preview reopens in whatever mode it was
-   * last left in rather than a configured default. See CONTEXT.md. */
+   * just app-remembered state (same treatment as Skipped Version), so the
+   * preview reopens in whatever mode it was last left in rather than a
+   * configured default. See CONTEXT.md. */
   lastRenderMode: RenderMode
 }
 
 export const DEFAULT_STORE_DATA: StoreData = {
-  favorites: [],
-  lastOpenedFolder: null,
+  projects: [],
+  activeProjectPath: null,
+  projectState: {},
   settings: {
     theme: 'system',
     sidebarWidth: 220,
@@ -76,29 +88,46 @@ export interface StoreBackend {
 }
 
 export interface Store {
-  getFavorites(): Promise<Favorite[]>
-  addFavorite(favorite: Favorite): Promise<void>
-  removeFavorite(path: string): Promise<void>
-  getLastOpenedFolder(): Promise<string | null>
-  setLastOpenedFolder(path: string): Promise<void>
+  getProjects(): Promise<Project[]>
+  /** Appends `project` to the end of the list - the decision of whether to
+   * add at all (vs. activating an existing duplicate) is made by the
+   * caller via `addOrActivateProject` (see projects.ts), not here. */
+  addProject(project: Project): Promise<void>
+  /** Removes a Project and its per-project state together - see the
+   * "removing a Project deletes its state immediately" decision in
+   * CONTEXT.md. Also clears the Active Project if it was the one removed,
+   * rather than silently activating whatever's left. */
+  removeProject(path: string): Promise<void>
+  renameProject(path: string, name: string): Promise<void>
+  reorderProjects(orderedPaths: string[]): Promise<void>
+  /** Repoints a Project at `newPath` (the "Relocate" action) and discards
+   * its old per-project state - see relocateProject in projects.ts. */
+  relocateProject(path: string, newPath: string): Promise<void>
+  getActiveProjectPath(): Promise<string | null>
+  setActiveProjectPath(path: string | null): Promise<void>
+  getProjectState(path: string): Promise<ProjectState>
+  setProjectState(path: string, patch: Partial<ProjectState>): Promise<void>
   getSettings(): Promise<Settings>
   setSettings(patch: Partial<Settings>): Promise<void>
   getSkippedUpdateVersion(): Promise<string | null>
   setSkippedUpdateVersion(version: string | null): Promise<void>
   getLastRenderMode(): Promise<RenderMode>
   setLastRenderMode(mode: RenderMode): Promise<void>
-  /** Clears all stored configuration (favorites, last-opened folder,
-   * settings, skipped update version, last render mode) back to defaults
-   * and returns the reset data, so callers can apply it immediately
-   * without a separate round of reads. */
+  /** Clears all stored configuration (projects, project state, settings,
+   * skipped update version, last render mode) back to defaults and returns
+   * the reset data, so callers can apply it immediately without a separate
+   * round of reads. */
   resetAll(): Promise<StoreData>
 }
 
 export function createStore(backend: StoreBackend): Store {
   // Merges in top-level and settings defaults rather than trusting the
   // backend's shape outright, so a config file written by an older version
-  // of Bella (missing fields this version added, e.g. checkForUpdatesOnStartup)
-  // still reads as complete instead of leaving those fields undefined.
+  // of Bella (missing fields this version added, e.g. checkForUpdatesOnStartup,
+  // or predating Projects entirely - see ADR 0005) still reads as complete
+  // instead of leaving those fields undefined. An older config's `favorites`/
+  // `lastOpenedFolder` fields, if present, are simply never read by any
+  // method below - dropped rather than migrated, per that ADR.
   async function readData(): Promise<StoreData> {
     const data = await backend.read()
     if (!data) return DEFAULT_STORE_DATA
@@ -111,32 +140,80 @@ export function createStore(backend: StoreBackend): Store {
   }
 
   return {
-    async getFavorites() {
+    async getProjects() {
       const data = await readData()
-      return data.favorites
+      return data.projects
     },
 
-    async addFavorite(favorite) {
+    async addProject(project) {
       const data = await readData()
-      await backend.write({ ...data, favorites: [...data.favorites, favorite] })
+      await backend.write({ ...data, projects: [...data.projects, project] })
     },
 
-    async removeFavorite(path) {
+    async removeProject(path) {
       const data = await readData()
+      const remainingState = { ...data.projectState }
+      delete remainingState[path]
       await backend.write({
         ...data,
-        favorites: data.favorites.filter((f) => f.path !== path)
+        projects: data.projects.filter((project) => project.path !== path),
+        activeProjectPath: data.activeProjectPath === path ? null : data.activeProjectPath,
+        projectState: remainingState
       })
     },
 
-    async getLastOpenedFolder() {
+    async renameProject(path, name) {
       const data = await readData()
-      return data.lastOpenedFolder
+      await backend.write({
+        ...data,
+        projects: data.projects.map((project) =>
+          project.path === path ? { ...project, name } : project
+        )
+      })
     },
 
-    async setLastOpenedFolder(path) {
+    async reorderProjects(orderedPaths) {
       const data = await readData()
-      await backend.write({ ...data, lastOpenedFolder: path })
+      await backend.write({ ...data, projects: reorderProjects(data.projects, orderedPaths) })
+    },
+
+    async relocateProject(path, newPath) {
+      const data = await readData()
+      const remainingState = { ...data.projectState }
+      delete remainingState[path]
+      await backend.write({
+        ...data,
+        projects: relocateProject(data.projects, path, newPath),
+        activeProjectPath: data.activeProjectPath === path ? newPath : data.activeProjectPath,
+        projectState: {
+          ...remainingState,
+          [newPath]: { ...DEFAULT_PROJECT_STATE, expandedPaths: [newPath] }
+        }
+      })
+    },
+
+    async getActiveProjectPath() {
+      const data = await readData()
+      return data.activeProjectPath
+    },
+
+    async setActiveProjectPath(path) {
+      const data = await readData()
+      await backend.write({ ...data, activeProjectPath: path })
+    },
+
+    async getProjectState(path) {
+      const data = await readData()
+      return data.projectState[path] ?? DEFAULT_PROJECT_STATE
+    },
+
+    async setProjectState(path, patch) {
+      const data = await readData()
+      const current = data.projectState[path] ?? DEFAULT_PROJECT_STATE
+      await backend.write({
+        ...data,
+        projectState: { ...data.projectState, [path]: { ...current, ...patch } }
+      })
     },
 
     async getSettings() {

@@ -1,31 +1,57 @@
-import { useRef, useState } from 'react'
-import type { Favorite, FileEntry, Location } from '../types'
-import { LocationTreeNode, type Highlighted, type RevealRequest } from './LocationTree'
+import { useEffect, useRef, useState } from 'react'
+import type { FileEntry, Project } from '../types'
+import { ChevronIcon, TreeChildren, type Highlighted, type RevealRequest } from './LocationTree'
+import { useExpandableFolder } from '../useExpandableFolder'
+import { ContextMenu } from './ContextMenu'
 
 const MIN_SIDEBAR_WIDTH = 180
 const MAX_SIDEBAR_WIDTH = 560
+const NO_EXPANDED_PATHS = new Set<string>()
+
+/** A one-shot request to open a Project's row in inline rename mode -
+ * fired once after a genuinely new Project is added (see CONTEXT.md: "When
+ * a project is created the project name in the list should be editable"),
+ * never for activating an existing one. `nonce` follows the same pattern
+ * as RevealRequest, in case the same path is ever added, removed, and
+ * re-added in a row. */
+export interface RenameRequest {
+  path: string
+  nonce: number
+}
 
 interface SidebarProps {
-  favorites: Favorite[]
-  locations: Location[]
+  projects: Project[]
+  /** The Active Project's path, if any - see CONTEXT.md. */
+  activeProjectPath: string | null
+  /** Projects whose directory couldn't be found the last time they were
+   * activated - see CONTEXT.md's "missing directory" decision. Only ever
+   * populated for the Active Project, since that's the only one whose tree
+   * actually gets loaded. */
+  missingProjectPaths: Set<string>
   /** The single row highlighted across the whole tree (file or folder) -
-   * see Highlighted. Passed through as one value rather than split into
-   * path/kind props, since both are needed together for the "add to
-   * Favorites" affordance below (only makes sense for a folder). */
+   * see Highlighted. */
   highlighted: Highlighted | null
-  /** The folder Bella opened at startup - see LocationTreeNode. */
-  initialFolder: string | null
-  /** Set on a Favorite click - see LocationTreeNode. */
+  /** The Active Project's own persisted expand-state - see
+   * LocationTreeNode. */
+  expandedPaths: Set<string>
+  /** Set on Project activation, and when restoring a Project's persisted
+   * selected file - see RevealRequest. */
   revealRequest: RevealRequest | null
-  onSelectFavorite: (path: string) => void
+  /** Set once, right after a brand-new Project is added - see
+   * RenameRequest. */
+  renameRequest: RenameRequest | null
+  onSelectProject: (project: Project) => void
+  onAddProject: () => void
+  onRemoveProject: (path: string) => void
+  onRenameProject: (path: string, name: string) => void
+  onRelocateProject: (path: string) => void
+  onReorderProjects: (orderedPaths: string[]) => void
   onSelectFolder: (path: string) => void
   onSelectFile: (entry: FileEntry) => void
-  onRemoveFavorite: (path: string) => void
-  /** Fired from a Locations-tree folder's right-click menu ("Make
-   * favorite"/"Unfavorite") - see LocationTreeNode. Threaded down to every
-   * tree node rather than computed here, since only the node handling the
-   * click knows which folder it's for. */
-  onToggleFavorite: (item: { name: string; path: string }) => void
+  onToggleExpand: (path: string, expanded: boolean) => void
+  /** Fired if the Active Project's own root folder-listing fails - see
+   * LocationTreeNode. */
+  onLoadError: (path: string) => void
   /** Persisted panel width in px, and the setter to commit a resize once
    * the drag ends - see ADR 0004 (the sole survivor of the old
    * resizable-columns persistence, now that files live in the tree). */
@@ -33,29 +59,182 @@ interface SidebarProps {
   onWidthChange: (width: number) => void
 }
 
-function StarIcon(): React.JSX.Element {
+interface ProjectRowProps {
+  project: Project
+  isActive: boolean
+  isMissing: boolean
+  isRenaming: boolean
+  renameDraft: string
+  onRenameDraftChange: (value: string) => void
+  onCommitRename: () => void
+  onCancelRename: () => void
+  highlightedPath: string | null
+  expandedPaths: Set<string>
+  revealRequest: RevealRequest | null
+  onSelectProject: (project: Project) => void
+  onSelectFolder: (path: string) => void
+  onSelectFile: (entry: FileEntry) => void
+  onToggleExpand: (path: string, expanded: boolean) => void
+  onLoadError: (path: string) => void
+  onRemove: () => void
+  onContextMenu: (event: React.MouseEvent) => void
+  isDragging: boolean
+  onDragStart: () => void
+  onDragOver: (event: React.DragEvent) => void
+  onDrop: (event: React.DragEvent) => void
+  onDragEnd: () => void
+}
+
+/** One row of the PROJECTS list - and, for whichever Project is Active,
+ * the tree's own root at the same time (see CONTEXT.md: "root of the tree
+ * is the Project directory"). A non-Active row is a plain, inert-looking
+ * folder row: clicking it activates that Project. The Active row instead
+ * behaves exactly like an ordinary tree folder row (chevron, lazy fetch,
+ * reveal/scroll) via the same useExpandableFolder hook LocationTreeNode
+ * uses, with its own subfolders/files rendered directly beneath it via
+ * TreeChildren - not as a separate tree elsewhere in the sidebar. Clicking
+ * the Active row toggles its own expand/collapse rather than reactivating
+ * it.
+ *
+ * Keyed by `${project.path}:${isActive}` in the parent .map() (see
+ * Sidebar) so this component remounts fresh - with a correctly-seeded
+ * expand state - every time a Project becomes (or stops being) Active,
+ * rather than trying to react to expandedPaths changing after the fact
+ * (useExpandableFolder only reads it once, at mount). */
+function ProjectRow({
+  project,
+  isActive,
+  isMissing,
+  isRenaming,
+  renameDraft,
+  onRenameDraftChange,
+  onCommitRename,
+  onCancelRename,
+  highlightedPath,
+  expandedPaths,
+  revealRequest,
+  onSelectProject,
+  onSelectFolder,
+  onSelectFile,
+  onToggleExpand,
+  onLoadError,
+  onRemove,
+  onContextMenu,
+  isDragging,
+  onDragStart,
+  onDragOver,
+  onDrop,
+  onDragEnd
+}: ProjectRowProps): React.JSX.Element {
+  const itemRef = useRef<HTMLDivElement>(null)
+  // Inactive rows never fetch/expand/reveal - only the Active Project's
+  // tree is ever loaded (see CONTEXT.md's "Browsing scope").
+  const folder = useExpandableFolder({
+    path: project.path,
+    expandedPaths: isActive ? expandedPaths : NO_EXPANDED_PATHS,
+    onToggleExpand,
+    revealRequest: isActive ? revealRequest : null,
+    onLoadError: isActive ? onLoadError : undefined,
+    itemRef
+  })
+
+  function handleClick(): void {
+    if (isRenaming) return
+    if (isActive) {
+      void folder.toggle()
+    } else {
+      onSelectProject(project)
+    }
+  }
+
   return (
-    <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
-      <path
-        d="M12 3l2.6 5.9 6.4.6-4.8 4.3 1.4 6.2L12 16.9 6.4 20l1.4-6.2L3 9.5l6.4-.6L12 3z"
-        stroke="currentColor"
-        strokeWidth="1.4"
-      />
-    </svg>
+    <div>
+      <div
+        ref={itemRef}
+        className={`sidebar__item sidebar__tree-item${isActive ? ' is-active' : ''}${isMissing ? ' is-missing' : ''}${isDragging ? ' is-dragging' : ''}`}
+        draggable={!isRenaming}
+        onClick={handleClick}
+        onContextMenu={onContextMenu}
+        onDragStart={onDragStart}
+        onDragOver={onDragOver}
+        onDrop={onDrop}
+        onDragEnd={onDragEnd}
+        role="button"
+        tabIndex={0}
+        aria-expanded={isActive && folder.expanded}
+        title={isMissing ? `${project.path} (not found)` : project.path}
+      >
+        <span className="sidebar__chevron" aria-hidden="true">
+          <ChevronIcon expanded={isActive && folder.expanded} />
+        </span>
+        {isRenaming ? (
+          <input
+            autoFocus
+            className="sidebar__rename-input"
+            value={renameDraft}
+            onClick={(event) => event.stopPropagation()}
+            onChange={(event) => onRenameDraftChange(event.target.value)}
+            onBlur={onCommitRename}
+            onKeyDown={(event) => {
+              if (event.key === 'Enter') onCommitRename()
+              if (event.key === 'Escape') onCancelRename()
+            }}
+          />
+        ) : (
+          <span className="sidebar__tree-label">
+            {project.name}
+            {isMissing && <span className="sidebar__missing-badge">not found</span>}
+          </span>
+        )}
+        <button
+          type="button"
+          className="sidebar__remove"
+          title="Remove Project"
+          onClick={(event) => {
+            event.stopPropagation()
+            onRemove()
+          }}
+        >
+          ✕
+        </button>
+      </div>
+      {isActive && folder.expanded && (
+        <TreeChildren
+          loading={folder.loading}
+          loadError={folder.loadError}
+          contents={folder.children}
+          depth={1}
+          highlightedPath={highlightedPath}
+          onSelectFolder={onSelectFolder}
+          onSelectFile={onSelectFile}
+          expandedPaths={expandedPaths}
+          onToggleExpand={onToggleExpand}
+          revealRequest={revealRequest}
+          onLoadError={onLoadError}
+        />
+      )}
+    </div>
   )
 }
 
 export function Sidebar({
-  favorites,
-  locations,
+  projects,
+  activeProjectPath,
+  missingProjectPaths,
   highlighted,
-  initialFolder,
+  expandedPaths,
   revealRequest,
-  onSelectFavorite,
+  renameRequest,
+  onSelectProject,
+  onAddProject,
+  onRemoveProject,
+  onRenameProject,
+  onRelocateProject,
+  onReorderProjects,
   onSelectFolder,
   onSelectFile,
-  onRemoveFavorite,
-  onToggleFavorite,
+  onToggleExpand,
+  onLoadError,
   width,
   onWidthChange
 }: SidebarProps): React.JSX.Element {
@@ -68,9 +247,59 @@ export function Sidebar({
   // LocationTreeNode only ever needs the bare path for its own highlight
   // check.
   const highlightedPath = highlighted?.path ?? null
-  // Membership-only view of favorites, for each tree node's own right-click
-  // menu label - see LocationTreeNode.
-  const favoritePaths = new Set(favorites.map((f) => f.path))
+
+  // Project row currently in inline rename mode - null when none is (the
+  // normal case). Local to the sidebar, not lifted to App: renaming is a
+  // transient UI concern that only needs to reach App once, on commit. See
+  // CONTEXT.md.
+  const [renamingPath, setRenamingPath] = useState<string | null>(null)
+  const [renameDraft, setRenameDraft] = useState('')
+  // The path being dragged for a PROJECTS-list reorder - null outside a
+  // drag. See handleDrop.
+  const [dragPath, setDragPath] = useState<string | null>(null)
+  const [contextMenuFor, setContextMenuFor] = useState<{
+    project: Project
+    x: number
+    y: number
+  } | null>(null)
+
+  function startRename(project: Project): void {
+    setRenamingPath(project.path)
+    setRenameDraft(project.name)
+  }
+
+  function commitRename(path: string): void {
+    const trimmed = renameDraft.trim()
+    setRenamingPath(null)
+    if (trimmed) onRenameProject(path, trimmed)
+  }
+
+  // Auto-opens rename mode once for a freshly-added Project - see
+  // RenameRequest. Never fires for activating an existing Project (App
+  // only bumps renameRequest when addOrActivateProject reports `added`).
+  useEffect(() => {
+    if (!renameRequest) return
+    const project = projects.find((p) => p.path === renameRequest.path)
+    // Deferred to a microtask - setting state synchronously inside an
+    // effect body cascades an extra render; same pattern as
+    // LocationTreeNode's reveal effect.
+    if (project) queueMicrotask(() => startRename(project))
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [renameRequest])
+
+  function handleDrop(overPath: string): void {
+    if (!dragPath || dragPath === overPath) {
+      setDragPath(null)
+      return
+    }
+    const paths = projects.map((project) => project.path)
+    const fromIndex = paths.indexOf(dragPath)
+    const toIndex = paths.indexOf(overPath)
+    paths.splice(fromIndex, 1)
+    paths.splice(toIndex, 0, dragPath)
+    onReorderProjects(paths)
+    setDragPath(null)
+  }
 
   function startResize(event: React.MouseEvent): void {
     event.preventDefault()
@@ -110,47 +339,84 @@ export function Sidebar({
           position. */}
       <div className="sidebar__scroll">
         <div className="sidebar__section-header">
-          <span>FAVORITES</span>
-        </div>
-        {favorites.map((favorite) => (
-          <div
-            key={favorite.path}
-            className={`sidebar__item${favorite.path === highlightedPath ? ' is-active' : ''}`}
-            onClick={() => onSelectFavorite(favorite.path)}
+          <span>PROJECTS</span>
+          <button
+            type="button"
+            className="sidebar__add-project"
+            title="Add Project…"
+            onClick={onAddProject}
           >
-            <StarIcon />
-            <span>{favorite.name}</span>
-            <button
-              type="button"
-              className="sidebar__remove"
-              title="Remove from Favorites"
-              onClick={(event) => {
-                event.stopPropagation()
-                onRemoveFavorite(favorite.path)
+            +
+          </button>
+        </div>
+
+        {projects.map((project) => {
+          const isActive = project.path === activeProjectPath
+          return (
+            <ProjectRow
+              // Remounts fresh whenever this Project becomes (or stops
+              // being) Active - see ProjectRow's own doc comment.
+              key={`${project.path}:${isActive}`}
+              project={project}
+              isActive={isActive}
+              isMissing={missingProjectPaths.has(project.path)}
+              isRenaming={renamingPath === project.path}
+              renameDraft={renameDraft}
+              onRenameDraftChange={setRenameDraft}
+              onCommitRename={() => commitRename(project.path)}
+              onCancelRename={() => setRenamingPath(null)}
+              highlightedPath={highlightedPath}
+              expandedPaths={expandedPaths}
+              revealRequest={revealRequest}
+              onSelectProject={onSelectProject}
+              onSelectFolder={onSelectFolder}
+              onSelectFile={onSelectFile}
+              onToggleExpand={onToggleExpand}
+              onLoadError={onLoadError}
+              onRemove={() => onRemoveProject(project.path)}
+              onContextMenu={(event) => {
+                event.preventDefault()
+                setContextMenuFor({ project, x: event.clientX, y: event.clientY })
               }}
-            >
-              ✕
+              isDragging={dragPath === project.path}
+              onDragStart={() => setDragPath(project.path)}
+              onDragOver={(event) => event.preventDefault()}
+              onDrop={(event) => {
+                event.preventDefault()
+                handleDrop(project.path)
+              }}
+              onDragEnd={() => setDragPath(null)}
+            />
+          )
+        })}
+
+        {projects.length === 0 && (
+          <div className="sidebar__empty-state">
+            <p>No projects yet.</p>
+            <button type="button" onClick={onAddProject}>
+              Add Project
             </button>
           </div>
-        ))}
+        )}
 
-        <div className="sidebar__section-header">
-          <span>LOCATIONS</span>
-        </div>
-        {locations.map((location) => (
-          <LocationTreeNode
-            key={location.path}
-            item={location}
-            depth={0}
-            highlightedPath={highlightedPath}
-            onSelectFolder={onSelectFolder}
-            onSelectFile={onSelectFile}
-            autoExpandPath={initialFolder}
-            revealRequest={revealRequest}
-            favoritePaths={favoritePaths}
-            onToggleFavorite={onToggleFavorite}
+        {contextMenuFor && (
+          <ContextMenu
+            x={contextMenuFor.x}
+            y={contextMenuFor.y}
+            onClose={() => setContextMenuFor(null)}
+            items={[
+              { label: 'Rename Project…', onSelect: () => startRename(contextMenuFor.project) },
+              {
+                label: 'Relocate…',
+                onSelect: () => onRelocateProject(contextMenuFor.project.path)
+              },
+              {
+                label: 'Remove Project',
+                onSelect: () => onRemoveProject(contextMenuFor.project.path)
+              }
+            ]}
           />
-        ))}
+        )}
       </div>
 
       <div className="sidebar__resizer" onMouseDown={startResize} />

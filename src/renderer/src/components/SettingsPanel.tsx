@@ -89,7 +89,7 @@ export function SettingsPanel({
 }: SettingsPanelProps): React.JSX.Element {
   function handleReset(): void {
     const confirmed = window.confirm(
-      'Reset configuration? This clears your favorites, last-opened folder, and settings back to defaults. This cannot be undone.'
+      'Reset configuration? This clears your projects and settings back to defaults. This cannot be undone.'
     )
     if (confirmed) onReset()
   }

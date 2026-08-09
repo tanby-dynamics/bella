@@ -1,20 +1,25 @@
 import { app, shell, BrowserWindow, ipcMain } from 'electron'
 import { basename, dirname, join } from 'path'
-import { homedir } from 'node:os'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import icon from '../../resources/icon.png?asset'
 import {
   listFolderContents,
   extractMtlLibNames,
-  enumerateLocations,
+  addOrActivateProject,
   createStore,
   classifyFormat,
   type RenderMode
 } from '../domain'
 import { fsDirectoryReader } from './adapters/fsDirectoryReader'
-import { osDriveLister } from './adapters/osDriveLister'
+import { electronDirectoryPicker } from './adapters/electronDirectoryPicker'
 import { fileStoreBackend } from './adapters/fileStoreBackend'
-import { IPC, type ParseRenderableFileResult, type UpdateCheckResult } from '../shared/ipc'
+import {
+  IPC,
+  type ParseRenderableFileResult,
+  type PickAndAddProjectResult,
+  type RelocateProjectResult,
+  type UpdateCheckResult
+} from '../shared/ipc'
 import { readFile } from 'node:fs/promises'
 import { parseInBackground } from './parseWorkerClient'
 import * as updater from './updater'
@@ -47,8 +52,6 @@ async function resolveMtlSources(objPath: string, objBytes: Buffer): Promise<Map
 }
 
 function registerIpcHandlers(): void {
-  ipcMain.handle(IPC.homeDirectory, () => homedir())
-
   ipcMain.handle(IPC.listFolderContents, (_event, path: string) =>
     listFolderContents(path, fsDirectoryReader)
   )
@@ -59,7 +62,7 @@ function registerIpcHandlers(): void {
     // requestSeqRef in selectFile) - threaded through as-is so
     // parseWorkerClient can tell which of several in-flight requests is
     // actually the most recent selection, immune to this handler's own
-    // awaits (or setLastOpenedFolder's separate round trip beforehand)
+    // awaits (or setProjectState's separate round trip beforehand)
     // reordering when things land here relative to when they were fired.
     async (_event, path: string, requestId: number): Promise<ParseRenderableFileResult> => {
       // classifyFormat is contracted to take a filename, not a full path
@@ -87,16 +90,67 @@ function registerIpcHandlers(): void {
 
   ipcMain.handle(IPC.openExternal, (_event, path: string) => shell.openPath(path))
 
-  ipcMain.handle(IPC.listLocations, () => enumerateLocations(osDriveLister))
+  ipcMain.handle(IPC.showItemInFolder, (_event, path: string) => shell.showItemInFolder(path))
 
-  ipcMain.handle(IPC.listFavorites, () => store.getFavorites())
-  ipcMain.handle(IPC.addFavorite, (_event, favorite: { name: string; path: string }) =>
-    store.addFavorite(favorite)
+  ipcMain.handle(IPC.listProjects, () => store.getProjects())
+
+  // Opens the native directory picker (the only way a Project is created -
+  // see ADR 0005) and decides what to do with the result: activate an
+  // existing Project if the chosen directory is already one (compared via
+  // addOrActivateProject's normalized-path check), otherwise append a new
+  // one - named from the directory's own basename - and seed its state
+  // with the root itself already expanded, so a freshly added Project
+  // immediately shows its own contents. Returns null if the user cancels.
+  ipcMain.handle(IPC.pickAndAddProject, async (): Promise<PickAndAddProjectResult> => {
+    const pickedPath = await electronDirectoryPicker.pickDirectory()
+    if (!pickedPath) return null
+
+    const existingProjects = await store.getProjects()
+    const { projects, activePath, added } = addOrActivateProject(existingProjects, pickedPath)
+
+    if (added) {
+      const project = projects[projects.length - 1]
+      await store.addProject(project)
+      await store.setProjectState(project.path, { expandedPaths: [project.path] })
+    }
+    await store.setActiveProjectPath(activePath)
+
+    return { projects, activeProjectPath: activePath, added }
+  })
+
+  ipcMain.handle(IPC.removeProject, (_event, path: string) => store.removeProject(path))
+  ipcMain.handle(IPC.renameProject, (_event, path: string, name: string) =>
+    store.renameProject(path, name)
   )
-  ipcMain.handle(IPC.removeFavorite, (_event, path: string) => store.removeFavorite(path))
+  ipcMain.handle(IPC.reorderProjects, (_event, orderedPaths: string[]) =>
+    store.reorderProjects(orderedPaths)
+  )
 
-  ipcMain.handle(IPC.getLastOpenedFolder, () => store.getLastOpenedFolder())
-  ipcMain.handle(IPC.setLastOpenedFolder, (_event, path: string) => store.setLastOpenedFolder(path))
+  // Repoints an existing Project at a newly-chosen directory (see
+  // CONTEXT.md's "Relocate" action) - reuses the same picker as adding a
+  // Project. Returns null if the user cancels, leaving the Project
+  // untouched.
+  ipcMain.handle(
+    IPC.relocateProject,
+    async (_event, path: string): Promise<RelocateProjectResult> => {
+      const newPath = await electronDirectoryPicker.pickDirectory()
+      if (!newPath) return null
+
+      await store.relocateProject(path, newPath)
+      const project = (await store.getProjects()).find((p) => p.path === newPath)
+      return project ?? null
+    }
+  )
+
+  ipcMain.handle(IPC.getActiveProjectPath, () => store.getActiveProjectPath())
+  ipcMain.handle(IPC.setActiveProjectPath, (_event, path: string | null) =>
+    store.setActiveProjectPath(path)
+  )
+
+  ipcMain.handle(IPC.getProjectState, (_event, path: string) => store.getProjectState(path))
+  ipcMain.handle(IPC.setProjectState, (_event, path: string, patch) =>
+    store.setProjectState(path, patch)
+  )
 
   ipcMain.handle(IPC.getLastRenderMode, () => store.getLastRenderMode())
   ipcMain.handle(IPC.setLastRenderMode, (_event, mode: RenderMode) => store.setLastRenderMode(mode))

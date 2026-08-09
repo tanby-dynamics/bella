@@ -7,7 +7,7 @@ import type { ParseRenderableExtra, RenderableFormatId, StlParseResult } from '.
  * and large OBJ/3MF parses are CPU-bound and, once started, run to
  * completion synchronously - done inline, a parse blocks the main process's
  * single event loop for as long as it takes, and that event loop is what
- * every other ipcMain handler (listFolderContents, favorites, ...) runs on
+ * every other ipcMain handler (listFolderContents, projects, ...) runs on
  * too. That froze the whole app: the user couldn't browse to, let alone
  * select, a different file until the current one finished loading.
  * Offloading just the parse here keeps the main process free to keep

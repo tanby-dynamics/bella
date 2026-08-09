@@ -11,51 +11,203 @@ function fakeBackend(initial?: StoreData): StoreBackend {
   }
 }
 
-describe('store', () => {
-  it('has no favorites by default', async () => {
+describe('store - Projects', () => {
+  it('has no projects by default', async () => {
     const store = createStore(fakeBackend())
 
-    expect(await store.getFavorites()).toEqual([])
+    expect(await store.getProjects()).toEqual([])
   })
 
-  it('adds a favorite and persists it', async () => {
+  it('adds a project and persists it', async () => {
     const store = createStore(fakeBackend())
 
-    await store.addFavorite({ name: '3D Projects', path: 'D:\\3D Projects' })
+    await store.addProject({ name: '3D Projects', path: 'D:\\3D Projects' })
 
-    expect(await store.getFavorites()).toEqual([{ name: '3D Projects', path: 'D:\\3D Projects' }])
+    expect(await store.getProjects()).toEqual([{ name: '3D Projects', path: 'D:\\3D Projects' }])
   })
 
-  it('removes a favorite by path', async () => {
+  it('appends a second project after the first', async () => {
+    const store = createStore(
+      fakeBackend({ ...DEFAULT_STORE_DATA, projects: [{ name: 'Desktop', path: 'C:\\Desktop' }] })
+    )
+
+    await store.addProject({ name: '3D Projects', path: 'D:\\3D Projects' })
+
+    expect(await store.getProjects()).toEqual([
+      { name: 'Desktop', path: 'C:\\Desktop' },
+      { name: '3D Projects', path: 'D:\\3D Projects' }
+    ])
+  })
+
+  it('removes a project by path, along with its per-project state', async () => {
     const store = createStore(
       fakeBackend({
         ...DEFAULT_STORE_DATA,
-        favorites: [
+        projects: [
           { name: 'Desktop', path: 'C:\\Desktop' },
           { name: '3D Projects', path: 'D:\\3D Projects' }
+        ],
+        projectState: {
+          'C:\\Desktop': { selectedFilePath: 'C:\\Desktop\\a.stl', expandedPaths: [] }
+        }
+      })
+    )
+
+    await store.removeProject('C:\\Desktop')
+
+    expect(await store.getProjects()).toEqual([{ name: '3D Projects', path: 'D:\\3D Projects' }])
+    expect(await store.getProjectState('C:\\Desktop')).toEqual({
+      selectedFilePath: null,
+      expandedPaths: []
+    })
+  })
+
+  it('clears the Active Project when the removed project was active', async () => {
+    const store = createStore(
+      fakeBackend({
+        ...DEFAULT_STORE_DATA,
+        projects: [{ name: 'Desktop', path: 'C:\\Desktop' }],
+        activeProjectPath: 'C:\\Desktop'
+      })
+    )
+
+    await store.removeProject('C:\\Desktop')
+
+    expect(await store.getActiveProjectPath()).toBeNull()
+  })
+
+  it('leaves the Active Project untouched when a different project is removed', async () => {
+    const store = createStore(
+      fakeBackend({
+        ...DEFAULT_STORE_DATA,
+        projects: [
+          { name: 'Desktop', path: 'C:\\Desktop' },
+          { name: '3D Projects', path: 'D:\\3D Projects' }
+        ],
+        activeProjectPath: 'D:\\3D Projects'
+      })
+    )
+
+    await store.removeProject('C:\\Desktop')
+
+    expect(await store.getActiveProjectPath()).toBe('D:\\3D Projects')
+  })
+
+  it('renames a project, leaving its path untouched', async () => {
+    const store = createStore(
+      fakeBackend({ ...DEFAULT_STORE_DATA, projects: [{ name: 'Old Name', path: 'C:\\Desktop' }] })
+    )
+
+    await store.renameProject('C:\\Desktop', 'New Name')
+
+    expect(await store.getProjects()).toEqual([{ name: 'New Name', path: 'C:\\Desktop' }])
+  })
+
+  it('reorders projects', async () => {
+    const store = createStore(
+      fakeBackend({
+        ...DEFAULT_STORE_DATA,
+        projects: [
+          { name: 'A', path: 'C:\\A' },
+          { name: 'B', path: 'C:\\B' }
         ]
       })
     )
 
-    await store.removeFavorite('C:\\Desktop')
+    await store.reorderProjects(['C:\\B', 'C:\\A'])
 
-    expect(await store.getFavorites()).toEqual([{ name: '3D Projects', path: 'D:\\3D Projects' }])
+    expect(await store.getProjects()).toEqual([
+      { name: 'B', path: 'C:\\B' },
+      { name: 'A', path: 'C:\\A' }
+    ])
   })
 
-  it('has no last-opened folder by default', async () => {
+  it('relocates a project to a new path, discarding its old per-project state', async () => {
+    const store = createStore(
+      fakeBackend({
+        ...DEFAULT_STORE_DATA,
+        projects: [{ name: 'Robot Arm', path: 'D:\\Old\\Robot Arm' }],
+        activeProjectPath: 'D:\\Old\\Robot Arm',
+        projectState: {
+          'D:\\Old\\Robot Arm': {
+            selectedFilePath: 'D:\\Old\\Robot Arm\\a.stl',
+            expandedPaths: ['D:\\Old\\Robot Arm']
+          }
+        }
+      })
+    )
+
+    await store.relocateProject('D:\\Old\\Robot Arm', 'E:\\New\\Robot Arm')
+
+    expect(await store.getProjects()).toEqual([{ name: 'Robot Arm', path: 'E:\\New\\Robot Arm' }])
+    expect(await store.getActiveProjectPath()).toBe('E:\\New\\Robot Arm')
+    expect(await store.getProjectState('D:\\Old\\Robot Arm')).toEqual({
+      selectedFilePath: null,
+      expandedPaths: []
+    })
+    expect(await store.getProjectState('E:\\New\\Robot Arm')).toEqual({
+      selectedFilePath: null,
+      expandedPaths: ['E:\\New\\Robot Arm']
+    })
+  })
+
+  it('has no Active Project by default', async () => {
     const store = createStore(fakeBackend())
 
-    expect(await store.getLastOpenedFolder()).toBeNull()
+    expect(await store.getActiveProjectPath()).toBeNull()
   })
 
-  it('sets and gets the last-opened folder', async () => {
+  it('sets and gets the Active Project', async () => {
     const store = createStore(fakeBackend())
 
-    await store.setLastOpenedFolder('D:\\Projects\\Robot Arm')
+    await store.setActiveProjectPath('D:\\Projects\\Robot Arm')
 
-    expect(await store.getLastOpenedFolder()).toBe('D:\\Projects\\Robot Arm')
+    expect(await store.getActiveProjectPath()).toBe('D:\\Projects\\Robot Arm')
   })
 
+  it('has default (empty) state for a project that has never been browsed', async () => {
+    const store = createStore(fakeBackend())
+
+    expect(await store.getProjectState('D:\\Projects\\Robot Arm')).toEqual({
+      selectedFilePath: null,
+      expandedPaths: []
+    })
+  })
+
+  it('sets project state, merging with what was already there', async () => {
+    const store = createStore(fakeBackend())
+
+    await store.setProjectState('D:\\Projects\\Robot Arm', {
+      expandedPaths: ['D:\\Projects\\Robot Arm']
+    })
+    await store.setProjectState('D:\\Projects\\Robot Arm', {
+      selectedFilePath: 'D:\\Projects\\Robot Arm\\arm.stl'
+    })
+
+    expect(await store.getProjectState('D:\\Projects\\Robot Arm')).toEqual({
+      selectedFilePath: 'D:\\Projects\\Robot Arm\\arm.stl',
+      expandedPaths: ['D:\\Projects\\Robot Arm']
+    })
+  })
+
+  it('keeps different projects state independent', async () => {
+    const store = createStore(fakeBackend())
+
+    await store.setProjectState('C:\\A', { selectedFilePath: 'C:\\A\\a.stl' })
+    await store.setProjectState('C:\\B', { selectedFilePath: 'C:\\B\\b.stl' })
+
+    expect(await store.getProjectState('C:\\A')).toEqual({
+      selectedFilePath: 'C:\\A\\a.stl',
+      expandedPaths: []
+    })
+    expect(await store.getProjectState('C:\\B')).toEqual({
+      selectedFilePath: 'C:\\B\\b.stl',
+      expandedPaths: []
+    })
+  })
+})
+
+describe('store - Settings', () => {
   it('has default settings (system theme, 220px sidebar, update checks on, orange accent and render color)', async () => {
     const store = createStore(fakeBackend())
 
@@ -137,12 +289,17 @@ describe('store', () => {
       renderColor: '#ff8a9d'
     })
   })
+})
 
-  it('resetAll clears favorites, last-opened folder, settings, skipped update version, and last render mode back to defaults', async () => {
+describe('store - reset', () => {
+  it('resetAll clears projects, project state, settings, skipped update version, and last render mode back to defaults', async () => {
     const store = createStore(
       fakeBackend({
-        favorites: [{ name: '3D Projects', path: 'D:\\3D Projects' }],
-        lastOpenedFolder: 'D:\\3D Projects',
+        projects: [{ name: '3D Projects', path: 'D:\\3D Projects' }],
+        activeProjectPath: 'D:\\3D Projects',
+        projectState: {
+          'D:\\3D Projects': { selectedFilePath: 'D:\\3D Projects\\a.stl', expandedPaths: [] }
+        },
         settings: {
           theme: 'dark',
           sidebarWidth: 280,
@@ -158,8 +315,8 @@ describe('store', () => {
     const result = await store.resetAll()
 
     expect(result).toEqual(DEFAULT_STORE_DATA)
-    expect(await store.getFavorites()).toEqual([])
-    expect(await store.getLastOpenedFolder()).toBeNull()
+    expect(await store.getProjects()).toEqual([])
+    expect(await store.getActiveProjectPath()).toBeNull()
     expect(await store.getSettings()).toEqual(DEFAULT_STORE_DATA.settings)
     expect(await store.getSkippedUpdateVersion()).toBeNull()
     expect(await store.getLastRenderMode()).toBe('shaded')
@@ -189,21 +346,22 @@ describe('store - Skipped Version', () => {
     expect(await store.getSkippedUpdateVersion()).toBeNull()
   })
 
-  it('fills in defaults for fields missing from an older on-disk config', async () => {
-    // Simulates a config file written before checkForUpdatesOnStartup /
-    // skippedUpdateVersion / sidebarWidth / lastRenderMode existed (the
-    // sidebarWidth field replaced the old sort/columnWidths fields - see
-    // ADR 0004).
+  it('fills in defaults for fields missing from an older on-disk config, dropping old favorites/lastOpenedFolder rather than migrating them', async () => {
+    // Simulates a config file written before Projects existed (see ADR
+    // 0005) - it still has the old favorites/lastOpenedFolder fields
+    // instead of projects/activeProjectPath/projectState.
     const store = createStore(
       fakeBackend({
-        favorites: [],
-        lastOpenedFolder: null,
+        favorites: [{ name: '3D Projects', path: 'D:\\3D Projects' }],
+        lastOpenedFolder: 'D:\\3D Projects',
         settings: {
           theme: 'dark'
         }
       } as unknown as StoreData)
     )
 
+    expect(await store.getProjects()).toEqual([])
+    expect(await store.getActiveProjectPath()).toBeNull()
     expect(await store.getSkippedUpdateVersion()).toBeNull()
     expect((await store.getSettings()).checkForUpdatesOnStartup).toBe(true)
     expect((await store.getSettings()).sidebarWidth).toBe(220)

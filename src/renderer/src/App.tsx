@@ -1,9 +1,8 @@
 import { useEffect, useRef, useState } from 'react'
 import {
   COLOR_PRESETS,
-  type Favorite,
   type FileEntry,
-  type Location,
+  type Project,
   type RenderMode,
   type Settings,
   type UpdateCheckResult,
@@ -11,7 +10,7 @@ import {
 } from './types'
 import type { PreviewState } from './preview'
 import { parentFolderPath } from './paths'
-import { Sidebar } from './components/Sidebar'
+import { Sidebar, type RenameRequest } from './components/Sidebar'
 import type { Highlighted, RevealRequest } from './components/LocationTree'
 import { PreviewPanel } from './components/PreviewPanel'
 import { StatusBar } from './components/StatusBar'
@@ -43,24 +42,34 @@ function applyAccentColor(color: string): void {
 }
 
 function App(): React.JSX.Element {
-  // The folder Bella opened at startup - captured once and never updated
-  // again, so the Locations tree only auto-expands to it on initial mount.
-  // See LocationTreeNode.
-  const [initialFolder, setInitialFolder] = useState<string | null>(null)
-  // Tells the Locations tree to expand down to and scroll to a folder -
-  // set on startup (see init below), and by revealInTree/
-  // selectFolderAndReveal (Favorite clicks). Purely an expand-and-scroll
-  // signal in itself; it never carries highlight information -
-  // selectFolderAndReveal happens to also highlight the folder, but that's
-  // a separate setState call, not something this causes. See
+  const [projects, setProjects] = useState<Project[]>([])
+  // The Active Project's path, if any - see CONTEXT.md. Kept separately
+  // from `projects` (rather than storing the whole Project inline) so a
+  // rename/relocate that only touches the `projects` array doesn't need to
+  // also reconcile a duplicate copy of the active one.
+  const [activeProjectPath, setActiveProjectPath] = useState<string | null>(null)
+  // Projects whose directory failed to load the last time they were
+  // activated - see CONTEXT.md's "missing directory" decision. Cleared
+  // optimistically on every (re-)activation attempt; re-added if that
+  // attempt's root fetch fails again - see handleLoadError.
+  const [missingProjectPaths, setMissingProjectPaths] = useState<Set<string>>(new Set())
+  // The Active Project's own persisted expand-state - see ProjectState and
+  // LocationTreeNode. Reset (not merged) on every activateProject call,
+  // since it belongs to whichever Project is active.
+  const [expandedPaths, setExpandedPaths] = useState<Set<string>>(new Set())
+  // Tells the Locations tree to expand down to and scroll to a path - set
+  // on Project activation, when restoring that Project's persisted
+  // selected file. Purely an expand-and-scroll signal in itself; it never
+  // carries highlight information - that's a separate setState call. See
   // LocationTreeNode.
   const [revealRequest, setRevealRequest] = useState<RevealRequest | null>(null)
+  // Tells the PROJECTS list to open a freshly-added Project's row in
+  // inline rename mode - see RenameRequest.
+  const [renameRequest, setRenameRequest] = useState<RenameRequest | null>(null)
   const [highlighted, setHighlighted] = useState<Highlighted | null>(null)
   const [selectedEntry, setSelectedEntry] = useState<FileEntry | null>(null)
   const [preview, setPreview] = useState<PreviewState>({ status: 'empty' })
   const [renderMode, setRenderMode] = useState<RenderMode>('shaded')
-  const [favorites, setFavorites] = useState<Favorite[]>([])
-  const [locations, setLocations] = useState<Location[]>([])
   const [settings, setSettings] = useState<Settings | null>(null)
   const [settingsOpen, setSettingsOpen] = useState(false)
   const [appVersion, setAppVersion] = useState<string | null>(null)
@@ -85,34 +94,77 @@ function App(): React.JSX.Element {
   const renderColor = settings?.renderColor ?? COLOR_PRESETS[0]
 
   // Expands + scrolls the tree to `path`, without touching what's
-  // highlighted - used for the one-off startup reveal (see init below),
-  // where nothing's been clicked yet so nothing should be highlighted.
-  // `align` defaults to 'nearest' - see RevealRequest.
+  // highlighted. `align` defaults to 'nearest' - see RevealRequest.
   function revealInTree(path: string, align?: RevealRequest['align']): void {
     setRevealRequest((current) => ({ path, nonce: (current?.nonce ?? 0) + 1, align }))
+  }
+
+  // Makes `project` the Active Project: persists the switch, resets
+  // whatever was highlighted/previewed (it belonged to the previous
+  // Project), then restores this Project's own remembered state -
+  // expanded folders, and its selected file if it still exists (silently
+  // ignored otherwise - see CONTEXT.md's "missing file" decision). Also
+  // used to (re-)activate the same Project, e.g. clicking its row again to
+  // retry after a missing-directory error.
+  async function activateProject(project: Project): Promise<void> {
+    setHighlighted(null)
+    setSelectedEntry(null)
+    setPreview({ status: 'empty' })
+    // Optimistic clear - re-added below (via handleLoadError, fired by the
+    // freshly-mounted root tree node) if the directory still can't be found.
+    setMissingProjectPaths((current) => {
+      if (!current.has(project.path)) return current
+      const next = new Set(current)
+      next.delete(project.path)
+      return next
+    })
+
+    // Fetched *before* setActiveProjectPath below, and applied together
+    // with it - setActiveProjectPath is what makes Sidebar mount the tree
+    // (see the `activeProject &&` check), and LocationTreeNode decides its
+    // *initial* expanded state once, at mount, from the expandedPaths prop
+    // it's given right then. Setting activeProjectPath first (with
+    // expandedPaths still the previous Project's, or empty) would mount
+    // the tree collapsed no matter what this Project's own persisted
+    // expand-state says - too late for a later setExpandedPaths call to
+    // undo.
+    const state = await window.api.getProjectState(project.path)
+    setExpandedPaths(new Set(state.expandedPaths))
+    setActiveProjectPath(project.path)
+    void window.api.setActiveProjectPath(project.path)
+
+    if (!state.selectedFilePath) return
+
+    try {
+      const parentContents = await window.api.listFolderContents(
+        parentFolderPath(state.selectedFilePath)
+      )
+      const entry = parentContents.files.find((file) => file.path === state.selectedFilePath)
+      if (entry) {
+        await selectFile(entry)
+        revealInTree(state.selectedFilePath, 'start')
+      }
+      // No matching entry: the file was deleted/moved while Bella was
+      // closed - silently leave nothing selected, per CONTEXT.md.
+    } catch {
+      // The containing folder itself is gone too - same silent treatment.
+      // A missing Project *directory* specifically still surfaces via the
+      // tree's own root-node error state (see handleLoadError).
+    }
   }
 
   useEffect(() => {
     let cancelled = false
 
     async function init(): Promise<void> {
-      const [
-        loadedSettings,
-        loadedFavorites,
-        loadedLocations,
-        lastOpenedFolder,
-        lastRenderMode,
-        homeDirectory,
-        version
-      ] = await Promise.all([
-        window.api.getSettings(),
-        window.api.listFavorites(),
-        window.api.listLocations(),
-        window.api.getLastOpenedFolder(),
-        window.api.getLastRenderMode(),
-        window.api.getHomeDirectory(),
-        window.api.getAppVersion()
-      ])
+      const [loadedSettings, loadedProjects, activePath, lastRenderMode, version] =
+        await Promise.all([
+          window.api.getSettings(),
+          window.api.listProjects(),
+          window.api.getActiveProjectPath(),
+          window.api.getLastRenderMode(),
+          window.api.getAppVersion()
+        ])
 
       if (cancelled) return
 
@@ -120,18 +172,11 @@ function App(): React.JSX.Element {
       setRenderMode(lastRenderMode)
       applyTheme(loadedSettings.theme)
       applyAccentColor(loadedSettings.accentColor)
-      setFavorites(loadedFavorites)
-      setLocations(loadedLocations)
+      setProjects(loadedProjects)
       setAppVersion(version)
-      const startFolder = lastOpenedFolder ?? homeDirectory
-      setInitialFolder(startFolder)
-      // The tree auto-expands down to startFolder synchronously (see
-      // LocationTreeNode's shouldAutoExpand, driven by initialFolder/
-      // autoExpandPath) - that alone doesn't scroll it into view, though.
-      // Reveal reuses the same ancestor-chain check, finds those nodes
-      // already expanded, and just does the scroll. See ADR 0004 / user
-      // story 15.
-      revealInTree(startFolder)
+
+      const activeProject = loadedProjects.find((project) => project.path === activePath)
+      if (activeProject) await activateProject(activeProject)
 
       // Silent startup Update Check - never surfaces an error, and honours
       // a previously Skipped Version (bypassSkip: false). See CONTEXT.md.
@@ -149,6 +194,7 @@ function App(): React.JSX.Element {
     return () => {
       cancelled = true
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   useEffect(() => {
@@ -163,22 +209,24 @@ function App(): React.JSX.Element {
 
   // A file row's click - highlights it and loads it into the preview. The
   // only interaction that changes what's previewed (see ADR 0004): folder
-  // clicks/expands never clear it. Also becomes the new "last opened
-  // folder" for next startup's auto-expand, since there's no other
-  // "current folder" signal left to persist.
+  // clicks/expands never clear it. Also becomes the Active Project's own
+  // remembered selected file, so reopening this Project resumes here - see
+  // CONTEXT.md.
   async function selectFile(entry: FileEntry): Promise<void> {
     // Re-clicking the already-selected file is a no-op - it's already
-    // highlighted, already the last-opened folder, and already loaded (or
-    // loading); nothing about its state should change, so there's nothing
-    // to re-fetch or re-parse. Guards against a real cost too: a second
-    // parse of an expensive file (STEP) would preempt/kill the worker
-    // mid-render for no reason - see parseWorkerClient.ts.
+    // highlighted, already remembered, and already loaded (or loading);
+    // nothing about its state should change, so there's nothing to
+    // re-fetch or re-parse. Guards against a real cost too: a second parse
+    // of an expensive file (STEP) would preempt/kill the worker mid-render
+    // for no reason - see parseWorkerClient.ts.
     if (entry.path === selectedEntry?.path) return
 
     const seq = ++requestSeqRef.current
     setHighlighted({ path: entry.path, kind: 'file' })
     setSelectedEntry(entry)
-    await window.api.setLastOpenedFolder(parentFolderPath(entry.path))
+    if (activeProjectPath) {
+      await window.api.setProjectState(activeProjectPath, { selectedFilePath: entry.path })
+    }
     // Another selectFile may have started (and possibly already finished)
     // during that await - see requestSeqRef. If so, this call is stale:
     // applying anything below now would flash the wrong file's preview in
@@ -203,18 +251,6 @@ function App(): React.JSX.Element {
     }
   }
 
-  // A Favorite click - means "go to this folder": highlight it, as if its
-  // own row had been clicked directly in the tree, and reveal (expand +
-  // scroll to) it, even if the tree was never expanded down to it. Scrolls
-  // it to the top of the sidebar (align: 'start') rather than the minimal
-  // "nearest" scroll, since the user just asked to jump there. Never
-  // touches the preview - selecting a folder this way is exactly like
-  // selecting one by clicking its row.
-  function selectFolderAndReveal(path: string): void {
-    setHighlighted({ path, kind: 'folder' })
-    revealInTree(path, 'start')
-  }
-
   async function openSelected(): Promise<void> {
     if (!selectedEntry) return
     await window.api.openExternal(selectedEntry.path)
@@ -225,21 +261,97 @@ function App(): React.JSX.Element {
     await window.api.showItemInFolder(selectedEntry.path)
   }
 
-  async function removeFavorite(path: string): Promise<void> {
-    await window.api.removeFavorite(path)
-    setFavorites(await window.api.listFavorites())
+  // The PROJECTS section's "+" button (or the empty-state's "Add Project")
+  // - the only way a Project gets created, see CONTEXT.md. Opens the
+  // native directory picker; a canceled pick is a no-op. A genuinely new
+  // Project is both activated immediately and dropped into inline rename
+  // mode; picking an already-known directory just activates that existing
+  // entry (see addOrActivateProject in the domain layer).
+  async function addProject(): Promise<void> {
+    const result = await window.api.pickAndAddProject()
+    if (!result) return
+
+    setProjects(result.projects)
+    const project = result.projects.find((p) => p.path === result.activeProjectPath)
+    if (!project) return
+
+    await activateProject(project)
+    if (result.added) {
+      setRenameRequest((current) => ({ path: project.path, nonce: (current?.nonce ?? 0) + 1 }))
+    }
   }
 
-  // "Make favorite"/"Unfavorite" from a Locations-tree folder's right-click
-  // menu - see LocationTreeNode. Which one it means is decided here, from
-  // current favorites state, rather than by the tree node itself.
-  async function toggleFavorite(item: { name: string; path: string }): Promise<void> {
-    if (favorites.some((f) => f.path === item.path)) {
-      await window.api.removeFavorite(item.path)
-    } else {
-      await window.api.addFavorite(item)
+  async function removeProject(path: string): Promise<void> {
+    await window.api.removeProject(path)
+    setProjects((current) => current.filter((project) => project.path !== path))
+    setMissingProjectPaths((current) => {
+      if (!current.has(path)) return current
+      const next = new Set(current)
+      next.delete(path)
+      return next
+    })
+
+    if (path === activeProjectPath) {
+      setActiveProjectPath(null)
+      setHighlighted(null)
+      setSelectedEntry(null)
+      setPreview({ status: 'empty' })
+      setExpandedPaths(new Set())
     }
-    setFavorites(await window.api.listFavorites())
+  }
+
+  async function renameProject(path: string, name: string): Promise<void> {
+    await window.api.renameProject(path, name)
+    setProjects((current) =>
+      current.map((project) => (project.path === path ? { ...project, name } : project))
+    )
+  }
+
+  async function reorderProjects(orderedPaths: string[]): Promise<void> {
+    await window.api.reorderProjects(orderedPaths)
+    setProjects((current) => {
+      const byPath = new Map(current.map((project) => [project.path, project]))
+      return orderedPaths
+        .map((path) => byPath.get(path))
+        .filter((project): project is Project => project !== undefined)
+    })
+  }
+
+  // "Relocate…" from a Project's context menu - repoints it at a
+  // newly-chosen directory via the same picker used to add a Project,
+  // keeping its name and position. Reactivates it at the new path
+  // afterward, since a relocated Project is almost always the one that was
+  // just missing. A canceled pick is a no-op.
+  async function relocateProject(path: string): Promise<void> {
+    const relocated = await window.api.relocateProject(path)
+    if (!relocated) return
+
+    setProjects((current) =>
+      current.map((project) => (project.path === path ? relocated : project))
+    )
+    await activateProject(relocated)
+  }
+
+  // Fired whenever a Locations-tree node's own expanded state changes -
+  // keeps the Active Project's persisted expand-state in sync immediately,
+  // not just at a checkpoint like switching Projects. See CONTEXT.md.
+  function toggleExpand(path: string, isExpanded: boolean): void {
+    const next = new Set(expandedPaths)
+    if (isExpanded) next.add(path)
+    else next.delete(path)
+    setExpandedPaths(next)
+    if (activeProjectPath) {
+      void window.api.setProjectState(activeProjectPath, { expandedPaths: Array.from(next) })
+    }
+  }
+
+  // Fired if the Active Project's own root folder-listing fails - see
+  // LocationTreeNode. Ignores failures from any other (inactive) node's
+  // subfolder - only the root, at the Active Project's own path, means the
+  // Project itself can't be found.
+  function handleLoadError(path: string): void {
+    if (path !== activeProjectPath) return
+    setMissingProjectPaths((current) => new Set(current).add(path))
   }
 
   async function changeSettings(patch: Partial<Settings>): Promise<void> {
@@ -263,7 +375,13 @@ function App(): React.JSX.Element {
     setRenderMode(defaults.lastRenderMode)
     applyTheme(defaults.settings.theme)
     applyAccentColor(defaults.settings.accentColor)
-    setFavorites(defaults.favorites)
+    setProjects(defaults.projects)
+    setActiveProjectPath(defaults.activeProjectPath)
+    setMissingProjectPaths(new Set())
+    setExpandedPaths(new Set())
+    setHighlighted(null)
+    setSelectedEntry(null)
+    setPreview({ status: 'empty' })
   }
 
   async function changeSidebarWidth(width: number): Promise<void> {
@@ -318,16 +436,23 @@ function App(): React.JSX.Element {
     <div className="app">
       <div className="app__body">
         <Sidebar
-          favorites={favorites}
-          locations={locations}
+          projects={projects}
+          activeProjectPath={activeProjectPath}
+          missingProjectPaths={missingProjectPaths}
           highlighted={highlighted}
-          initialFolder={initialFolder}
+          expandedPaths={expandedPaths}
           revealRequest={revealRequest}
-          onSelectFavorite={selectFolderAndReveal}
+          renameRequest={renameRequest}
+          onSelectProject={activateProject}
+          onAddProject={addProject}
+          onRemoveProject={removeProject}
+          onRenameProject={renameProject}
+          onRelocateProject={relocateProject}
+          onReorderProjects={reorderProjects}
           onSelectFolder={selectFolder}
           onSelectFile={selectFile}
-          onRemoveFavorite={removeFavorite}
-          onToggleFavorite={toggleFavorite}
+          onToggleExpand={toggleExpand}
+          onLoadError={handleLoadError}
           width={sidebarWidth}
           onWidthChange={changeSidebarWidth}
         />

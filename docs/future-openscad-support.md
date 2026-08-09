@@ -4,6 +4,8 @@ Status: **shelved / not scheduled**. Captured so the research doesn't need
 redoing when this comes back up. Not an ADR — no decision has been made,
 just findings.
 
+**Thought**: Could just assume that OpenSCAD is installed and prompt if it isn't, then just use the existing CLI directly. That would avoid much of the heavy lifting required for embedding OpenSCAD in some way.
+
 ## Why this is a bigger lift than it looks
 
 `.scad` currently classifies as a `ListedFormatId` (see `formats.ts`) —

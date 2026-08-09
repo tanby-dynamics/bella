@@ -20,25 +20,38 @@ than Renderable even though Bella does read it (see "OBJ's MTL sidecar"
 below) - it's a material sidecar, not a mesh format, so it never gets a 3D
 preview of its own.
 
-**Favorite** — a user-pinned folder shown in the sidebar for quick access.
+**Project** — a user-chosen directory that roots the location tree; the
+unit of persistent, resumable browsing state (selected file, expanded
+folders, scroll position) in Bella. Added only via a system
+directory-picker dialog - there's no other way to create one. Replaces the
+old unrestricted "browse anything under any OS drive" model: the tree only
+ever shows one Project's contents at a time, rooted at that Project's own
+directory.
+_Avoid_: Favorite, Location (superseded terms — see ADR 0005)
 
-**Browsing scope** — unrestricted and OS-wide: any drive, folder, or network
-share reachable from the OS, not limited to app-defined workspaces or
-project roots. Expanding a folder anywhere in the Locations tree reveals its
-Renderable-format files (the only ones with a 3D preview, each with an
-extension badge) and subfolders; hidden entries and any file without a
-preview - Listed format or unrecognized - are filtered out rather than
-shown unstyled (see the "Hidden and no-preview entries" decision below).
-See ADR 0004: the tree is the sole browsing surface, there's no separate
-file list.
+**Active Project** — the one Project currently rooting the location tree.
+Switching the Active Project replaces the entire tree's contents with the
+newly-active Project's directory - a bigger action than the old Favorite
+click, which only revealed/scrolled to a spot within one shared, OS-wide
+tree.
 
-**Location** — a filesystem root shown in the sidebar's tree (e.g. "This
-PC", a drive, a network share), auto-enumerated from the OS and lazily
-expandable to browse its subfolders and files. Distinct from Favorite:
-Locations are what the OS offers, Favorites are what the user pins. The
-term applies only to these top-level roots — the tree's expandable
-subfolder nodes underneath a Location aren't themselves Locations, just
-folders being browsed.
+**Relocate** (action) — repoints an existing Project entry at a
+newly-chosen directory via the same system directory-picker used to add a
+Project, keeping its name and position in the list. Used to recover a
+Project whose directory can no longer be found; discards that Project's
+persisted selected file, expanded folders, and scroll position, since they
+belonged to the old directory's contents.
+
+**Browsing scope** — bounded to the Active Project's directory and
+everything beneath it; there's no way to browse above the Project root or
+reach a different OS drive/folder without switching Projects first (see
+ADR 0005, which supersedes the old OS-wide framing). Expanding a folder
+anywhere in the tree reveals its Renderable-format files (the only ones
+with a 3D preview, each with an extension badge) and subfolders; hidden
+entries and any file without a preview - Listed format or unrecognized -
+are filtered out rather than shown unstyled (see the "Hidden and no-preview
+entries" decision below). See ADR 0004: the tree is the sole browsing
+surface, there's no separate file list.
 
 **Render mode** — the 3D viewer's display style for a Renderable-format
 file, one of:
@@ -92,20 +105,24 @@ Version only — a later Release still prompts.
 - **v1 Settings scope**: theme (light/dark/system). Nothing
   file-management-related until that feature exists. Render mode is not a
   Setting - see "App state persists" below.
-- **The Locations tree is the sole browsing surface.** There's no
-  separate file list panel and no "current folder" concept — expanding a
-  folder anywhere in the tree reveals its subfolders and files together,
-  inline, and any number of folders can be expanded independently at
-  once (a VS Code Explorer-style hierarchy). The breadcrumb tracks
-  whatever's currently _highlighted_ — a folder's own path, or a
-  selected file's containing folder — instead of a navigated-to folder.
-  Clicking a breadcrumb segment (or a Favorite) highlights that folder,
-  the same as clicking its row directly, and reveals (expands + scrolls
-  to) it in the tree — it doesn't navigate anywhere, since the tree is
-  the only browsing surface, but it does select, so the breadcrumb
-  itself updates to match. The tree still does not otherwise
-  auto-expand/sync to follow the highlight. See ADR 0004, which
-  supersedes ADR 0001.
+- **The location tree is the sole browsing surface, rooted at the Active
+  Project.** There's still no separate file list panel, and no
+  navigate-between-folders concept _within_ a Project's own subtree —
+  expanding a folder anywhere below the root reveals its subfolders and
+  files together, inline, and any number of folders can be expanded
+  independently at once (a VS Code Explorer-style hierarchy). What's
+  changed from ADR 0004's original framing: the tree now does have a
+  bounded "current folder" at the very top - the Active Project's own
+  directory - since switching Projects replaces the whole tree's
+  contents, rather than just scrolling to a spot within one shared,
+  OS-wide tree. See ADR 0005, which supersedes this part of ADR 0004
+  while keeping ADR 0004's "no separate file list" principle intact. The
+  breadcrumb tracks whatever's currently _highlighted_ below the root —
+  a folder's own path, or a selected file's containing folder — instead
+  of a navigated-to folder. Clicking a breadcrumb segment highlights
+  that folder, the same as clicking its row directly, and reveals
+  (expands + scrolls to) it in the tree. The tree still does not
+  otherwise auto-expand/sync to follow the highlight.
 - **Tree chevrons are unconditional.** Every folder node in the tree
   shows an expand affordance, even if it turns out to have no children —
   avoids an eager per-node child-existence check. A folder row is a
@@ -114,13 +131,46 @@ Version only — a later Release still prompts.
   there's no separate "navigate" action left to disambiguate from
   "expand." Selecting/highlighting a folder never touches the preview —
   only selecting a _different file_ does.
-- **No synthetic "This PC" grouping node.** Locations stay flat
-  top-level roots (drives, shares), matching how they're enumerated
-  today — no wrapper node introduced purely for grouping.
-- **Favorites stay simple.** Explorer-styled (collapsible section, same
-  visual treatment as the tree) but no drag-to-reorder and no
-  auto-suggested "frequent folders" — pinning/unpinning only, same as
-  today.
+- **OS drive/network-share enumeration is removed entirely.** The old
+  flat list of top-level Locations (drives, shares) that the tree could
+  root itself on is gone along with Location itself - the tree only ever
+  roots at a Project's own directory now. See ADR 0005.
+- **Projects replace Favorites outright.** No data migration - existing
+  Favorites are dropped, and Projects start from an empty list on first
+  launch after this change. A Project can only be created via a system
+  directory-picker dialog (triggered from a "+" button in the PROJECTS
+  section header); the old per-folder "Make Favorite" tree context-menu
+  action is gone, since re-adding an equivalent "pin any subfolder"
+  escape hatch would reopen the unrestricted-browsing surface this
+  change removes. See ADR 0005.
+- **The PROJECTS list carries over Favorites' list UI, not its click
+  behavior.** Same collapsible-section, Explorer-styled list (name,
+  remove control) - but unlike a Favorite click (reveal/scroll within
+  one shared tree), clicking a Project switches the Active Project and
+  re-roots the whole tree. Unlike Favorites, the list is reorderable by
+  drag-and-drop, and each entry supports "Rename Project..." (inline, in
+  the row) and "Remove Project" from a right-click menu, alongside the
+  existing remove control. Adding a Project inserts it at the bottom of
+  the list and makes it the Active Project immediately. A Project's name
+  defaults to its directory's basename but is independently editable;
+  its path is not.
+- **Duplicate and overlapping Project directories.** Adding a directory
+  that's already a Project (compared case-folded, trailing separators
+  stripped) activates the existing entry instead of adding a second one.
+  Nested or overlapping Project directories (one Project's folder living
+  inside another's) are otherwise allowed freely - there's no meaningful
+  harm in the overlap, and blocking it would need validation with no
+  clear benefit.
+- **A Project with a missing directory shows an in-place error, not a
+  blocking prompt.** If the Active Project's directory can't be found
+  (deleted, renamed, unmounted drive), its row shows an error/greyed-out
+  state and the tree shows "not found" instead of contents - the user
+  can Relocate it or remove it. Nothing pops up unprompted, and the
+  entry is never silently auto-removed.
+- **No application menu was introduced for adding a Project.** Bella has
+  no native File/Edit/etc. menu today; the "+" button in the PROJECTS
+  section header is the only entry point, rather than building a whole
+  menu-bar system to also host a "New Project..." item.
 - **One domain function returns a folder's subfolders and files
   together** (`listFolderContents`), pre-sorted folders-first then
   alphabetically (case-insensitive) within each group — replaces the old
@@ -138,12 +188,36 @@ Version only — a later Release still prompts.
   date — Dimensions and Triangle count require parsing geometry Bella
   doesn't understand for these formats, so they're omitted rather than
   shown empty.
-- **App state persists** across restarts in a local app-config file:
-  Favorites list, last-opened folder (now updated whenever a file is
-  selected, since there's no separate "navigate to a folder" event
-  anymore — see ADR 0004), the sidebar width, and the last-selected Render
-  mode (updated whenever the user picks one in the preview's render-mode
-  toggle - not a Setting, same treatment as Skipped Version).
+- **App state persists** across restarts in a local app-config file: the
+  Projects list (with each Project's own selected file, expanded
+  folders, and scroll position - see the per-Project state decision
+  below), which Project is Active, the sidebar width, and the
+  last-selected Render mode (updated whenever the user picks one in the
+  preview's render-mode toggle - not a Setting, same treatment as
+  Skipped Version).
+- **Per-Project state is scoped to that Project and restored on
+  reactivation** (switching to it, or launching with it Active):
+  selected file, expanded folders, and scroll position are remembered
+  per Project, not globally, so returning to an old Project resumes
+  where you left it independently of whichever Project was open most
+  recently elsewhere. Scroll position is restored by scrolling the
+  persisted selected file's path into view (the same reveal mechanism a
+  fresh selection already uses), not a raw scroll offset, since
+  lazily-loaded content height can differ at restore time. Restoring a
+  Project's expanded folders happens node-by-node as the tree mounts
+  them, not as an eager bulk re-expand up front; reopening a Project's
+  previously-selected file automatically resumes its preview, rather
+  than only restoring a dormant highlight. If the persisted selected
+  file no longer exists, the selection is silently cleared - no error,
+  since a missing Project directory (above) is the only case that
+  surfaces one. All of this writes to the app-config file
+  immediately/debounced as it changes, the same as other app state here,
+  rather than only at checkpoints like switching Projects or quitting.
+- **Expanding any folder eagerly loads its immediate children in the
+  background**, whether that expansion came from restoring a Project's
+  persisted state or from ordinary browsing - one level deep only (not
+  its grandchildren too), to keep the tree feeling responsive without
+  fetching more of the filesystem than what's about to be shown.
 - **Selection is single-file only** in v1 — no multi-select. The tree's
   highlight can land on a folder too (for visual feedback while
   browsing), but only a file selection drives the preview, and it's a

@@ -1,5 +1,79 @@
 # Scratchpad
 
+## 20260810
+
+- [ ] Fix auto update
+- [ ] Add preview for FreeCAD's format
+	- [x] Prompt: Implement preview for FreeCAD's `.FCStd` format
+	- [x] Spec
+	- [ ] implement https://github.com/tanby-dynamics/bella/issues/8
+	- [ ] test
+	- [ ] release note
+	- [ ] commit
+- [x] Move to "Project" management model
+	- [x] Grilling prompt: Move from a "show the entire file system" model to a "Project" management model. Replace "FAVORITES" with "PROJECTS", and add a way to select a directory (using the system dialog) as a new project. Selecting a project should show the contents of the project directory within the location tree, with the root of the tree being the project directory. The currently selected project should be remembered between restarts, as should the selected file and state of the location tree, including the scroll position.
+	- [x] Spec
+	- [x] implement
+	- [x] Prompt: This is a substantial refinement. Selecting a project should open the tree immediately below the project instead of as a separate tree, so that the project is displayed as the root of the tree. Keep the behaviour where selecting a project deselects the previous project, so the deselected project tree would be collapsed and replaced by the new project tree.
+	- [x] manual  test
+	- [x] release note
+	- [ ] merge
+- [ ] Release v0.3.0
+- [ ] Marketing site - bella.tanbydynamics.co
+- [ ] Code signing for macOS
+	- [ ] What do I have to do to set up code signing for macOS?
+- [ ] Code signing for Windows
+	- [x] What do I have to do to set up code signing for Windows? don't do anything yet, I'm just querying what the actual, manual process looks like.
+- [ ] Tabbed preview
+	- [ ] Prompt: I want to be able to open multiple previews via tabs. This should work similarly to VS Code's tabbing - single clicking a file opens the preview in a transient tab with the file name italicised, double clicking the file or double clicking the tab changes the tab to persistent (non-italicised). Opening a file's preview with a transient tab present closes the transient tab and replaces it with the new preview tab. Click the x or middle click the tab to close it. Tabs should be re-orderable by dragging and dropping. No support for splitting at the moment - only a single preview will actually be visible at a time.
+	- [ ] spec
+	- [ ] implement
+	- [ ] test
+	- [ ] release note
+	- [ ] merge
+- [ ] Drag and drop reordering of projects
+	- [ ] Prompt: xxx
+	- [ ] spec
+	- [ ] implement
+	- [ ] test
+	- [ ] release note
+	- [ ] merge
+- [ ] Preview PNG, GIF, and JPEG files
+	- [ ] Prompt: xxx
+	- [ ] spec
+	- [ ] implement
+	- [ ] test
+	- [ ] release note
+	- [ ] merge
+- [ ] Preview .md and .txt files
+	- [ ] Prompt: xxx
+	- [ ] implement
+	- [ ] test
+	- [ ] release note
+	- [ ] merge
+- [ ] Support collapsing "FAVORITES" and "LOCATIONS" sections
+	- [ ] Prompt: xxx
+	- [ ] spec
+	- [ ] implement
+	- [ ] test
+	- [ ] release note
+	- [ ] merge
+- [ ] Scroll  "FAVORITES" and "LOCATIONS" sections independently
+	- [ ] Prompt: xxx
+	- [ ] spec
+	- [ ] implement
+	- [ ] test
+	- [ ] release note
+	- [ ] merge
+- [ ] Release v0.4.0
+- [ ] Cache recent parsed models
+	- [ ] Prompt: Cache the last N parsed models (configurable, default to 10) so selecting a cached model is faster. Add a file system watcher so that if a cached model changed it is removed from the cache. If the model that is changed is currently displayed, reload the displayed model.
+	- [ ] spec
+	- [ ] implement
+	- [ ] test
+	- [ ] release note
+	- [ ] merge
+
 ## 20260809
 
 - [x] Configurable accent colors
@@ -19,7 +93,6 @@
   - [x] manual tests
   - [x] release note
   - [x] commit
-- [ ] Fix auto update
 - [x] Add preview for OBJ and MTL formats
 	- [x] Prompt: Implement preview for OBJ and MTL formats
 	- [x] implement
@@ -38,13 +111,13 @@
 	- [x] test
 	- [x] release note
 	- [x] commit
-- [ ] Load files on background thread
+- [x] Load files on background thread
 	- [x] Prompt: Loading a file should be on a background thread, so the user can select a different file while the current file is loading
 	- [x] implement
 	- [x] test
 	- [x] release note
 	- [x] commit
-- [ ] Don't trigger a reload when clicking an already selected file
+- [x] Don't trigger a reload when clicking an already selected file
 	- [x] Prompt: Clicking already selected file shouldn't trigger a reload
 	- [x] implement
 	- [x] test
@@ -57,7 +130,7 @@
 	- [ ] test
 	- [ ] release note
 	- [ ] commit
-- [ ] Add "Open in Explorer" to preview header
+- [x] Add "Open in Explorer" to preview header
 	- [x] Prompt: Add "Open in Explorer" to preview header
 	- [x] implement
 	- [x] test
@@ -66,9 +139,11 @@
 - [ ] Move to "Project" management model
 	- [x] Grilling prompt: Move from a "show the entire file system" model to a "Project" management model. Replace "FAVORITES" with "PROJECTS", and add a way to select a directory (using the system dialog) as a new project. Selecting a project should show the contents of the project directory within the location tree, with the root of the tree being the project directory. The currently selected project should be remembered between restarts, as should the selected file and state of the location tree, including the scroll position.
 	- [x] Spec
-	- [ ] implement
-	- [ ] manual  test
-	- [ ] release note
+	- [x] implement
+	- [x] Prompt: This is a substantial refinement. Selecting a project should open the tree immediately below the project instead of as a separate tree, so that the project is displayed as the root of the tree. Keep the behaviour where selecting a project deselects the previous project, so the deselected project tree would be collapsed and replaced by the new project tree.
+	- [ ] 
+	- [x] manual  test
+	- [x] release note
 	- [ ] merge
 - [ ] Release v0.3.0
 - [ ] Marketing site - bella.tanbydynamics.co

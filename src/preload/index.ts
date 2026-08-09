@@ -3,15 +3,16 @@ import { electronAPI } from '@electron-toolkit/preload'
 import {
   IPC,
   type ParseRenderableFileResult,
+  type PickAndAddProjectResult,
+  type RelocateProjectResult,
   type UpdateCheckResult,
   type UpdateDownloadStatus
 } from '../shared/ipc'
 import type { FolderContents } from '../domain/listFolderContents'
-import type { Location } from '../domain/locations'
-import type { Favorite, RenderMode, Settings, StoreData } from '../domain/store'
+import type { Project, ProjectState } from '../domain/projects'
+import type { RenderMode, Settings, StoreData } from '../domain/store'
 
 const api = {
-  getHomeDirectory: (): Promise<string> => ipcRenderer.invoke(IPC.homeDirectory),
   listFolderContents: (path: string): Promise<FolderContents> =>
     ipcRenderer.invoke(IPC.listFolderContents, path),
   // requestId: App.tsx's own monotonic selection counter - lets the main
@@ -21,13 +22,24 @@ const api = {
   parseRenderableFile: (path: string, requestId: number): Promise<ParseRenderableFileResult> =>
     ipcRenderer.invoke(IPC.parseRenderableFile, path, requestId),
   openExternal: (path: string): Promise<string> => ipcRenderer.invoke(IPC.openExternal, path),
-  listLocations: (): Promise<Location[]> => ipcRenderer.invoke(IPC.listLocations),
-  listFavorites: (): Promise<Favorite[]> => ipcRenderer.invoke(IPC.listFavorites),
-  addFavorite: (favorite: Favorite): Promise<void> => ipcRenderer.invoke(IPC.addFavorite, favorite),
-  removeFavorite: (path: string): Promise<void> => ipcRenderer.invoke(IPC.removeFavorite, path),
-  getLastOpenedFolder: (): Promise<string | null> => ipcRenderer.invoke(IPC.getLastOpenedFolder),
-  setLastOpenedFolder: (path: string): Promise<void> =>
-    ipcRenderer.invoke(IPC.setLastOpenedFolder, path),
+  showItemInFolder: (path: string): Promise<void> => ipcRenderer.invoke(IPC.showItemInFolder, path),
+  listProjects: (): Promise<Project[]> => ipcRenderer.invoke(IPC.listProjects),
+  pickAndAddProject: (): Promise<PickAndAddProjectResult> =>
+    ipcRenderer.invoke(IPC.pickAndAddProject),
+  removeProject: (path: string): Promise<void> => ipcRenderer.invoke(IPC.removeProject, path),
+  renameProject: (path: string, name: string): Promise<void> =>
+    ipcRenderer.invoke(IPC.renameProject, path, name),
+  reorderProjects: (orderedPaths: string[]): Promise<void> =>
+    ipcRenderer.invoke(IPC.reorderProjects, orderedPaths),
+  relocateProject: (path: string): Promise<RelocateProjectResult> =>
+    ipcRenderer.invoke(IPC.relocateProject, path),
+  getActiveProjectPath: (): Promise<string | null> => ipcRenderer.invoke(IPC.getActiveProjectPath),
+  setActiveProjectPath: (path: string | null): Promise<void> =>
+    ipcRenderer.invoke(IPC.setActiveProjectPath, path),
+  getProjectState: (path: string): Promise<ProjectState> =>
+    ipcRenderer.invoke(IPC.getProjectState, path),
+  setProjectState: (path: string, patch: Partial<ProjectState>): Promise<void> =>
+    ipcRenderer.invoke(IPC.setProjectState, path, patch),
   getLastRenderMode: (): Promise<RenderMode> => ipcRenderer.invoke(IPC.getLastRenderMode),
   setLastRenderMode: (mode: RenderMode): Promise<void> =>
     ipcRenderer.invoke(IPC.setLastRenderMode, mode),
