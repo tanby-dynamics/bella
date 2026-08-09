@@ -220,6 +220,11 @@ function App(): React.JSX.Element {
     await window.api.openExternal(selectedEntry.path)
   }
 
+  async function showSelectedInExplorer(): Promise<void> {
+    if (!selectedEntry) return
+    await window.api.showItemInFolder(selectedEntry.path)
+  }
+
   async function removeFavorite(path: string): Promise<void> {
     await window.api.removeFavorite(path)
     setFavorites(await window.api.listFavorites())
@@ -332,6 +337,7 @@ function App(): React.JSX.Element {
           renderMode={renderMode}
           onRenderModeChange={changeRenderMode}
           onOpen={openSelected}
+          onShowInExplorer={showSelectedInExplorer}
           renderColor={renderColor}
         />
       </div>

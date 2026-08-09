@@ -51,26 +51,21 @@
 	- [x] release note
 	- [x] commit
 - [ ] Add preview for FreeCAD's format
-	- [ ] Prompt: Implement preview for FreeCAD's `.FCStd` format
-	- [ ] implement
-	- [ ] test
-	- [ ] release note
-	- [ ] commit
-- [ ] Add preview for OpenSCAD format
-	- [ ] Prompt: Implement preview for OpenSCAD format
-	- [ ] implement
+	- [x] Prompt: Implement preview for FreeCAD's `.FCStd` format
+	- [x] Spec
+	- [ ] implement https://github.com/tanby-dynamics/bella/issues/8
 	- [ ] test
 	- [ ] release note
 	- [ ] commit
 - [ ] Add "Open in Explorer" to preview header
-	- [ ] Prompt: Add "Open in Explorer" to preview header
-	- [ ] implement
-	- [ ] test
-	- [ ] release note
-	- [ ] commit
+	- [x] Prompt: Add "Open in Explorer" to preview header
+	- [x] implement
+	- [x] test
+	- [x] release note
+	- [x] commit
 - [ ] Move to "Project" management model
 	- [x] Grilling prompt: Move from a "show the entire file system" model to a "Project" management model. Replace "FAVORITES" with "PROJECTS", and add a way to select a directory (using the system dialog) as a new project. Selecting a project should show the contents of the project directory within the location tree, with the root of the tree being the project directory. The currently selected project should be remembered between restarts, as should the selected file and state of the location tree, including the scroll position.
-	- [ ] Spec
+	- [x] Spec
 	- [ ] implement
 	- [ ] manual  test
 	- [ ] release note
@@ -153,7 +148,11 @@
 19. agreed
 20. agreed
 21. agreed---
-22. 
+22. agreed
+23. agreed
+24. agreed
+
+
 
 
 

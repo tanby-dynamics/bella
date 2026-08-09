@@ -15,6 +15,7 @@ file's top entry doesn't match the pushed tag. See ADR 0002.
 - Add preview for STEP format
 - Load files on background thread
 - Don't trigger a reload when clicking an already selected file
+- Add "Open in Explorer" to preview header
 
 ## v0.2.0 - 2026-08-08
 

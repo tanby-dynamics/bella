@@ -15,6 +15,7 @@ interface PreviewPanelProps {
   renderMode: RenderMode
   onRenderModeChange: (mode: RenderMode) => void
   onOpen: () => void
+  onShowInExplorer: () => void
   /** The configured Settings.renderColor - see Viewer3D. */
   renderColor: string
 }
@@ -25,6 +26,7 @@ export function PreviewPanel({
   renderMode,
   onRenderModeChange,
   onOpen,
+  onShowInExplorer,
   renderColor
 }: PreviewPanelProps): React.JSX.Element {
   return (
@@ -34,8 +36,13 @@ export function PreviewPanel({
           <div className="preview-panel__header">
             <div className="preview-panel__file-info">
               <span className="preview-panel__file-name">{selectedEntry.name}</span>
+              {' · '}
               <button type="button" className="preview-panel__open" onClick={onOpen}>
                 Open in default app
+              </button>
+              {' · '}
+              <button type="button" className="preview-panel__open" onClick={onShowInExplorer}>
+                Open in Explorer
               </button>
             </div>
             {preview.status === 'ready' && (
